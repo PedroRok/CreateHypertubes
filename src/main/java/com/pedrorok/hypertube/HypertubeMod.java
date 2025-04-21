@@ -11,13 +11,16 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.slf4j.Logger;
 
-// The value here should match an entry in the META-INF/neoforge.mods.toml file
-@Mod(HypetubeMod.MODID)
-public class HypetubeMod {
+/**
+ * @author Rok, Pedro Lucas nmm. Created on 17/04/2025
+ * @project Create Hypertube
+ */
+@Mod(HypertubeMod.MODID)
+public class HypertubeMod {
     public static final String MODID = "create_hypertube";
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public HypetubeMod(IEventBus modEventBus, ModContainer modContainer) {
+    public HypertubeMod(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.addListener(this::commonSetup);
 
         ModBlocks.register(modEventBus);
