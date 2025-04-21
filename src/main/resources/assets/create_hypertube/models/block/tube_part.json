@@ -1,0 +1,23 @@
+{
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"textures": {
+		"all": "create_hypertube:block/tube_base",
+		"particle": "create_hypertube:block/tube_base"
+	},
+	"elements": [
+		{
+			"from": [2, 2, 0],
+			"to": [14, 14, 2],
+			"shade": false,
+			"faces": {
+				"north": {"uv": [5, 3, 13, 11], "texture": "all"},
+				"east": {"uv": [8, 0, 10, 14], "texture": "all"},
+				"south": {"uv": [5, 3, 13, 11], "texture": "all"},
+				"west": {"uv": [8, 0, 10, 14], "texture": "all"},
+				"up": {"uv": [8, 0, 10, 14], "rotation": 90, "texture": "all"},
+				"down": {"uv": [8, 0, 10, 14], "rotation": 90, "texture": "all"}
+			}
+		}
+	]
+}
