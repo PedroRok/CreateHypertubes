@@ -15,44 +15,44 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(PlayerModel.class)
 public abstract class PlayerModelMixin {
-    
+
     @Inject(method = "setupAnim*", at = @At("RETURN"))
     private void onSetupAnim(LivingEntity entity, float limbSwing, float limbSwingAmount,
                              float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
-        if (entity instanceof Player player
-            && player.getPersistentData().getBoolean(HypertubeBaseBlock.TRAVEL_TAG)) {
-            PlayerModel<?> model = (PlayerModel<?>) (Object) this;
-
-            model.rightArm.xRot = 0;
-            model.rightArm.yRot = 0;
-            model.rightArm.zRot = 0;
-
-            model.rightSleeve.xRot = 0;
-            model.rightSleeve.yRot = 0;
-            model.rightSleeve.zRot = 0;
+        if (!(entity instanceof Player player)
+            || !player.getPersistentData().getBoolean(HypertubeBaseBlock.TRAVEL_TAG)) return;
 
 
-            model.leftArm.xRot = 0;
-            model.leftArm.yRot = 0;
-            model.leftArm.zRot = 0;
+        PlayerModel<?> model = (PlayerModel<?>) (Object) this;
 
-            model.leftSleeve.xRot = 0;
-            model.leftSleeve.yRot = 0;
-            model.leftSleeve.zRot = 0;
+        model.rightArm.xRot = 0;
+        model.rightArm.yRot = 0;
+        model.rightArm.zRot = 0;
+
+        model.rightSleeve.xRot = 0;
+        model.rightSleeve.yRot = 0;
+        model.rightSleeve.zRot = 0;
 
 
+        model.leftArm.xRot = 0;
+        model.leftArm.yRot = 0;
+        model.leftArm.zRot = 0;
 
-            model.rightLeg.xRot = 0;
-            model.rightLeg.yRot = 0;
-            model.rightLeg.zRot = 0;
+        model.leftSleeve.xRot = 0;
+        model.leftSleeve.yRot = 0;
+        model.leftSleeve.zRot = 0;
 
-            model.leftLeg.xRot = 0;
-            model.leftLeg.yRot = 0;
-            model.leftLeg.zRot = 0;
 
-            model.body.xRot = 0;
-            model.body.yRot = 0;
-            model.body.zRot = 0;
-        }
+        model.rightLeg.xRot = 0;
+        model.rightLeg.yRot = 0;
+        model.rightLeg.zRot = 0;
+
+        model.leftLeg.xRot = 0;
+        model.leftLeg.yRot = 0;
+        model.leftLeg.zRot = 0;
+
+        model.body.xRot = 0;
+        model.body.yRot = 0;
+        model.body.zRot = 0;
     }
 }

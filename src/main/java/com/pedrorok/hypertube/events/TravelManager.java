@@ -4,10 +4,13 @@ import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -54,9 +57,8 @@ public class TravelManager {
 
     @OnlyIn(Dist.CLIENT)
     private static void handleClient(Player player) {
-        if (player.getPersistentData().getBoolean(HypertubeBlock.TRAVEL_TAG)) {
-            player.setPose(Pose.SWIMMING);
-        }
+        if (!player.getPersistentData().getBoolean(HypertubeBlock.TRAVEL_TAG)) return;
+        player.setPose(Pose.SWIMMING);
     }
 
     private static void handleServer(Player player) {
@@ -69,7 +71,7 @@ public class TravelManager {
             PacketDistributor.sendToPlayer((ServerPlayer) player, new ISyncPersistentData.PersistentDataPacket(player));
             return;
         }
-        Vec3 point = travelPoint.getCenter();
+        Vec3 point = travelPoint.getCenter().subtract(0,0.2,0);
         double distance = player.distanceToSqr(point.x, point.y, point.z);
         if (distance > 0.4D) {
             Vec3 travelNormal = point.subtract(player.position()).normalize();
