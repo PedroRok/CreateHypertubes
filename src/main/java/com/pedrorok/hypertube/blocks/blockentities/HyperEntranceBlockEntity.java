@@ -30,7 +30,6 @@ public class HyperEntranceBlockEntity extends BlockEntity {
 
         Optional<ServerPlayer> nearbyPlayers = getNearbyPlayers((ServerLevel) level, pos.getCenter());
         if (nearbyPlayers.isEmpty()) return;
-        HypertubeMod.LOGGER.debug("Found player within range of Hyper Entrance: {}", nearbyPlayers.get().getName().getString());
 
         ServerPlayer player = nearbyPlayers.get();
         TravelManager.tryStartTravel(player, pos, state);

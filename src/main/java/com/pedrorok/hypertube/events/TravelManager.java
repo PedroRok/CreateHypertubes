@@ -38,6 +38,7 @@ public class TravelManager {
         BlockPos relative = pos.relative(state.getValue(HyperEntranceBlock.FACING));
         TravelData travelData = new TravelData(relative, player.level(), pos);
 
+        HypertubeMod.LOGGER.debug("Player start travel: {} to {}", player.getName().getString(), relative);
         travelDataMap.put(player.getUUID(), travelData);
     }
 
