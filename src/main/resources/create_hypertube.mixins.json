@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.pedrorok.hypertube.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "create_hypertube.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+    "PlayerModelMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
