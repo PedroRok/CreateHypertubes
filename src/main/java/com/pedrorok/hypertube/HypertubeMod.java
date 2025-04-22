@@ -1,6 +1,5 @@
 package com.pedrorok.hypertube;
 
-import com.mojang.logging.LogUtils;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModCreativeTab;
@@ -10,16 +9,17 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import org.slf4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 17/04/2025
  * @project Create Hypertube
  */
-@Mod(HypertubeMod.MODID)
+@Mod(HypertubeMod.MOD_ID)
 public class HypertubeMod {
-    public static final String MODID = "create_hypertube";
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final String MOD_ID = "create_hypertube";
+    public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
     public HypertubeMod(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.addListener(this::commonSetup);

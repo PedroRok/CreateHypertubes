@@ -16,12 +16,12 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public class ModCreativeTab {
 
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
-            DeferredRegister.create(Registries.CREATIVE_MODE_TAB, HypertubeMod.MODID);
+            DeferredRegister.create(Registries.CREATIVE_MODE_TAB, HypertubeMod.MOD_ID);
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MY_TAB =
             CREATIVE_MODE_TABS.register("create_hypertubes", () ->
                     CreativeModeTab.builder()
-                            .title(Component.translatable("itemGroup." + HypertubeMod.MODID))
+                            .title(Component.translatable("itemGroup." + HypertubeMod.MOD_ID))
                             .icon(ModItems.HYPERTUBE_ITEM::toStack)
                             .displayItems((featureFlagSet, output) -> {
                                 output.accept(new ItemStack(ModItems.HYPERTUBE_ITEM.get()));

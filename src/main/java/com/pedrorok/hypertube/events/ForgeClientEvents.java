@@ -13,7 +13,7 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-@EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD, modid = HypertubeMod.MODID)
+@EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD, modid = HypertubeMod.MOD_ID)
 public class ForgeClientEvents {
 
     @SubscribeEvent

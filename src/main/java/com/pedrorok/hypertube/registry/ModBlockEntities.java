@@ -15,7 +15,7 @@ import java.util.function.Supplier;
  */
 public class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES =
-            DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, HypertubeMod.MODID);
+            DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, HypertubeMod.MOD_ID);
 
     public static final Supplier<BlockEntityType<HyperEntranceBlockEntity>> HYPERTUBE_ENTRANCE_ENTITY = BLOCK_ENTITY_TYPES.register(
             "hypertube_entrance_entity",

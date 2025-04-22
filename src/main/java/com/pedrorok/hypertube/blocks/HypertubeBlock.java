@@ -25,17 +25,7 @@ import org.jetbrains.annotations.Nullable;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HypertubeBlock extends TransparentBlock implements TubeConnection {
-
-    public static final String TRAVEL_TAG = "hypertube_travel";
-    public static final Properties PROPERTIES = Properties.of()
-            .destroyTime(2.0f)
-            .dynamicShape()
-            .explosionResistance(10.0f)
-            .sound(SoundType.METAL)
-            .noOcclusion()
-            .isViewBlocking((state, level, pos) -> false)
-            .isSuffocating((state, level, pos) -> false);
+public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection {
 
     public static final BooleanProperty DOWN = BooleanProperty.create("down");
     public static final BooleanProperty UP = BooleanProperty.create("up");
@@ -74,44 +64,6 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection {
     }
 
     @Override
-    public @NotNull BlockState updateShape(@NotNull BlockState stateIn, @NotNull Direction facing, @NotNull BlockState facingState, @NotNull LevelAccessor worldIn, @NotNull BlockPos currentPos, @NotNull BlockPos facingPos) {
-        return super.updateShape(stateIn, facing, facingState, worldIn, currentPos, facingPos);
-    }
-
-    @Override
-    public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-        return getShape(state, context);
-    }
-
-    @Override
-    public @NotNull VoxelShape getCollisionShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-        return getShape(state, context);
-    }
-
-    @Override
-    public @NotNull VoxelShape getBlockSupportShape(@NotNull BlockState state, @NotNull BlockGetter reader, @NotNull BlockPos pos) {
-        return getShape(state);
-    }
-
-    @Override
-    public @NotNull VoxelShape getInteractionShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos) {
-        return getShape(state);
-    }
-
-    @Override
-    public @NotNull RenderShape getRenderShape(@NotNull BlockState state) {
-        return RenderShape.MODEL;
-    }
-
-    @Override
-    public boolean propagatesSkylightDown(@NotNull BlockState state, @NotNull BlockGetter reader, @NotNull BlockPos pos) {
-        return true;
-    }
-
-    public VoxelShape getShape(BlockState state) {
-        return getShape(state, null);
-    }
-
     public VoxelShape getShape(BlockState state, @Nullable CollisionContext ctx) {
         if (ctx instanceof EntityCollisionContext ecc
             && ecc.getEntity() instanceof Player player

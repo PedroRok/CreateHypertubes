@@ -12,7 +12,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
  * @project Create Hypertube
  */
 public class ModItems {
-    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(HypertubeMod.MODID);
+    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(HypertubeMod.MOD_ID);
 
     public static final DeferredItem<BlockItem> HYPERTUBE_ITEM = ITEMS.register("hypertube",
             () -> new BlockItem(ModBlocks.HYPERTUBE.get(), new Item.Properties()));

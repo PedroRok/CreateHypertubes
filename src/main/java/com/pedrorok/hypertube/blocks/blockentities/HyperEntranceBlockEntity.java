@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.blocks.blockentities;
 
+import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
@@ -31,8 +32,10 @@ public class HyperEntranceBlockEntity extends BlockEntity {
 
         Optional<ServerPlayer> nearbyPlayers = getNearbyPlayers((ServerLevel) level, pos.getCenter());
         if (nearbyPlayers.isEmpty()) return;
+        HypertubeMod.LOGGER.debug("Found player within range of Hyper Entrance: {}", nearbyPlayers.get().getName().getString());
 
         ServerPlayer player = nearbyPlayers.get();
+        if (player.getPersistentData().getBoolean(HypertubeBlock.TRAVEL_TAG)) return;
         player.getPersistentData().putBoolean(HypertubeBlock.TRAVEL_TAG, true);
         PacketDistributor.sendToPlayer(player, new ISyncPersistentData.PersistentDataPacket(player));
     }
