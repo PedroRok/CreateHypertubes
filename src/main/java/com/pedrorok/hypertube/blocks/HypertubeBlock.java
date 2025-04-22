@@ -21,6 +21,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
@@ -111,6 +114,17 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
                 .setValue(SOUTH, isConnected(world, pos, Direction.SOUTH))
                 .setValue(EAST, isConnected(world, pos, Direction.EAST))
                 .setValue(WEST, isConnected(world, pos, Direction.WEST));
+    }
+
+    public List<Direction> getConnectedFaces(BlockState state) {
+        List<Direction> directions = new ArrayList<>();
+        if (state.getValue(UP)) directions.add(Direction.UP);
+        if (state.getValue(DOWN)) directions.add(Direction.DOWN);
+        if (state.getValue(NORTH)) directions.add(Direction.NORTH);
+        if (state.getValue(SOUTH)) directions.add(Direction.SOUTH);
+        if (state.getValue(EAST)) directions.add(Direction.EAST);
+        if (state.getValue(WEST)) directions.add(Direction.WEST);
+        return directions;
     }
 
     public boolean isConnected(Level world, BlockPos pos, Direction facing) {

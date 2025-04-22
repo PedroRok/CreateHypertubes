@@ -14,7 +14,7 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
  * @project Create Hypertube
  */
 @EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD, modid = HypertubeMod.MOD_ID)
-public class ForgeClientEvents {
+public class ModClientEvents {
 
     @SubscribeEvent
     public static void forgeLoad(FMLClientSetupEvent event) {

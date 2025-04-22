@@ -1,9 +1,8 @@
 package com.pedrorok.hypertube.blocks.blockentities;
 
 import com.pedrorok.hypertube.HypertubeMod;
-import com.pedrorok.hypertube.blocks.HypertubeBlock;
+import com.pedrorok.hypertube.events.TravelManager;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
-import com.simibubi.create.foundation.networking.ISyncPersistentData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -11,7 +10,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.Optional;
 
@@ -35,9 +33,7 @@ public class HyperEntranceBlockEntity extends BlockEntity {
         HypertubeMod.LOGGER.debug("Found player within range of Hyper Entrance: {}", nearbyPlayers.get().getName().getString());
 
         ServerPlayer player = nearbyPlayers.get();
-        if (player.getPersistentData().getBoolean(HypertubeBlock.TRAVEL_TAG)) return;
-        player.getPersistentData().putBoolean(HypertubeBlock.TRAVEL_TAG, true);
-        PacketDistributor.sendToPlayer(player, new ISyncPersistentData.PersistentDataPacket(player));
+        TravelManager.tryStartTravel(player, pos, state);
     }
 
     private static Optional<ServerPlayer> getNearbyPlayers(ServerLevel level, Vec3 centerPos) {

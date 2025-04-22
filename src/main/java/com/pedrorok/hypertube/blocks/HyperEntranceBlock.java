@@ -63,6 +63,12 @@ public class HyperEntranceBlock extends HypertubeBaseBlock implements EntityBloc
 
     @Override
     public VoxelShape getShape(BlockState state, @Nullable CollisionContext ctx) {
+        if (ctx instanceof EntityCollisionContext ecc
+            && ecc.getEntity() instanceof Player player
+            && player.getPersistentData().getBoolean(TRAVEL_TAG)) {
+            return VoxelUtils.empty();
+        }
+
         return switch (state.getValue(FACING)) {
             case NORTH -> SHAPE_NORTH;
             case SOUTH -> SHAPE_SOUTH;
