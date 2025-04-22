@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube;
 
 import com.mojang.logging.LogUtils;
+import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModCreativeTab;
 import com.pedrorok.hypertube.registry.ModItems;
@@ -26,6 +27,7 @@ public class HypertubeMod {
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
         ModCreativeTab.register(modEventBus);
+        ModBlockEntities.register(modEventBus);
 
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }

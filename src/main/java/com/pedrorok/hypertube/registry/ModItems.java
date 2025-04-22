@@ -16,6 +16,8 @@ public class ModItems {
 
     public static final DeferredItem<BlockItem> HYPERTUBE_ITEM = ITEMS.register("hypertube",
             () -> new BlockItem(ModBlocks.HYPERTUBE.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> HYPERTUBE_ENTRANCE_ITEM = ITEMS.register("hypertube_entrance",
+            () -> new BlockItem(ModBlocks.HYPERTUBE_ENTRANCE.get(), new Item.Properties()));
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);

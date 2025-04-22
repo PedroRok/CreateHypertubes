@@ -21,4 +21,8 @@ public class VoxelUtils {
 
         return combined;
     }
+
+    public static VoxelShape empty() {
+        return Shapes.empty();
+    }
 }

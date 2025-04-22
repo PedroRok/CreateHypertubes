@@ -25,6 +25,7 @@ public class ModCreativeTab {
                             .icon(ModItems.HYPERTUBE_ITEM::toStack)
                             .displayItems((featureFlagSet, output) -> {
                                 output.accept(new ItemStack(ModItems.HYPERTUBE_ITEM.get()));
+                                output.accept(new ItemStack(ModItems.HYPERTUBE_ENTRANCE_ITEM.get()));
                             })
                             .build()
             );

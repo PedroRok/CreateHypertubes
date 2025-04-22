@@ -3,6 +3,7 @@ package com.pedrorok.hypertube.blocks;
 import com.pedrorok.hypertube.utils.VoxelUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -15,6 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,7 +25,17 @@ import org.jetbrains.annotations.Nullable;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HypertubeBlock extends TransparentBlock {
+public class HypertubeBlock extends TransparentBlock implements TubeConnection {
+
+    public static final String TRAVEL_TAG = "hypertube_travel";
+    public static final Properties PROPERTIES = Properties.of()
+            .destroyTime(2.0f)
+            .dynamicShape()
+            .explosionResistance(10.0f)
+            .sound(SoundType.METAL)
+            .noOcclusion()
+            .isViewBlocking((state, level, pos) -> false)
+            .isSuffocating((state, level, pos) -> false);
 
     public static final BooleanProperty DOWN = BooleanProperty.create("down");
     public static final BooleanProperty UP = BooleanProperty.create("up");
@@ -41,14 +53,7 @@ public class HypertubeBlock extends TransparentBlock {
     public static final VoxelShape SHAPE_CORE = Block.box(2D, 2D, 2D, 14D, 14D, 14D);
 
     public HypertubeBlock() {
-        super(Properties.of()
-                .destroyTime(2.0f)
-                .dynamicShape()
-                .explosionResistance(10.0f)
-                .sound(SoundType.METAL)
-                .noOcclusion()
-                .isViewBlocking((state, level, pos) -> false)
-                .isSuffocating((state, level, pos) -> false));
+        super(PROPERTIES);
     }
 
     @Override
@@ -75,22 +80,22 @@ public class HypertubeBlock extends TransparentBlock {
 
     @Override
     public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-        return getShape(worldIn, pos, state);
+        return getShape(state, context);
     }
 
     @Override
     public @NotNull VoxelShape getCollisionShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-        return getShape(worldIn, pos, state);
+        return getShape(state, context);
     }
 
     @Override
     public @NotNull VoxelShape getBlockSupportShape(@NotNull BlockState state, @NotNull BlockGetter reader, @NotNull BlockPos pos) {
-        return getShape(reader, pos, state);
+        return getShape(state);
     }
 
     @Override
     public @NotNull VoxelShape getInteractionShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos) {
-        return getShape(worldIn, pos, state);
+        return getShape(state);
     }
 
     @Override
@@ -103,8 +108,17 @@ public class HypertubeBlock extends TransparentBlock {
         return true;
     }
 
+    public VoxelShape getShape(BlockState state) {
+        return getShape(state, null);
+    }
 
-    public VoxelShape getShape(BlockGetter blockReader, BlockPos pos, BlockState state) {
+    public VoxelShape getShape(BlockState state, @Nullable CollisionContext ctx) {
+        if (ctx instanceof EntityCollisionContext ecc
+            && ecc.getEntity() instanceof Player player
+            && player.getPersistentData().getBoolean(TRAVEL_TAG)) {
+            return VoxelUtils.empty();
+        }
+
         VoxelShape shape = SHAPE_CORE;
         if (state.getValue(UP)) {
             shape = VoxelUtils.combine(shape, SHAPE_UP);
@@ -152,6 +166,6 @@ public class HypertubeBlock extends TransparentBlock {
     }
 
     public boolean canConnect(LevelAccessor world, BlockPos pos, Direction facing) {
-        return world.getBlockState(pos).getBlock() instanceof HypertubeBlock && world.getBlockState(pos.relative(facing)).getBlock() instanceof HypertubeBlock;
+        return world.getBlockState(pos.relative(facing)).getBlock() instanceof TubeConnection;
     }
 }
