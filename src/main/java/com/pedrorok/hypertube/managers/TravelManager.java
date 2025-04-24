@@ -1,16 +1,13 @@
-package com.pedrorok.hypertube.events;
+package com.pedrorok.hypertube.managers;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -116,7 +113,6 @@ public class TravelManager {
 
         public void getNextTravelPoint() {
             if (travelIndex >= travelPoints.size()) return;
-            BlockPos nextTravelPoint = travelPoints.get(travelIndex);
             travelIndex++;
         }
     }

@@ -1,7 +1,6 @@
 package com.pedrorok.hypertube.blocks.blockentities;
 
-import com.pedrorok.hypertube.HypertubeMod;
-import com.pedrorok.hypertube.events.TravelManager;
+import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
