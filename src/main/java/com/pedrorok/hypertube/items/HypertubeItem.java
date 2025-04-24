@@ -66,8 +66,7 @@ public class HypertubeItem extends BlockItem {
             } else {
                 level.playSound(player, pos, SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.BLOCKS, 0.75f, 1);
             }
-            stack.remove(ModDataComponent.TUBE_CONNECTING_FROM);
-            stack.remove(DataComponents.ENCHANTMENT_GLINT_OVERRIDE);
+            clearConnection(stack);
             return InteractionResult.SUCCESS;
         }
 
@@ -105,6 +104,11 @@ public class HypertubeItem extends BlockItem {
         heldItem.set(ModDataComponent.TUBE_CONNECTING_FROM, new ConnectingFrom(pos, direction));
         heldItem.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
         return true;
+    }
+
+    public static void clearConnection(ItemStack stack) {
+        stack.remove(ModDataComponent.TUBE_CONNECTING_FROM);
+        stack.remove(DataComponents.ENCHANTMENT_GLINT_OVERRIDE);
     }
 
     @Override
