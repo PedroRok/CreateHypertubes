@@ -1,7 +1,5 @@
 package com.pedrorok.hypertube.managers.placement;
 
-import lombok.AllArgsConstructor;
-import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
@@ -14,14 +12,13 @@ import java.util.List;
  * @author Rok, Pedro Lucas nmm. Created on 24/04/2025
  * @project Create Hypertube
  */
-@Setter
 public class BezierConnection {
 
-    public static final float MAX_DISTANCE = 20.0f;
+    public static final float MAX_DISTANCE = 30.0f;
 
     private final ConnectingFrom from;
-    private @Nullable BlockPos toPos;
-    private int detailLevel;
+    private final @Nullable BlockPos toPos;
+    private final int detailLevel;
 
     private List<Vec3> bezierPoints;
 
@@ -131,7 +128,6 @@ public class BezierConnection {
     public boolean isValid() {
         return from != null && toPos != null;
     }
-
 
     public static BezierConnection of(ConnectingFrom from, @Nullable BlockPos toPos) {
         return new BezierConnection(from, toPos);
