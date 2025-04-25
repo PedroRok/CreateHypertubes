@@ -3,6 +3,7 @@ package com.pedrorok.hypertube.managers;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
+import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -61,14 +62,13 @@ public class TravelManager {
     private static void handleServer(Player player) {
         if (!travelDataMap.containsKey(player.getUUID())) return;
         TravelData travelData = travelDataMap.get(player.getUUID());
-        BlockPos travelPoint = travelData.getTravelPoint();
-        if (travelPoint == null) {
+        Vec3 point = travelData.getTravelPoint();
+        if (point == null) {
             travelDataMap.remove(player.getUUID());
             player.getPersistentData().putBoolean(HypertubeBlock.TRAVEL_TAG, false);
             PacketDistributor.sendToPlayer((ServerPlayer) player, new ISyncPersistentData.PersistentDataPacket(player));
             return;
         }
-        Vec3 point = travelPoint.getCenter().subtract(0,0.2,0);
         double distance = player.distanceToSqr(point.x, point.y, point.z);
         if (distance > 0.4D) {
             Vec3 travelNormal = point.subtract(player.position()).normalize();
@@ -80,40 +80,5 @@ public class TravelManager {
     }
 
 
-    private static class TravelData {
 
-        private final List<BlockPos> travelPoints;
-        private int travelIndex;
-
-        public TravelData(BlockPos firstPipe, Level level, BlockPos entrancePos) {
-            this.travelPoints = new ArrayList<>();
-            travelPoints.add(entrancePos);
-            travelPoints.add(firstPipe);
-
-            addTravelPoint(firstPipe, level);
-        }
-
-        private void addTravelPoint(BlockPos pos, Level level) {
-            BlockState blockState = level.getBlockState(pos);
-            HypertubeBlock pipeBlock = (HypertubeBlock) blockState.getBlock();
-            List<Direction> connectedFaces = pipeBlock.getConnectedFaces(blockState);
-            for (Direction direction : connectedFaces) {
-                BlockPos nextPipe = pos.relative(direction);
-                if (travelPoints.contains(nextPipe)) continue;
-                travelPoints.add(nextPipe);
-                addTravelPoint(nextPipe, level);
-                break;
-            }
-        }
-
-        public BlockPos getTravelPoint() {
-            if (travelIndex >= travelPoints.size()) return null;
-            return travelPoints.get(travelIndex);
-        }
-
-        public void getNextTravelPoint() {
-            if (travelIndex >= travelPoints.size()) return;
-            travelIndex++;
-        }
-    }
 }

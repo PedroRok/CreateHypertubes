@@ -26,8 +26,6 @@ public class HypertubeMod {
         ModCreativeTab.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModDataComponent.register(modEventBus);
-
-        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {

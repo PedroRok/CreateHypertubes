@@ -86,6 +86,6 @@ public class HyperEntranceBlock extends HypertubeBaseBlock implements EntityBloc
 
     @Override
     public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos blockPos, @NotNull BlockState blockState) {
-        return new HyperEntranceBlockEntity(blockPos, blockState);
+        return ModBlockEntities.HYPERTUBE_ENTRANCE_ENTITY.get().create(blockPos, blockState);
     }
 }
