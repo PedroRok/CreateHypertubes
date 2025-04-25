@@ -1,23 +1,36 @@
 package com.pedrorok.hypertube.blocks;
 
+import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
+import com.pedrorok.hypertube.items.HypertubeItem;
+import com.pedrorok.hypertube.managers.placement.BezierConnection;
+import com.pedrorok.hypertube.managers.placement.Connecting;
+import com.pedrorok.hypertube.registry.ModBlockEntities;
+import com.pedrorok.hypertube.registry.ModBlocks;
+import com.pedrorok.hypertube.registry.ModDataComponent;
+import com.pedrorok.hypertube.utils.RayCastUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;
+import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.TransparentBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.fml.common.Mod;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,7 +41,7 @@ import java.util.List;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection {
+public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection, IBE<HypertubeBlockEntity> {
 
     public static final BooleanProperty DOWN = BooleanProperty.create("down");
     public static final BooleanProperty UP = BooleanProperty.create("up");
@@ -55,7 +68,7 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
     }
 
     @Override
-    public @Nullable BlockState getStateForPlacement(BlockPlaceContext pContext) {
+    public @Nullable BlockState getStateForPlacement(@NotNull BlockPlaceContext pContext) {
         BlockState state = super.getStateForPlacement(pContext);
         if (state == null) return null;
         return state.setValue(DOWN, false)
@@ -133,5 +146,82 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
 
     public boolean canConnect(LevelAccessor world, BlockPos pos, Direction facing) {
         return world.getBlockState(pos.relative(facing)).getBlock() instanceof TubeConnection;
+    }
+
+    @Override
+    public Class<HypertubeBlockEntity> getBlockEntityClass() {
+        return HypertubeBlockEntity.class;
+    }
+
+    @Override
+    public BlockEntityType<? extends HypertubeBlockEntity> getBlockEntityType() {
+        return ModBlockEntities.HYPERTUBE_ENTITY.get();
+    }
+
+    @Override
+    public BlockEntity newBlockEntity(BlockPos blockPos, BlockState state) {
+        return ModBlockEntities.HYPERTUBE_ENTITY.get().create(blockPos, state);
+    }
+
+
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        return type == ModBlockEntities.HYPERTUBE_ENTITY.get() ? HypertubeBlockEntity::tick : null;
+    }
+
+
+
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean update) {
+        super.onRemove(state, level, pos, newState, update);
+
+    }
+
+    @Override
+    public @NotNull BlockState playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Player player) {
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (!(blockEntity instanceof HypertubeBlockEntity hypertubeEntity)) return super.playerWillDestroy(level, pos, state, player);
+        BezierConnection connection = hypertubeEntity.getConnection();
+        if (connection == null) return super.playerWillDestroy(level, pos, state, player);
+        BlockPos fromPos = connection.getFromPos().pos();
+
+        BlockEntity otherBlockEntity = level.getBlockEntity(fromPos.equals(pos) ? connection.getToPos().pos() : fromPos);
+        if (!(otherBlockEntity instanceof HypertubeBlockEntity otherHypertubeEntity)) return super.playerWillDestroy(level, pos, state, player);
+        otherHypertubeEntity.setConnection(null);
+        return super.playerWillDestroy(level, pos, state, player);
+    }
+
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        if (!(placer instanceof Player player)) return;
+        if (level.isClientSide()) return;
+
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (!(blockEntity instanceof HypertubeBlockEntity hypertubeEntity)) return;
+        if (!stack.hasFoil()) return;
+
+        Connecting connectingFrom = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
+        if (connectingFrom == null) return;
+
+        Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, null, true);
+        Connecting connectingTo = new Connecting(pos, finalDirection);
+        BezierConnection bezierConnection = BezierConnection.of(connectingFrom, connectingTo);
+
+        System.out.println("------- client --------");
+        System.out.println(bezierConnection);
+
+        HypertubeItem.clearConnection(stack);
+        if (!bezierConnection.isValid()) {
+            player.displayClientMessage(Component.literal("Invalid connection"), true);
+            return;
+        }
+
+        BlockEntity otherBlockEntity = level.getBlockEntity(connectingFrom.pos());
+        if (otherBlockEntity instanceof HypertubeBlockEntity otherHypertubeEntity) {
+            otherHypertubeEntity.setConnection(bezierConnection);
+        }
+
+        hypertubeEntity.setConnection(bezierConnection);
     }
 }

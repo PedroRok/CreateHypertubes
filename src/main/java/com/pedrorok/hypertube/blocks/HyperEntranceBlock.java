@@ -31,7 +31,6 @@ public class HyperEntranceBlock extends HypertubeBaseBlock implements EntityBloc
 
     public static DirectionProperty FACING = DirectionProperty.create("facing", Direction.values());
 
-
     public static final VoxelShape SHAPE_NORTH = Block.box(0D, 0D, 0D, 16D, 16D, 10D);
     public static final VoxelShape SHAPE_SOUTH = Block.box(0D, 0D, 6D, 16D, 16D, 16D);
     public static final VoxelShape SHAPE_EAST = Block.box(6D, 0D, 0D, 16D, 16D, 16D);
@@ -81,11 +80,11 @@ public class HyperEntranceBlock extends HypertubeBaseBlock implements EntityBloc
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> type) {
-        return type == ModBlockEntities.HYPERTUBE_ENTRANCE_ENTITY.get() ? (BlockEntityTicker<T>) HyperEntranceBlockEntity::tick : null;
+        return type == ModBlockEntities.HYPERTUBE_ENTRANCE_ENTITY.get() ? HyperEntranceBlockEntity::tick : null;
     }
 
     @Override
     public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos blockPos, @NotNull BlockState blockState) {
-        return new HyperEntranceBlockEntity(blockPos, blockState);
+        return ModBlockEntities.HYPERTUBE_ENTRANCE_ENTITY.get().create(blockPos, blockState);
     }
 }

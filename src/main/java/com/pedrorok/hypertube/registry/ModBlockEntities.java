@@ -2,6 +2,7 @@ package com.pedrorok.hypertube.registry;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
+import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
@@ -21,6 +22,12 @@ public class ModBlockEntities {
             "hypertube_entrance_entity",
             () ->
                     BlockEntityType.Builder.of(HyperEntranceBlockEntity::new, ModBlocks.HYPERTUBE_ENTRANCE.get()).build(null)
+    );
+
+    public static final Supplier<BlockEntityType<HypertubeBlockEntity>> HYPERTUBE_ENTITY = BLOCK_ENTITY_TYPES.register(
+            "hypertube_entity",
+            () ->
+                    BlockEntityType.Builder.of(HypertubeBlockEntity::new, ModBlocks.HYPERTUBE.get()).build(null)
     );
 
     public static void register(IEventBus eventBus) {

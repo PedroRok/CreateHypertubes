@@ -1,12 +1,27 @@
 package com.pedrorok.hypertube.managers.placement;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.pedrorok.hypertube.utils.CodecUtils;
+import io.netty.buffer.ByteBuf;
+import lombok.Getter;
+import net.createmod.catnip.animation.LerpedFloat;
+import net.createmod.catnip.codecs.stream.CatnipStreamCodecs;
+import net.createmod.catnip.data.Pair;
+import net.createmod.catnip.outliner.Outliner;
+import net.createmod.catnip.theme.Color;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 24/04/2025
@@ -14,44 +29,76 @@ import java.util.List;
  */
 public class BezierConnection {
 
+    public static final Codec<BezierConnection> CODEC = RecordCodecBuilder.create(i -> i.group(
+            Connecting.CODEC.fieldOf("fromPos").forGetter(BezierConnection::getFromPos),
+            Connecting.CODEC.fieldOf("direction").forGetter(BezierConnection::getToPos),
+            Vec3.CODEC.listOf().fieldOf("curvePoints").forGetter(BezierConnection::getBezierPoints)
+    ).apply(i, BezierConnection::new));
+
+    public static final StreamCodec<ByteBuf, BezierConnection> STREAM_CODEC = StreamCodec.composite(
+            Connecting.STREAM_CODEC, BezierConnection::getFromPos,
+            Connecting.STREAM_CODEC, BezierConnection::getToPos,
+            CodecUtils.VEC3_LIST, BezierConnection::getBezierPoints,
+            BezierConnection::new
+    );
+
+
     public static final float MAX_DISTANCE = 30.0f;
+    public static final float MAX_ANGLE = 0.6f;
 
-    private final ConnectingFrom from;
-    private final @Nullable BlockPos toPos;
-    private final int detailLevel;
-
+    @Getter
+    private final UUID uuid = UUID.randomUUID();
+    @Getter
+    private final Connecting fromPos;
+    @Getter
+    private @Nullable Connecting toPos;
     private List<Vec3> bezierPoints;
 
-    public BezierConnection(ConnectingFrom from, @Nullable BlockPos toPos) {
-        this(from, toPos, (int) Math.max(3, from.pos().getCenter().distanceTo(toPos.getCenter())));
+    private Boolean isValid;
+    private final int detailLevel;
+
+
+    private BezierConnection(Connecting fromPos, Connecting toBlockPos, List<Vec3> bezierPoints) {
+        this(fromPos, toBlockPos, (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toBlockPos.pos().getCenter())));
     }
 
-    public BezierConnection(ConnectingFrom from, @Nullable BlockPos toPos, int detailLevel) {
-        this.from = from;
+
+    public BezierConnection saveAll() {
+        //toPos = new Connecting(toBlockPos, finalDirection);
+        return this;
+    }
+
+    public BezierConnection(Connecting fromPos,@Nullable Connecting toPos) {
+        this(fromPos, toPos, toPos != null ? (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter())) : 0);
+    }
+
+    public BezierConnection(Connecting fromPos, Connecting toPos, int detailLevel) {
+        this.fromPos = fromPos;
         this.toPos = toPos;
         this.detailLevel = detailLevel;
     }
 
-    public List<Vec3> getBezierPoints(Direction finalDirection) {
+    public List<Vec3> getBezierPoints() {
         if (bezierPoints != null) return bezierPoints;
         if (toPos == null) return List.of();
-        Vec3 fromPos = from.pos().getCenter();
-        Vec3 toPos = new Vec3(this.toPos.getX() + 0.5, this.toPos.getY() + 0.5, this.toPos.getZ() + 0.5);
-        bezierPoints = calculateBezierCurve(fromPos, from.direction(), toPos, detailLevel, finalDirection);
+        Vec3 fromPos = this.fromPos.pos().getCenter();
+        Vec3 toPos = new Vec3(this.toPos.pos().getX() + 0.5, this.toPos.pos().getY() + 0.5, this.toPos.pos().getZ() + 0.5);
+        bezierPoints = calculateBezierCurve(fromPos, this.fromPos.direction(), toPos, detailLevel, getToPos().direction());
         return bezierPoints;
     }
 
-    private List<Vec3> calculateBezierCurve(Vec3 from, Direction direction, Vec3 to, int detailLevel, @Nullable Direction finalDirection) {
-        double distance = from.distanceTo(to);
+    private List<Vec3> calculateBezierCurve(Vec3 from, Direction direction, Vec3 toVec, int detailLevel, @Nullable Direction finalDirection) {
+        isValid = null;
+        double distance = from.distanceTo(toVec);
 
         Vec3 controlPoint1 = createFirstControlPoint(from, direction, distance);
-        Vec3 controlPoint2 = createSecondControlPoint(to, direction, distance, Vec3.atLowerCornerOf(finalDirection.getNormal()));
+        Vec3 controlPoint2 = createSecondControlPoint(toVec, direction, distance, Vec3.atLowerCornerOf(finalDirection.getNormal()));
 
         List<Vec3> curvePoints = new ArrayList<>();
 
         for (int i = 0; i <= detailLevel; i++) {
             double t = (double) i / detailLevel;
-            Vec3 point = cubicBezier(from, controlPoint1, controlPoint2, to, t);
+            Vec3 point = cubicBezier(from, controlPoint1, controlPoint2, toVec, t);
             curvePoints.add(point);
         }
 
@@ -101,9 +148,9 @@ public class BezierConnection {
         return new Vec3(x, y, z);
     }
 
-    public float getMaxAngleBezierAngle(Direction finalDirection) {
+    public float getMaxAngleBezierAngle() {
         if (bezierPoints == null) {
-            bezierPoints = getBezierPoints(finalDirection);
+            bezierPoints = getBezierPoints();
         }
         float maxAngle = 0;
         Vec3 lastPoint = bezierPoints.get(0);
@@ -122,14 +169,52 @@ public class BezierConnection {
 
     public float distance() {
         if (toPos == null) return 0;
-        return (float) from.pos().getCenter().distanceTo(toPos.getCenter());
+        return (float) fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter());
     }
 
     public boolean isValid() {
-        return from != null && toPos != null;
+        if (isValid != null) return isValid;
+        isValid = (fromPos != null && toPos != null) && getMaxAngleBezierAngle() < MAX_ANGLE;
+        return isValid;
     }
 
-    public static BezierConnection of(ConnectingFrom from, @Nullable BlockPos toPos) {
+    public static BezierConnection of(Connecting from, @Nullable Connecting toPos) {
         return new BezierConnection(from, toPos);
+    }
+
+
+    @OnlyIn(Dist.CLIENT)
+    public void drawPath(LerpedFloat animation) {
+        Vec3 pos1 = fromPos.pos().getCenter();
+        int id = 0;
+        for (Vec3 bezierPoint : getBezierPoints()) {
+            line(uuid, id, pos1, bezierPoint, animation, !isValid());
+            pos1 = bezierPoint;
+            id++;
+        }
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public static void line(UUID uuid, int id, Vec3 start, Vec3 end, LerpedFloat animation, boolean hasException) {
+        int color = Color.mixColors(0xEA5C2B, 0x95CD41, animation.getValue());
+        if (hasException) {
+            Vec3 diff = end.subtract(start);
+            start = start.add(diff.scale(0.2));
+            end = start.add(diff.scale(-0.2));
+        }
+        Outliner.getInstance().showLine(Pair.of(uuid, id), start, end)
+                .lineWidth(1 / 8f)
+                .disableLineNormals()
+                .colored(color);
+    }
+
+
+    @Override
+    public String toString() {
+        return "BezierConnection{" +
+                "fromPos=" + fromPos +
+                ", toPos=" + toPos +
+                ", isValid=" + isValid +
+                '}';
     }
 }
