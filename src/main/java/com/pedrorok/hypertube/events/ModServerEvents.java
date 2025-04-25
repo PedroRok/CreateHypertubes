@@ -11,11 +11,11 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  * @author Rok, Pedro Lucas nmm. Created on 22/04/2025
  * @project Create Hypertube
  */
-@EventBusSubscriber(value = Dist.DEDICATED_SERVER, bus = EventBusSubscriber.Bus.MOD, modid = HypertubeMod.MOD_ID)
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = HypertubeMod.MOD_ID)
 public class ModServerEvents {
 
     @SubscribeEvent
-    static void onRegisterCommand(RegisterCommandsEvent event) {
+    public static void onRegisterCommand(RegisterCommandsEvent event) {
         new TestCommand().register(event.getDispatcher());
     }
 }

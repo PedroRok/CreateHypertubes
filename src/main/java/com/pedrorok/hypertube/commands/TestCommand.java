@@ -17,7 +17,7 @@ import net.minecraft.world.entity.player.Player;
 public class TestCommand implements CommandBase {
     @Override
     public LiteralArgumentBuilder<CommandSourceStack> getBaseCommandBuilder() {
-        return Commands.literal("test")
+        return Commands.literal("remove-bug")
                 .executes(this::execute);
     }
 
