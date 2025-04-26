@@ -92,8 +92,7 @@ public class TubePlacement {
 
         Connecting connectingTo = new Connecting(pos, finalDirection);
         BezierConnection bezierConnection = BezierConnection.of(connectingFrom, connectingTo);
-        System.out.println("------------");
-        System.out.println(bezierConnection);
+
         // Exception & visual
         animation.setValue( !bezierConnection.isValid() ? 0.2 : 0.8);
 

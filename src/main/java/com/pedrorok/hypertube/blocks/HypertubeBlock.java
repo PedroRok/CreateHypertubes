@@ -208,9 +208,6 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
         Connecting connectingTo = new Connecting(pos, finalDirection);
         BezierConnection bezierConnection = BezierConnection.of(connectingFrom, connectingTo);
 
-        System.out.println("------- client --------");
-        System.out.println(bezierConnection);
-
         HypertubeItem.clearConnection(stack);
         if (!bezierConnection.isValid()) {
             player.displayClientMessage(Component.literal("Invalid connection"), true);
