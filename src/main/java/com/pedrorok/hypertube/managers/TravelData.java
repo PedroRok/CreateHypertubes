@@ -22,11 +22,13 @@ public class TravelData {
 
     private final List<Vec3> travelPoints;
     private final List<UUID> bezierConnections;
+    private final List<BlockPos> blockConnections;
     private int travelIndex;
 
     public TravelData(BlockPos firstPipe, Level level, BlockPos entrancePos) {
         this.travelPoints = new ArrayList<>();
         this.bezierConnections = new ArrayList<>();
+        this.blockConnections = new ArrayList<>();
         travelPoints.add(entrancePos.getCenter().subtract(0, 0.2, 0));
         travelPoints.add(firstPipe.getCenter().subtract(0, 0.2, 0));
 
@@ -40,6 +42,8 @@ public class TravelData {
             && !bezierConnections.contains(hypertubeBlockEntity.getConnection().getUuid())) {
             travelPoints.addAll(hypertubeBlockEntity.getConnection().getBezierPoints());
             bezierConnections.add(hypertubeBlockEntity.getConnection().getUuid());
+            blockConnections.add(hypertubeBlockEntity.getConnection().getToPos().pos());
+            blockConnections.add(hypertubeBlockEntity.getConnection().getFromPos().pos());
             addTravelPoint(hypertubeBlockEntity.getConnection().getToPos().pos(), level);
             return;
         }
@@ -49,8 +53,9 @@ public class TravelData {
         List<Direction> connectedFaces = pipeBlock.getConnectedFaces(blockState);
         for (Direction direction : connectedFaces) {
             BlockPos nextPipe = pos.relative(direction);
-            if (travelPoints.contains(nextPipe)) continue;
-            travelPoints.add(nextPipe.getCenter().subtract(0, 0.2, 0));
+            if (blockConnections.contains(nextPipe)) continue;
+            travelPoints.add(nextPipe.getCenter().subtract(0, 0.25, 0));
+            blockConnections.add(nextPipe);
             addTravelPoint(nextPipe, level);
             break;
         }
