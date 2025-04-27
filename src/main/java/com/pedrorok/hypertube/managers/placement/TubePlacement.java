@@ -95,7 +95,6 @@ public class TubePlacement {
 
         // Exception & visual
         animation.setValue( !bezierConnection.isValid() ? 0.2 : 0.8);
-
         bezierConnection.drawPath(animation);
     }
 

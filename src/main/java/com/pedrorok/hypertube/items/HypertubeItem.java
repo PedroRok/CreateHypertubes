@@ -2,6 +2,7 @@ package com.pedrorok.hypertube.items;
 
 import com.pedrorok.hypertube.blocks.HypertubeBaseBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
+import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.managers.placement.BezierConnection;
 import com.pedrorok.hypertube.managers.placement.Connecting;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
@@ -24,6 +25,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -85,9 +87,19 @@ public class HypertubeItem extends BlockItem {
 
         if (isHypertubeClicked) {
             level.getBlockEntity(pos, ModBlockEntities.HYPERTUBE_ENTITY.get())
-                    .ifPresent(te -> {
+                    .ifPresent(hyperTubeEntity -> {
                         if (!level.isClientSide) {
-                            te.setConnection(new BezierConnection(connecting, new Connecting(pos, direction)));
+                            BezierConnection connection = new BezierConnection(connecting, new Connecting(pos, direction.getOpposite()));
+                            System.out.println("Connection: " + connection);
+                            if (!connection.isValid()) {
+                                player.displayClientMessage(Component.literal("Invalid connection"), true);
+                                return;
+                            }
+                            hyperTubeEntity.setConnection(connection);
+                            HypertubeBlockEntity otherBlockEntity = (HypertubeBlockEntity) level.getBlockEntity(connecting.pos());
+                            if (otherBlockEntity != null) {
+                                otherBlockEntity.setConnection(connection);
+                            }
                             player.displayClientMessage(Component.literal("Connected"), true);
                         } else {
                             level.playSound(player, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.75f, 1);
