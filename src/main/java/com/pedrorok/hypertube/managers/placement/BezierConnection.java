@@ -6,13 +6,10 @@ import com.pedrorok.hypertube.utils.CodecUtils;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import net.createmod.catnip.animation.LerpedFloat;
-import net.createmod.catnip.codecs.stream.CatnipStreamCodecs;
 import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.outliner.Outliner;
 import net.createmod.catnip.theme.Color;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Vec3i;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -30,14 +27,14 @@ import java.util.UUID;
 public class BezierConnection {
 
     public static final Codec<BezierConnection> CODEC = RecordCodecBuilder.create(i -> i.group(
-            Connecting.CODEC.fieldOf("fromPos").forGetter(BezierConnection::getFromPos),
-            Connecting.CODEC.fieldOf("direction").forGetter(BezierConnection::getToPos),
+            SimpleConnection.CODEC.fieldOf("fromPos").forGetter(BezierConnection::getFromPos),
+            SimpleConnection.CODEC.fieldOf("direction").forGetter(BezierConnection::getToPos),
             Vec3.CODEC.listOf().fieldOf("curvePoints").forGetter(BezierConnection::getBezierPoints)
     ).apply(i, BezierConnection::new));
 
     public static final StreamCodec<ByteBuf, BezierConnection> STREAM_CODEC = StreamCodec.composite(
-            Connecting.STREAM_CODEC, BezierConnection::getFromPos,
-            Connecting.STREAM_CODEC, BezierConnection::getToPos,
+            SimpleConnection.STREAM_CODEC, BezierConnection::getFromPos,
+            SimpleConnection.STREAM_CODEC, BezierConnection::getToPos,
             CodecUtils.VEC3_LIST, BezierConnection::getBezierPoints,
             BezierConnection::new
     );
@@ -49,16 +46,16 @@ public class BezierConnection {
     @Getter
     private final UUID uuid = UUID.randomUUID();
     @Getter
-    private final Connecting fromPos;
+    private final SimpleConnection fromPos;
     @Getter
-    private @Nullable Connecting toPos;
+    private @Nullable SimpleConnection toPos;
     private List<Vec3> bezierPoints;
 
     private Boolean isValid;
     private final int detailLevel;
 
 
-    private BezierConnection(Connecting fromPos, Connecting toBlockPos, List<Vec3> bezierPoints) {
+    private BezierConnection(SimpleConnection fromPos, SimpleConnection toBlockPos, List<Vec3> bezierPoints) {
         this(fromPos, toBlockPos, (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toBlockPos.pos().getCenter())));
     }
 
@@ -68,11 +65,11 @@ public class BezierConnection {
         return this;
     }
 
-    public BezierConnection(Connecting fromPos,@Nullable Connecting toPos) {
+    public BezierConnection(SimpleConnection fromPos, @Nullable SimpleConnection toPos) {
         this(fromPos, toPos, toPos != null ? (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter())) : 0);
     }
 
-    public BezierConnection(Connecting fromPos, Connecting toPos, int detailLevel) {
+    public BezierConnection(SimpleConnection fromPos, SimpleConnection toPos, int detailLevel) {
         this.fromPos = fromPos;
         this.toPos = toPos;
         this.detailLevel = detailLevel;
@@ -178,7 +175,7 @@ public class BezierConnection {
         return isValid;
     }
 
-    public static BezierConnection of(Connecting from, @Nullable Connecting toPos) {
+    public static BezierConnection of(SimpleConnection from, @Nullable SimpleConnection toPos) {
         return new BezierConnection(from, toPos);
     }
 
@@ -207,6 +204,7 @@ public class BezierConnection {
                 .disableLineNormals()
                 .colored(color);
     }
+
 
 
     @Override

@@ -73,9 +73,16 @@ public class TravelManager {
         if (point == null) {
             travelDataMap.remove(player.getUUID());
             player.getPersistentData().putBoolean(TRAVEL_TAG, false);
-            // NOTE: this is just to make easy to debug
+            // --- NOTE: this is just to make easy to debug
             player.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
+            // ---
             PacketDistributor.sendToPlayer((ServerPlayer) player, new ISyncPersistentData.PersistentDataPacket(player));
+
+            // TODO: Persist velocity
+            Vec3 scale = player.getDeltaMovement().scale(2);
+            player.teleportRelative(scale.x,0, scale.z);
+            player.setDeltaMovement(scale);
+            player.hurtMarked = true;
             return;
         }
         double distance = player.distanceToSqr(point.x, point.y, point.z);

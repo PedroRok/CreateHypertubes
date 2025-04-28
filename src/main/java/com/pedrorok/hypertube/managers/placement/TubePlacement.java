@@ -10,9 +10,6 @@ import com.pedrorok.hypertube.registry.ModItems;
 import com.pedrorok.hypertube.utils.RayCastUtils;
 import com.simibubi.create.content.trains.track.*;
 import net.createmod.catnip.animation.LerpedFloat;
-import net.createmod.catnip.data.Pair;
-import net.createmod.catnip.outliner.Outliner;
-import net.createmod.catnip.theme.Color;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -80,9 +77,9 @@ public class TubePlacement {
             pos = pos.relative(bhr.getDirection());
         }
 
-        Connecting connectingFrom = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
+        SimpleConnection connectionFrom = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
         animation.setValue(0.8);
-        if (connectingFrom == null) {
+        if (connectionFrom == null) {
             animation.setValue(0);
             return;
         }
@@ -90,8 +87,8 @@ public class TubePlacement {
         Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, ModBlocks.HYPERTUBE.get());
 
 
-        Connecting connectingTo = new Connecting(pos, finalDirection);
-        BezierConnection bezierConnection = BezierConnection.of(connectingFrom, connectingTo);
+        SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
+        BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
 
         // Exception & visual
         animation.setValue( !bezierConnection.isValid() ? 0.2 : 0.8);
@@ -105,12 +102,12 @@ public class TubePlacement {
         ItemStack mainHandItem = Minecraft.getInstance().player.getMainHandItem();
         if (!mainHandItem.is(ModBlocks.HYPERTUBE.get().asItem())) return;
         if (!mainHandItem.hasFoil()) return;
-        Connecting connecting = mainHandItem.get(ModDataComponent.TUBE_CONNECTING_FROM);
-        if (connecting == null) return;
+        SimpleConnection connection = mainHandItem.get(ModDataComponent.TUBE_CONNECTING_FROM);
+        if (connection == null) return;
 
         VertexConsumer vb = buffer.getBuffer(RenderType.lines());
         ms.pushPose();
-        ms.translate(connecting.pos().getX() - camera.x, connecting.pos().getY() - camera.y, connecting.pos().getZ() - camera.z);
+        ms.translate(connection.pos().getX() - camera.x, connection.pos().getY() - camera.y, connection.pos().getZ() - camera.z);
         TrackBlockOutline.renderShape(HypertubeBlock.SHAPE_CORE, ms, vb, false);
         ms.popPose();
     }

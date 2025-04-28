@@ -4,7 +4,7 @@ import com.pedrorok.hypertube.blocks.HypertubeBaseBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.managers.placement.BezierConnection;
-import com.pedrorok.hypertube.managers.placement.Connecting;
+import com.pedrorok.hypertube.managers.placement.SimpleConnection;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModDataComponent;
 import com.simibubi.create.AllDataComponents;
@@ -25,7 +25,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -63,8 +62,8 @@ public class HypertubeItem extends BlockItem {
             return super.useOn(pContext);
         }
 
-        Connecting connecting = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
-        if (player.isShiftKeyDown() && connecting.pos().equals(pos)) {
+        SimpleConnection simpleConnection = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
+        if (player.isShiftKeyDown() && simpleConnection.pos().equals(pos)) {
             if (!level.isClientSide) {
                 player.displayClientMessage(Component.literal("Connection cleared"), true);
             } else {
@@ -74,7 +73,7 @@ public class HypertubeItem extends BlockItem {
             return InteractionResult.SUCCESS;
         }
 
-        if (connecting.pos().equals(pos)) {
+        if (simpleConnection.pos().equals(pos)) {
             if (!level.isClientSide) {
                 player.displayClientMessage(Component.literal("Can't connect to itself"), true);
             } else {
@@ -89,15 +88,15 @@ public class HypertubeItem extends BlockItem {
             level.getBlockEntity(pos, ModBlockEntities.HYPERTUBE_ENTITY.get())
                     .ifPresent(hyperTubeEntity -> {
                         if (!level.isClientSide) {
-                            BezierConnection connection = new BezierConnection(connecting, new Connecting(pos, direction.getOpposite()));
+                            BezierConnection connection = new BezierConnection(simpleConnection, new SimpleConnection(pos, direction.getOpposite()));
                             if (!connection.isValid()) {
                                 player.displayClientMessage(Component.literal("Invalid connection"), true);
                                 return;
                             }
-                            hyperTubeEntity.setConnection(connection);
-                            HypertubeBlockEntity otherBlockEntity = (HypertubeBlockEntity) level.getBlockEntity(connecting.pos());
+                            hyperTubeEntity.setConnectionTo(connection);
+                            HypertubeBlockEntity otherBlockEntity = (HypertubeBlockEntity) level.getBlockEntity(simpleConnection.pos());
                             if (otherBlockEntity != null) {
-                                otherBlockEntity.setConnection(connection);
+                                otherBlockEntity.setConnectionFrom(connection.getFromPos());
                             }
                             player.displayClientMessage(Component.literal("Connected"), true);
                         } else {
@@ -130,7 +129,7 @@ public class HypertubeItem extends BlockItem {
         if (!(block instanceof HypertubeBaseBlock track))
             return false;
 
-        heldItem.set(ModDataComponent.TUBE_CONNECTING_FROM, new Connecting(pos, direction));
+        heldItem.set(ModDataComponent.TUBE_CONNECTING_FROM, new SimpleConnection(pos, direction));
         heldItem.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
         return true;
     }

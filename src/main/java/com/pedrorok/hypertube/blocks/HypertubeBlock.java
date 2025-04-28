@@ -4,7 +4,7 @@ import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.items.HypertubeItem;
 import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.managers.placement.BezierConnection;
-import com.pedrorok.hypertube.managers.placement.Connecting;
+import com.pedrorok.hypertube.managers.placement.SimpleConnection;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModDataComponent;
 import com.pedrorok.hypertube.utils.RayCastUtils;
@@ -179,14 +179,24 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof HypertubeBlockEntity hypertubeEntity))
             return super.playerWillDestroy(level, pos, state, player);
-        BezierConnection connection = hypertubeEntity.getConnection();
-        if (connection == null) return super.playerWillDestroy(level, pos, state, player);
-        BlockPos fromPos = connection.getFromPos().pos();
+        BezierConnection connection = hypertubeEntity.getConnectionTo();
 
-        BlockEntity otherBlockEntity = level.getBlockEntity(fromPos.equals(pos) ? connection.getToPos().pos() : fromPos);
-        if (!(otherBlockEntity instanceof HypertubeBlockEntity otherHypertubeEntity))
-            return super.playerWillDestroy(level, pos, state, player);
-        otherHypertubeEntity.setConnection(null);
+        // Removing connectionFrom
+        if (hypertubeEntity.getConnectionFrom() != null) {
+            SimpleConnection connectionFrom = hypertubeEntity.getConnectionFrom();
+            BlockEntity otherBlock = level.getBlockEntity(connectionFrom.pos());
+            if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity) {
+                otherHypertubeEntity.setConnectionTo(null);
+            }
+        }
+
+        // Removing connection to
+        if (connection == null) return super.playerWillDestroy(level, pos, state, player);
+        BlockPos toPos = connection.getToPos().pos();;
+        BlockEntity otherBlock = level.getBlockEntity(toPos);
+        if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity) {
+            otherHypertubeEntity.setConnectionFrom(null);
+        }
         return super.playerWillDestroy(level, pos, state, player);
     }
 
@@ -200,12 +210,12 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
         if (!(blockEntity instanceof HypertubeBlockEntity hypertubeEntity)) return;
         if (!stack.hasFoil()) return;
 
-        Connecting connectingFrom = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
-        if (connectingFrom == null) return;
+        SimpleConnection connectionFrom = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
+        if (connectionFrom == null) return;
 
         Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, null, true);
-        Connecting connectingTo = new Connecting(pos, finalDirection);
-        BezierConnection bezierConnection = BezierConnection.of(connectingFrom, connectingTo);
+        SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
+        BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
 
         HypertubeItem.clearConnection(stack);
         if (!bezierConnection.isValid()) {
@@ -213,11 +223,11 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
             return;
         }
 
-        BlockEntity otherBlockEntity = level.getBlockEntity(connectingFrom.pos());
+        BlockEntity otherBlockEntity = level.getBlockEntity(connectionFrom.pos());
         if (otherBlockEntity instanceof HypertubeBlockEntity otherHypertubeEntity) {
-            otherHypertubeEntity.setConnection(bezierConnection);
+            otherHypertubeEntity.setConnectionTo(bezierConnection);
         }
 
-        hypertubeEntity.setConnection(bezierConnection);
+        hypertubeEntity.setConnectionFrom(connectionFrom);
     }
 }

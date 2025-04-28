@@ -2,7 +2,7 @@ package com.pedrorok.hypertube.registry;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.managers.placement.BezierConnection;
-import com.pedrorok.hypertube.managers.placement.Connecting;
+import com.pedrorok.hypertube.managers.placement.SimpleConnection;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.neoforged.bus.api.IEventBus;
@@ -18,9 +18,9 @@ public class ModDataComponent {
 
     private static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, HypertubeMod.MOD_ID);
 
-    public static final DataComponentType<Connecting> TUBE_CONNECTING_FROM = register(
+    public static final DataComponentType<SimpleConnection> TUBE_CONNECTING_FROM = register(
             "tube_connecting_from",
-            builder -> builder.persistent(Connecting.CODEC).networkSynchronized(Connecting.STREAM_CODEC)
+            builder -> builder.persistent(SimpleConnection.CODEC).networkSynchronized(SimpleConnection.STREAM_CODEC)
     );
 
     public static final DataComponentType<BezierConnection> BEZIER_CONNECTION = register(

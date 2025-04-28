@@ -38,13 +38,13 @@ public class TravelData {
     private void addTravelPoint(BlockPos pos, Level level) {
         BlockState blockState = level.getBlockState(pos);
         if (level.getBlockEntity(pos) instanceof HypertubeBlockEntity hypertubeBlockEntity
-            && hypertubeBlockEntity.getConnection() != null
-            && !bezierConnections.contains(hypertubeBlockEntity.getConnection().getUuid())) {
-            travelPoints.addAll(hypertubeBlockEntity.getConnection().getBezierPoints());
-            bezierConnections.add(hypertubeBlockEntity.getConnection().getUuid());
-            blockConnections.add(hypertubeBlockEntity.getConnection().getToPos().pos());
-            blockConnections.add(hypertubeBlockEntity.getConnection().getFromPos().pos());
-            addTravelPoint(hypertubeBlockEntity.getConnection().getToPos().pos(), level);
+            && hypertubeBlockEntity.getConnectionTo() != null
+            && !bezierConnections.contains(hypertubeBlockEntity.getConnectionTo().getUuid())) {
+            travelPoints.addAll(hypertubeBlockEntity.getConnectionTo().getBezierPoints());
+            bezierConnections.add(hypertubeBlockEntity.getConnectionTo().getUuid());
+            blockConnections.add(hypertubeBlockEntity.getConnectionTo().getToPos().pos());
+            blockConnections.add(hypertubeBlockEntity.getConnectionTo().getFromPos().pos());
+            addTravelPoint(hypertubeBlockEntity.getConnectionTo().getToPos().pos(), level);
             return;
         }
 
