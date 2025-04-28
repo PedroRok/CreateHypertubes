@@ -2,10 +2,10 @@ package com.pedrorok.hypertube.blocks;
 
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.items.HypertubeItem;
+import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.managers.placement.BezierConnection;
 import com.pedrorok.hypertube.managers.placement.Connecting;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
-import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModDataComponent;
 import com.pedrorok.hypertube.utils.RayCastUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;
@@ -26,11 +26,9 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.fml.common.Mod;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -83,7 +81,7 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
     public VoxelShape getShape(BlockState state, @Nullable CollisionContext ctx) {
         if (ctx instanceof EntityCollisionContext ecc
             && ecc.getEntity() instanceof Player player
-            && player.getPersistentData().getBoolean(TRAVEL_TAG)) {
+            && player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) {
             return VoxelUtils.empty();
         }
 
@@ -170,7 +168,6 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
     }
 
 
-
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean update) {
         super.onRemove(state, level, pos, newState, update);
@@ -180,13 +177,15 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
     @Override
     public @NotNull BlockState playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Player player) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof HypertubeBlockEntity hypertubeEntity)) return super.playerWillDestroy(level, pos, state, player);
+        if (!(blockEntity instanceof HypertubeBlockEntity hypertubeEntity))
+            return super.playerWillDestroy(level, pos, state, player);
         BezierConnection connection = hypertubeEntity.getConnection();
         if (connection == null) return super.playerWillDestroy(level, pos, state, player);
         BlockPos fromPos = connection.getFromPos().pos();
 
         BlockEntity otherBlockEntity = level.getBlockEntity(fromPos.equals(pos) ? connection.getToPos().pos() : fromPos);
-        if (!(otherBlockEntity instanceof HypertubeBlockEntity otherHypertubeEntity)) return super.playerWillDestroy(level, pos, state, player);
+        if (!(otherBlockEntity instanceof HypertubeBlockEntity otherHypertubeEntity))
+            return super.playerWillDestroy(level, pos, state, player);
         otherHypertubeEntity.setConnection(null);
         return super.playerWillDestroy(level, pos, state, player);
     }

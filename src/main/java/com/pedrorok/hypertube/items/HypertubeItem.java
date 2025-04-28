@@ -90,7 +90,6 @@ public class HypertubeItem extends BlockItem {
                     .ifPresent(hyperTubeEntity -> {
                         if (!level.isClientSide) {
                             BezierConnection connection = new BezierConnection(connecting, new Connecting(pos, direction.getOpposite()));
-                            System.out.println("Connection: " + connection);
                             if (!connection.isValid()) {
                                 player.displayClientMessage(Component.literal("Invalid connection"), true);
                                 return;

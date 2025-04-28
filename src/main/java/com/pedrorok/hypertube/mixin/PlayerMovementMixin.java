@@ -1,8 +1,7 @@
 package com.pedrorok.hypertube.mixin;
 
-import com.pedrorok.hypertube.blocks.HypertubeBaseBlock;
+import com.pedrorok.hypertube.managers.TravelManager;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,7 +20,7 @@ public abstract class PlayerMovementMixin {
     private void onTick(CallbackInfo ci) {
         Player player = (Player) (Object) this;
 
-        if (!player.getPersistentData().getBoolean(HypertubeBaseBlock.TRAVEL_TAG)) return;
+        if (!player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
 
         Vec3 velocity = new Vec3(player.getDeltaMovement().x, 0, player.getDeltaMovement().z);
 

@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube.blocks;
 
 import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
+import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.utils.VoxelUtils;
 import net.minecraft.core.BlockPos;
@@ -64,7 +65,7 @@ public class HyperEntranceBlock extends HypertubeBaseBlock implements EntityBloc
     public VoxelShape getShape(BlockState state, @Nullable CollisionContext ctx) {
         if (ctx instanceof EntityCollisionContext ecc
             && ecc.getEntity() instanceof Player player
-            && player.getPersistentData().getBoolean(TRAVEL_TAG)) {
+            && player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) {
             return VoxelUtils.empty();
         }
 

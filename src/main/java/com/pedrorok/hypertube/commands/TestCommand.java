@@ -1,10 +1,9 @@
 package com.pedrorok.hypertube.commands;
 
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.pedrorok.hypertube.blocks.HypertubeBaseBlock;
+import com.pedrorok.hypertube.managers.TravelManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -28,7 +27,7 @@ public class TestCommand implements CommandBase {
             return 0;
         }
         Player player = ctx.getSource().getPlayerOrException();
-        player.getPersistentData().putBoolean(HypertubeBaseBlock.TRAVEL_TAG, !player.getPersistentData().getBoolean(HypertubeBaseBlock.TRAVEL_TAG));
+        player.getPersistentData().putBoolean(TravelManager.TRAVEL_TAG, !player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG));
         return 1;
     }
 }

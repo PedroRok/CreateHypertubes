@@ -18,7 +18,6 @@ import org.jetbrains.annotations.NotNull;
  */
 public abstract class HypertubeBaseBlock extends Block {
 
-    public static final String TRAVEL_TAG = "hypertube_travel";
     public static final Properties PROPERTIES = Properties.of()
             .destroyTime(2.0f)
             .dynamicShape()

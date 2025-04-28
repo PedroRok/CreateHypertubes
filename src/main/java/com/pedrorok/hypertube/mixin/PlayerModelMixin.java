@@ -1,6 +1,6 @@
 package com.pedrorok.hypertube.mixin;
 
-import com.pedrorok.hypertube.blocks.HypertubeBaseBlock;
+import com.pedrorok.hypertube.managers.TravelManager;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -20,7 +20,7 @@ public abstract class PlayerModelMixin {
     private void onSetupAnim(LivingEntity entity, float limbSwing, float limbSwingAmount,
                              float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
         if (!(entity instanceof Player player)
-            || !player.getPersistentData().getBoolean(HypertubeBaseBlock.TRAVEL_TAG)) return;
+            || !player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
 
 
         PlayerModel<?> model = (PlayerModel<?>) (Object) this;
