@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.blocks.blockentities;
 
+import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.managers.placement.BezierConnection;
 import com.pedrorok.hypertube.managers.placement.SimpleConnection;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
@@ -8,6 +9,7 @@ import com.simibubi.create.content.contraptions.StructureTransform;
 import lombok.Getter;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -18,6 +20,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 24/04/2025
@@ -59,11 +63,6 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
         if (t == null) return;
         if (!(t instanceof HypertubeBlockEntity tubeEntity)) return;
 
-        // Checking if is connecting From
-        if (tubeEntity.getConnectionFrom() != null) {
-            // Checking if is connecting to
-        }
-
 
         if (tubeEntity.getConnectionTo() == null) return;
         if (!tubeEntity.getConnectionTo().isValid()) return;
@@ -102,6 +101,24 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
             this.connectionFrom = SimpleConnection.CODEC.parse(NbtOps.INSTANCE, tag.get("ConnectionFrom"))
                     .getOrThrow();
         }
+    }
+
+    public List<Direction> getFacesConnectable() {
+        if (connectionFrom != null) {
+            BlockEntity blockEntity = level.getBlockEntity(connectionFrom.pos());
+            if (blockEntity instanceof HypertubeBlockEntity hypertubeBlockEntity) {
+                SimpleConnection toPos = hypertubeBlockEntity.getConnectionTo().getToPos();
+                return List.of(toPos.direction(),
+                        toPos.direction().getOpposite());
+            }
+        }
+        if (connectionTo != null) {
+            return List.of(connectionTo.getFromPos().direction(), connectionTo.getFromPos().direction().getOpposite());
+        }
+        BlockState blockState = getBlockState();
+        if (!(blockState.getBlock() instanceof HypertubeBlock hypertubeBlock)) return List.of();
+        List<Direction> connectedFaces = hypertubeBlock.getConnectedFaces(blockState);
+        return connectedFaces.isEmpty() ? List.of(Direction.values()) : connectedFaces.stream().map(Direction::getOpposite).toList();
     }
 
     @Override

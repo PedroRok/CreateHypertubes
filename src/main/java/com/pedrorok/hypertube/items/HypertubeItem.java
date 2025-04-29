@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.items;
 
+import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HypertubeBaseBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
@@ -162,8 +163,16 @@ public class HypertubeItem extends BlockItem {
     public static boolean select(LevelAccessor world, BlockPos pos, Direction direction, ItemStack heldItem) {
         BlockState blockState = world.getBlockState(pos);
         Block block = blockState.getBlock();
-        if (!(block instanceof HypertubeBaseBlock tube))
+        if (!(block instanceof HypertubeBlock tube))
             return false;
+        HypertubeBlockEntity blockEntity = (HypertubeBlockEntity) world.getBlockEntity(pos);
+        if (blockEntity == null) {
+            return false;
+        }
+        if (!blockEntity.getFacesConnectable().contains(direction)) {
+            HypertubeMod.LOGGER.debug("Tube can't connect to any face");
+            return false;
+        }
 
         heldItem.set(ModDataComponent.TUBE_CONNECTING_FROM, new SimpleConnection(pos, direction));
         heldItem.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
