@@ -28,7 +28,7 @@ public class BezierConnection {
 
     public static final Codec<BezierConnection> CODEC = RecordCodecBuilder.create(i -> i.group(
             SimpleConnection.CODEC.fieldOf("fromPos").forGetter(BezierConnection::getFromPos),
-            SimpleConnection.CODEC.fieldOf("direction").forGetter(BezierConnection::getToPos),
+            SimpleConnection.CODEC.fieldOf("toPos").forGetter(BezierConnection::getToPos),
             Vec3.CODEC.listOf().fieldOf("curvePoints").forGetter(BezierConnection::getBezierPoints)
     ).apply(i, BezierConnection::new));
 
@@ -55,14 +55,9 @@ public class BezierConnection {
     private final int detailLevel;
 
 
-    private BezierConnection(SimpleConnection fromPos, SimpleConnection toBlockPos, List<Vec3> bezierPoints) {
-        this(fromPos, toBlockPos, (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toBlockPos.pos().getCenter())));
-    }
-
-
-    public BezierConnection saveAll() {
-        //toPos = new Connecting(toBlockPos, finalDirection);
-        return this;
+    private BezierConnection(SimpleConnection fromPos, SimpleConnection toPos, List<Vec3> bezierPoints) {
+        this(fromPos, toPos, (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter())));
+        this.bezierPoints = bezierPoints;
     }
 
     public BezierConnection(SimpleConnection fromPos, @Nullable SimpleConnection toPos) {
@@ -171,7 +166,9 @@ public class BezierConnection {
 
     public boolean isValid() {
         if (isValid != null) return isValid;
-        isValid = (fromPos != null && toPos != null) && getMaxAngleBezierAngle() < MAX_ANGLE;
+        isValid = (fromPos != null && toPos != null)
+                  && getMaxAngleBezierAngle() < MAX_ANGLE
+                  && distance() < MAX_DISTANCE;
         return isValid;
     }
 
@@ -206,13 +203,12 @@ public class BezierConnection {
     }
 
 
-
     @Override
     public String toString() {
         return "BezierConnection{" +
-                "fromPos=" + fromPos +
-                ", toPos=" + toPos +
-                ", isValid=" + isValid +
-                '}';
+               "fromPos=" + fromPos +
+               ", toPos=" + toPos +
+               ", isValid=" + isValid +
+               '}';
     }
 }

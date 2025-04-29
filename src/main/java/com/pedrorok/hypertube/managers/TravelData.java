@@ -50,7 +50,7 @@ public class TravelData {
         for (Direction direction : connectedFaces) {
             BlockPos nextPipe = pos.relative(direction);
             if (blockConnections.contains(nextPipe)) continue;
-            travelPoints.add(nextPipe.getCenter().subtract(0, 0.25, 0));
+            travelPoints.add(nextPipe.getCenter());
             blockConnections.add(nextPipe);
             addTravelPoint(nextPipe, level);
             break;

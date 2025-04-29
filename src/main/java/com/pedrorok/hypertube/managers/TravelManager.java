@@ -85,6 +85,7 @@ public class TravelManager {
             player.hurtMarked = true;
             return;
         }
+        point = point.subtract(0,0.25,0);
         double distance = player.distanceToSqr(point.x, point.y, point.z);
         if (distance > 0.4D) {
             Vec3 travelNormal = point.subtract(player.position()).normalize();

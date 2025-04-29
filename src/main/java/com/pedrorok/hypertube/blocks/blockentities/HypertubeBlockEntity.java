@@ -81,7 +81,11 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
 
     private void writeConnection(CompoundTag tag) {
         if (connectionTo != null) {
-            tag.put("Connection", BezierConnection.CODEC.encodeStart(NbtOps.INSTANCE, connectionTo)
+            tag.put("ConnectionTo", BezierConnection.CODEC.encodeStart(NbtOps.INSTANCE, connectionTo)
+                    .getOrThrow());
+        }
+        if (connectionFrom != null) {
+            tag.put("ConnectionFrom", SimpleConnection.CODEC.encodeStart(NbtOps.INSTANCE, connectionFrom)
                     .getOrThrow());
         }
     }
@@ -90,8 +94,12 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
     protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
         super.loadAdditional(tag, registries);
 
-        if (tag.contains("Connection")) {
-            this.connectionTo = BezierConnection.CODEC.parse(NbtOps.INSTANCE, tag.get("Connection"))
+        if (tag.contains("ConnectionTo")) {
+            this.connectionTo = BezierConnection.CODEC.parse(NbtOps.INSTANCE, tag.get("ConnectionTo"))
+                    .getOrThrow();
+        }
+        if (tag.contains("ConnectionFrom")) {
+            this.connectionFrom = SimpleConnection.CODEC.parse(NbtOps.INSTANCE, tag.get("ConnectionFrom"))
                     .getOrThrow();
         }
     }

@@ -89,7 +89,6 @@ public class TubePlacement {
 
         SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
-
         // Exception & visual
         animation.setValue( !bezierConnection.isValid() ? 0.2 : 0.8);
         bezierConnection.drawPath(animation);
