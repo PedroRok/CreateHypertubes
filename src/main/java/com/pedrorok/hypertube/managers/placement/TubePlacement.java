@@ -8,7 +8,7 @@ import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModDataComponent;
 import com.pedrorok.hypertube.registry.ModItems;
 import com.pedrorok.hypertube.utils.RayCastUtils;
-import com.simibubi.create.content.trains.track.*;
+import com.simibubi.create.content.trains.track.TrackBlockOutline;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -16,7 +16,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,14 +35,6 @@ public class TubePlacement {
     static LerpedFloat animation = LerpedFloat.linear()
             .startWithValue(0);
 
-    /*public static BezierConnection manageBezierConnection(Connecting connectingFrom, Connecting connectingTo) {
-        BezierConnection bezierConnection = BezierConnection.of(connectingFrom, connectingTo);
-        if (bezierConnection.isValid()) {
-            return bezierConnection;
-        }
-        return null;
-    }*/
-
     @OnlyIn(Dist.CLIENT)
     public static void clientTick() {
         LocalPlayer player = Minecraft.getInstance().player;
@@ -55,10 +46,8 @@ public class TubePlacement {
         if (hitResult.getType() != HitResult.Type.BLOCK)
             return;
 
-        InteractionHand hand = InteractionHand.MAIN_HAND;
         if (!stack.getItem().equals(ModItems.HYPERTUBE_ITEM.get())) {
             stack = player.getOffhandItem();
-            hand = InteractionHand.OFF_HAND;
             if (!stack.getItem().equals(ModItems.HYPERTUBE_ITEM.get()))
                 return;
         }
