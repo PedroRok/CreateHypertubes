@@ -45,7 +45,6 @@ public class TravelManager {
         PacketDistributor.sendToPlayer(player, new ISyncPersistentData.PersistentDataPacket(player));
         BlockPos relative = pos.relative(state.getValue(HyperEntranceBlock.FACING));
         TravelData travelData = new TravelData(relative, player.level(), pos);
-
         HypertubeMod.LOGGER.debug("Player start travel: {} to {}", player.getName().getString(), relative);
         travelDataMap.put(player.getUUID(), travelData);
     }
@@ -80,12 +79,12 @@ public class TravelManager {
 
             // TODO: Persist velocity
             Vec3 scale = player.getDeltaMovement().scale(2);
-            player.teleportRelative(scale.x,0, scale.z);
+            player.teleportRelative(scale.x, 0, scale.z);
             player.setDeltaMovement(scale);
             player.hurtMarked = true;
             return;
         }
-        point = point.subtract(0,0.25,0);
+        point = point.subtract(0, 0.25, 0);
         double distance = player.distanceToSqr(point.x, point.y, point.z);
         if (distance > 0.4D) {
             Vec3 travelNormal = point.subtract(player.position()).normalize();

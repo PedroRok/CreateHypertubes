@@ -33,8 +33,10 @@ public class TravelData {
         this.travelPoints = new ArrayList<>();
         this.bezierConnections = new ArrayList<>();
         this.blockConnections = new ArrayList<>();
-        travelPoints.add(entrancePos.getCenter().subtract(0, 0.2, 0));
-        travelPoints.add(firstPipe.getCenter().subtract(0, 0.2, 0));
+        travelPoints.add(entrancePos.getCenter());
+        blockConnections.add(entrancePos);
+        travelPoints.add(firstPipe.getCenter());
+        blockConnections.add(firstPipe);
 
         addTravelPoint(firstPipe, level);
     }
