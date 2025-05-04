@@ -32,13 +32,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-/**
- * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
- * @project Create Hypertube
- */
 public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection, IBE<HypertubeBlockEntity> {
 
     public static final BooleanProperty DOWN = BooleanProperty.create("down");
@@ -61,13 +56,13 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> pBuilder) {
-        pBuilder.add(DOWN, UP, NORTH, SOUTH, WEST, EAST);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(DOWN, UP, NORTH, SOUTH, WEST, EAST);
     }
 
     @Override
-    public @Nullable BlockState getStateForPlacement(@NotNull BlockPlaceContext pContext) {
-        BlockState state = super.getStateForPlacement(pContext);
+    public @Nullable BlockState getStateForPlacement(@NotNull BlockPlaceContext context) {
+        BlockState state = super.getStateForPlacement(context);
         if (state == null) return null;
         return state.setValue(DOWN, false)
                 .setValue(UP, false)
@@ -86,45 +81,59 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
         }
 
         VoxelShape shape = SHAPE_CORE;
-        if (state.getValue(UP)) {
-            shape = VoxelUtils.combine(shape, SHAPE_UP);
-        }
-        if (state.getValue(DOWN)) {
-            shape = VoxelUtils.combine(shape, SHAPE_DOWN);
-        }
-        if (state.getValue(SOUTH)) {
-            shape = VoxelUtils.combine(shape, SHAPE_SOUTH);
-        }
-        if (state.getValue(NORTH)) {
-            shape = VoxelUtils.combine(shape, SHAPE_NORTH);
-        }
-        if (state.getValue(EAST)) {
-            shape = VoxelUtils.combine(shape, SHAPE_EAST);
-        }
-        if (state.getValue(WEST)) {
-            shape = VoxelUtils.combine(shape, SHAPE_WEST);
-        }
+        if (state.getValue(UP)) shape = VoxelUtils.combine(shape, SHAPE_UP);
+        if (state.getValue(DOWN)) shape = VoxelUtils.combine(shape, SHAPE_DOWN);
+        if (state.getValue(SOUTH)) shape = VoxelUtils.combine(shape, SHAPE_SOUTH);
+        if (state.getValue(NORTH)) shape = VoxelUtils.combine(shape, SHAPE_NORTH);
+        if (state.getValue(EAST)) shape = VoxelUtils.combine(shape, SHAPE_EAST);
+        if (state.getValue(WEST)) shape = VoxelUtils.combine(shape, SHAPE_WEST);
         return shape;
     }
-
 
     @Override
     public void neighborChanged(@NotNull BlockState state, @NotNull Level world, @NotNull BlockPos pos, @NotNull Block block, @NotNull BlockPos pos1, boolean b) {
         super.neighborChanged(state, world, pos, block, pos1, b);
         BlockState newState = getState(world, pos);
-        if (!state.getProperties().stream().allMatch(property -> state.getValue(property).equals(newState.getValue(property)))) {
+        if (!state.getProperties().stream().allMatch(p -> state.getValue(p).equals(newState.getValue(p)))) {
             world.setBlockAndUpdate(pos, newState);
         }
     }
 
     private BlockState getState(Level world, BlockPos pos) {
+        Set<BlockPos> visited = new HashSet<>();
+        List<Direction> locked = findDominantDirection(world, pos, visited);
         return defaultBlockState()
-                .setValue(UP, isConnected(world, pos, Direction.UP))
-                .setValue(DOWN, isConnected(world, pos, Direction.DOWN))
-                .setValue(NORTH, isConnected(world, pos, Direction.NORTH))
-                .setValue(SOUTH, isConnected(world, pos, Direction.SOUTH))
-                .setValue(EAST, isConnected(world, pos, Direction.EAST))
-                .setValue(WEST, isConnected(world, pos, Direction.WEST));
+                .setValue(UP, locked.contains(Direction.UP) && isConnected(world, pos, Direction.UP))
+                .setValue(DOWN, locked.contains(Direction.DOWN) && isConnected(world, pos, Direction.DOWN))
+                .setValue(NORTH,locked.contains(Direction.NORTH) && isConnected(world, pos, Direction.NORTH))
+                .setValue(SOUTH,locked.contains(Direction.SOUTH) && isConnected(world, pos, Direction.SOUTH))
+                .setValue(EAST, locked.contains(Direction.EAST) && isConnected(world, pos, Direction.EAST))
+                .setValue(WEST, locked.contains(Direction.WEST) && isConnected(world, pos, Direction.WEST));
+    }
+
+    private List<Direction> findDominantDirection(Level world, BlockPos pos, Set<BlockPos> visited) {
+        Queue<BlockPos> queue = new ArrayDeque<>();
+        Map<Direction, Integer> directionCount = new EnumMap<>(Direction.class);
+        queue.add(pos);
+        visited.add(pos);
+
+        while (!queue.isEmpty()) {
+            BlockPos current = queue.poll();
+            for (Direction direction : Direction.values()) {
+                BlockPos adjacent = current.relative(direction);
+                if (visited.contains(adjacent)) continue;
+                if (!(world.getBlockState(adjacent).getBlock() instanceof TubeConnection)) continue;
+                visited.add(adjacent);
+                queue.add(adjacent);
+                directionCount.put(direction, directionCount.getOrDefault(direction, 0) + 1);
+            }
+        }
+
+        Direction direction = directionCount.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(Direction.NORTH);
+        return List.of(direction, direction.getOpposite());
     }
 
     public List<Direction> getConnectedFaces(BlockState state) {
@@ -161,17 +170,14 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
         return ModBlockEntities.HYPERTUBE_ENTITY.get().create(blockPos, state);
     }
 
-
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         return type == ModBlockEntities.HYPERTUBE_ENTITY.get() ? HypertubeBlockEntity::tick : null;
     }
 
-
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean update) {
         super.onRemove(state, level, pos, newState, update);
-
     }
 
     @Override
@@ -179,24 +185,26 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof HypertubeBlockEntity hypertubeEntity))
             return super.playerWillDestroy(level, pos, state, player);
-        BezierConnection connection = hypertubeEntity.getConnectionTo();
 
-        // Removing connectionFrom
-        if (hypertubeEntity.getConnectionFrom() != null) {
-            SimpleConnection connectionFrom = hypertubeEntity.getConnectionFrom();
-            BlockEntity otherBlock = level.getBlockEntity(connectionFrom.pos());
+        SimpleConnection connectionFrom = hypertubeEntity.getConnectionFrom();
+        BezierConnection connectionTo = hypertubeEntity.getConnectionTo();
+
+        if (connectionFrom != null) {
+            BlockPos otherPos = connectionFrom.pos();
+            BlockEntity otherBlock = level.getBlockEntity(otherPos);
             if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity) {
                 otherHypertubeEntity.setConnectionTo(null);
             }
         }
 
-        // Removing connection to
-        if (connection == null) return super.playerWillDestroy(level, pos, state, player);
-        BlockPos toPos = connection.getToPos().pos();;
-        BlockEntity otherBlock = level.getBlockEntity(toPos);
-        if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity) {
-            otherHypertubeEntity.setConnectionFrom(null);
+        if (connectionTo != null) {
+            BlockPos otherPos = connectionTo.getToPos().pos();
+            BlockEntity otherBlock = level.getBlockEntity(otherPos);
+            if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity) {
+                otherHypertubeEntity.setConnectionFrom(null);
+            }
         }
+
         return super.playerWillDestroy(level, pos, state, player);
     }
 
