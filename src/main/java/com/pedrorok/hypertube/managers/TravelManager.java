@@ -2,6 +2,7 @@ package com.pedrorok.hypertube.managers;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
+import com.pedrorok.hypertube.utils.MathUtils;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -44,8 +45,8 @@ public class TravelManager {
 
         PacketDistributor.sendToPlayer(player, new ISyncPersistentData.PersistentDataPacket(player));
         BlockPos relative = pos.relative(state.getValue(HyperEntranceBlock.FACING));
-        TravelData travelData = new TravelData(relative, player.level(), pos);
-        HypertubeMod.LOGGER.debug("Player start travel: {} to {}", player.getName().getString(), relative);
+        TravelData travelData = new TravelData(relative, player.level(), pos, MathUtils.getMediumSpeed(player.getDeltaMovement()));
+        HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", player.getName().getString(), relative, travelData.getSpeed());
         travelDataMap.put(player.getUUID(), travelData);
     }
 
@@ -88,7 +89,7 @@ public class TravelManager {
         double distance = player.distanceToSqr(point.x, point.y, point.z);
         if (distance > 0.4D) {
             Vec3 travelNormal = point.subtract(player.position()).normalize();
-            player.setDeltaMovement(travelNormal.scale(0.5D));
+            player.setDeltaMovement(travelNormal.scale(0.5D + travelData.getSpeed()));
             player.hurtMarked = true;
         } else {
             travelData.getNextTravelPoint();
