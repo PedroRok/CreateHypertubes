@@ -7,7 +7,7 @@ import com.pedrorok.hypertube.managers.TravelManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 22/04/2025
@@ -26,8 +26,9 @@ public class TestCommand implements CommandBase {
             ctx.getSource().sendSystemMessage(Component.literal("Only player can use this command"));
             return 0;
         }
-        Player player = ctx.getSource().getPlayerOrException();
-        player.getPersistentData().putBoolean(TravelManager.TRAVEL_TAG, !player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG));
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        TravelManager.removePlayerFromTravel(player);
+        player.sendSystemMessage(Component.literal("Removed from travel"));
         return 1;
     }
 }

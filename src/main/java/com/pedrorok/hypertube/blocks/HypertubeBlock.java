@@ -75,8 +75,8 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
     @Override
     public VoxelShape getShape(BlockState state, @Nullable CollisionContext ctx) {
         if (ctx instanceof EntityCollisionContext ecc
-            && ecc.getEntity() instanceof Player player
-            && player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) {
+            && ecc.getEntity() != null
+            && ecc.getEntity().getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) {
             return VoxelUtils.empty();
         }
 
