@@ -2,8 +2,10 @@ package com.pedrorok.hypertube.managers;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
+import com.pedrorok.hypertube.camera.DetachedCameraController;
 import com.pedrorok.hypertube.utils.MathUtils;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
@@ -51,7 +53,7 @@ public class TravelManager {
 
 
     public static void removePlayerFromTravel(Player player) {
-        if (!travelDataMap.containsKey(player.getUUID())) return;
+        //if (!travelDataMap.containsKey(player.getUUID())) return;
         travelDataMap.remove(player.getUUID());
         player.getPersistentData().putBoolean(TRAVEL_TAG, false);
         player.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
@@ -70,8 +72,18 @@ public class TravelManager {
 
     @OnlyIn(Dist.CLIENT)
     private static void handleClient(Player player) {
-        if (!player.getPersistentData().getBoolean(TRAVEL_TAG)) return;
-        //player.setPose(Pose.SWIMMING);
+        Minecraft mc = Minecraft.getInstance();
+        if ((!player.getPersistentData().getBoolean(TRAVEL_TAG)
+             || mc.options.getCameraType().isFirstPerson())) {
+            DetachedCameraController.detached = false;
+            return;
+        }
+        if (!DetachedCameraController.detached) {
+            DetachedCameraController.yaw = player.getYRot();
+            DetachedCameraController.pitch = player.getXRot();
+            DetachedCameraController.detached = true;
+        }
+
     }
 
     private static void handleServer(Player player) {
