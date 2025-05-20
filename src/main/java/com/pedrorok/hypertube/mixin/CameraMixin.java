@@ -20,12 +20,12 @@ public class CameraMixin {
 
     @Inject(method = "setup", at = @At("HEAD"), cancellable = true)
     private void onSetup(BlockGetter p_90576_, Entity renderViewEntity, boolean isFrontView, boolean p_90579_, float PartialTicks, CallbackInfo ci) {
-        if (!DetachedCameraController.detached) return;
-        DetachedCameraController.tickCamera(renderViewEntity);
+        if (!DetachedCameraController.get().isDetached()) return;
+        DetachedCameraController.get().tickCamera(renderViewEntity);
 
         CameraAccessorMixin camera = (CameraAccessorMixin) this;
-        camera.callSetPosition(DetachedCameraController.getCurrentPos());
-        camera.callSetRotation(DetachedCameraController.yaw, DetachedCameraController.pitch);
+        camera.callSetPosition(DetachedCameraController.get().getCurrentPos());
+        camera.callSetRotation(DetachedCameraController.get().getYaw(), DetachedCameraController.get().getPitch());
 
         ci.cancel();
     }

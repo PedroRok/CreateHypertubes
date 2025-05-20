@@ -39,7 +39,6 @@ public class ClientEvents {
 
     private static void tickPlayer() {
         Player player = Minecraft.getInstance().player;
-        // Check if the player has the pointing pose tag
         CompoundTag persistentData = player.getPersistentData();
         if (persistentData.getBoolean(TravelManager.TRAVEL_TAG)) {
             if (!player.isFallFlying())
@@ -77,7 +76,7 @@ public class ClientEvents {
     public static void onClientTick(ClientTickEvent.Post event) {
 
         Minecraft mc = Minecraft.getInstance();
-        if (!DetachedCameraController.detached || mc.isPaused() || !mc.isWindowActive()) return;
+        if (!DetachedCameraController.get().isDetached() || mc.isPaused() || !mc.isWindowActive()) return;
 
         MouseHandler mouse = mc.mouseHandler;
 
@@ -87,7 +86,7 @@ public class ClientEvents {
         double sensitivity = mc.options.sensitivity().get();
         double factor = sensitivity * 0.6 + 0.2;
         factor = factor * factor * factor * 8.0;
-        DetachedCameraController.updateCameraRotation((float) (dx * factor), (float) (dy * factor));
+        DetachedCameraController.get().updateCameraRotation((float) (dx * factor), (float) (dy * factor));
     }
 
 }

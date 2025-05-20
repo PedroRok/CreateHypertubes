@@ -75,13 +75,13 @@ public class TravelManager {
         Minecraft mc = Minecraft.getInstance();
         if ((!player.getPersistentData().getBoolean(TRAVEL_TAG)
              || mc.options.getCameraType().isFirstPerson())) {
-            DetachedCameraController.detached = false;
+            DetachedCameraController.get().setDetached(false);
             return;
         }
-        if (!DetachedCameraController.detached) {
-            DetachedCameraController.setCameraRotation(player.getYRot(), player.getXRot());
-            DetachedCameraController.setCameraPosition(player);
-            DetachedCameraController.detached = true;
+        if (!DetachedCameraController.get().isDetached()) {
+            DetachedCameraController.get().setCameraRotation(player.getYRot(), player.getXRot());
+            DetachedCameraController.get().setCameraPosition(player);
+            DetachedCameraController.get().setDetached(true);
         }
 
     }
