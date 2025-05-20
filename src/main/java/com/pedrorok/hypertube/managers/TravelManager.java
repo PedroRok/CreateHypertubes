@@ -79,8 +79,8 @@ public class TravelManager {
             return;
         }
         if (!DetachedCameraController.detached) {
-            DetachedCameraController.yaw = player.getYRot();
-            DetachedCameraController.pitch = player.getXRot();
+            DetachedCameraController.setCameraRotation(player.getYRot(), player.getXRot());
+            DetachedCameraController.setCameraPosition(player);
             DetachedCameraController.detached = true;
         }
 
@@ -107,7 +107,7 @@ public class TravelManager {
         }
         point = point.subtract(0, 0.25, 0);
         double distance = player.distanceToSqr(point.x, point.y, point.z);
-        if (distance > 0.4D) {
+        if (distance > 0.6D) {
             Vec3 travelNormal = point.subtract(player.position()).normalize();
             player.setDeltaMovement(travelNormal.scale(0.5D + travelData.getSpeed()));
             player.hurtMarked = true;

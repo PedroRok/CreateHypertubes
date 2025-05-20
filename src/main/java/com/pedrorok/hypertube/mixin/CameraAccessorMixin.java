@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube.mixin;
 
 import net.minecraft.client.Camera;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
@@ -16,4 +17,7 @@ public interface CameraAccessorMixin {
 
     @Invoker("setRotation")
     void callSetRotation(float yaw, float pitch);
+
+    @Invoker("setPosition")
+    void callSetPosition(Vec3 pos);
 }

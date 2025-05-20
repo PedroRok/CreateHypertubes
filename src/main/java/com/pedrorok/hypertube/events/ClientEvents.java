@@ -73,7 +73,6 @@ public class ClientEvents {
         return !(Minecraft.getInstance().level == null || Minecraft.getInstance().player == null);
     }
 
-
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
 
@@ -88,10 +87,7 @@ public class ClientEvents {
         double sensitivity = mc.options.sensitivity().get();
         double factor = sensitivity * 0.6 + 0.2;
         factor = factor * factor * factor * 8.0;
-        LerpedFloat linear = LerpedFloat.linear()
-                .startWithValue(0);
-        linear.setValue(0.8);
-        DetachedCameraController.updateCameraRotation(linear.getValue((float) (dx * factor)), linear.getValue((float) (dy * factor)));
+        DetachedCameraController.updateCameraRotation((float) (dx * factor), (float) (dy * factor));
     }
 
 }
