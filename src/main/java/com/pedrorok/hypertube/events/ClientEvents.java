@@ -79,14 +79,13 @@ public class ClientEvents {
         if (!DetachedCameraController.get().isDetached() || mc.isPaused() || !mc.isWindowActive()) return;
 
         MouseHandler mouse = mc.mouseHandler;
-
         double dx = mouse.getXVelocity();
         double dy = mouse.getYVelocity();
 
         double sensitivity = mc.options.sensitivity().get();
         double factor = sensitivity * 0.6 + 0.2;
         factor = factor * factor * factor * 8.0;
-        DetachedCameraController.get().updateCameraRotation((float) (dx * factor), (float) (dy * factor));
+        DetachedCameraController.get().updateCameraRotation((float) (dx * factor), (float) (dy * factor), true);
     }
 
 }

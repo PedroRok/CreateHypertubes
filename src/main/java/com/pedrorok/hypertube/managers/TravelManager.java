@@ -79,8 +79,7 @@ public class TravelManager {
             return;
         }
         if (!DetachedCameraController.get().isDetached()) {
-            DetachedCameraController.get().setCameraRotation(player.getYRot(), player.getXRot());
-            DetachedCameraController.get().setCameraPosition(player);
+            DetachedCameraController.get().startCamera(player);
             DetachedCameraController.get().setDetached(true);
         }
 
