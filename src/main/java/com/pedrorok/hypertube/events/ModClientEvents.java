@@ -1,13 +1,17 @@
 package com.pedrorok.hypertube.events;
 
 import com.pedrorok.hypertube.HypertubeMod;
+import com.pedrorok.hypertube.client.BezierTextureRenderer;
+import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
@@ -21,6 +25,14 @@ public class ModClientEvents {
         event.enqueueWork(() -> {
             setupRenderTypes();
         });
+    }
+
+    public static final ResourceLocation TUBE_TEXTURE = ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "textures/block/entity_tube_base.png");
+
+    @SubscribeEvent
+    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerBlockEntityRenderer(ModBlockEntities.HYPERTUBE_ENTITY.get(),
+                context -> new BezierTextureRenderer<>(context, TUBE_TEXTURE));
     }
 
 

@@ -1,11 +1,14 @@
 package com.pedrorok.hypertube.blocks.blockentities;
 
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
+import com.pedrorok.hypertube.blocks.IBezierProvider;
 import com.pedrorok.hypertube.managers.placement.BezierConnection;
 import com.pedrorok.hypertube.managers.placement.SimpleConnection;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.simibubi.create.api.contraption.transformable.TransformableBlockEntity;
 import com.simibubi.create.content.contraptions.StructureTransform;
+import com.simibubi.create.foundation.blockEntity.CachedRenderBBBlockEntity;
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import lombok.Getter;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.core.BlockPos;
@@ -19,6 +22,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -28,7 +34,7 @@ import java.util.List;
  * @project Create Hypertube
  */
 @Getter
-public class HypertubeBlockEntity extends BlockEntity implements TransformableBlockEntity {
+public class HypertubeBlockEntity extends BlockEntity implements TransformableBlockEntity, IBezierProvider {
 
     private BezierConnection connectionTo;
     private SimpleConnection connectionFrom;
@@ -58,16 +64,16 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
     }
 
     public static <T extends BlockEntity> void tick(Level level, BlockPos pos, BlockState state, T t) {
-        if (!level.isClientSide) return;
+        //if (!level.isClientSide) return;
         // NOTE: THIS IS TEMPORARY
-        if (t == null) return;
-        if (!(t instanceof HypertubeBlockEntity tubeEntity)) return;
+        //if (t == null) return;
+        //if (!(t instanceof HypertubeBlockEntity tubeEntity)) return;
 
 
-        if (tubeEntity.getConnectionTo() == null) return;
-        if (!tubeEntity.getConnectionTo().isValid()) return;
-        tubeEntity.getConnectionTo().drawPath(LerpedFloat.linear()
-                .startWithValue(0));
+        //if (tubeEntity.getConnectionTo() == null) return;
+        //if (!tubeEntity.getConnectionTo().isValid()) return;
+        //tubeEntity.getConnectionTo().drawPath(LerpedFloat.linear()
+        //        .startWithValue(0));
     }
 
 
@@ -145,17 +151,8 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
     public void transform(BlockEntity blockEntity, StructureTransform transform) {
     }
 
-    /*
-     * TODO: test with SmartBlockEntity
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public AABB getRenderBoundingBox() {
-        return AABB.INFINITE;
+    public BezierConnection getBezierConnection() {
+        return connectionTo;
     }
-
-    @Override
-    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-        // Adicione comportamentos se necessário
-    }
-     */
 }
