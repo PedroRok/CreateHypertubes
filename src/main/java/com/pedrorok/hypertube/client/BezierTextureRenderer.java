@@ -30,7 +30,7 @@ import java.util.List;
 @OnlyIn(Dist.CLIENT)
 public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEntityRenderer<HypertubeBlockEntity> {
 
-    private static final float TUBE_RADIUS = 0.5F;
+    private static final float TUBE_RADIUS = 0.7F;
     private static final int SEGMENTS_AROUND = 4;
 
     private static final float TILING_UNIT = 1f;

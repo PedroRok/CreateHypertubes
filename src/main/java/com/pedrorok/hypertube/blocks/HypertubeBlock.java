@@ -36,20 +36,12 @@ import java.util.*;
 
 public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection, IBE<HypertubeBlockEntity> {
 
-    public static final BooleanProperty DOWN = BooleanProperty.create("down");
-    public static final BooleanProperty UP = BooleanProperty.create("up");
-    public static final BooleanProperty NORTH = BooleanProperty.create("north");
-    public static final BooleanProperty SOUTH = BooleanProperty.create("south");
-    public static final BooleanProperty WEST = BooleanProperty.create("west");
-    public static final BooleanProperty EAST = BooleanProperty.create("east");
+    // Only three axis-based connection properties
+    public static final BooleanProperty NORTH_SOUTH = BooleanProperty.create("north_south");
+    public static final BooleanProperty EAST_WEST = BooleanProperty.create("east_west");
+    public static final BooleanProperty UP_DOWN = BooleanProperty.create("up_down");
 
-    public static final VoxelShape SHAPE_NORTH = Block.box(2D, 2D, 0D, 14D, 14D, 2D);
-    public static final VoxelShape SHAPE_SOUTH = Block.box(2D, 2D, 14D, 14D, 14D, 16D);
-    public static final VoxelShape SHAPE_EAST = Block.box(14D, 2D, 2D, 16D, 14D, 14D);
-    public static final VoxelShape SHAPE_WEST = Block.box(0D, 2D, 2D, 2D, 14D, 14D);
-    public static final VoxelShape SHAPE_UP = Block.box(2D, 14D, 2D, 14D, 16D, 14D);
-    public static final VoxelShape SHAPE_DOWN = Block.box(2D, 0D, 2D, 14D, 2D, 14D);
-    public static final VoxelShape SHAPE_CORE = Block.box(2D, 2D, 2D, 14D, 14D, 14D);
+    public static final VoxelShape SHAPE_CORE = Block.box(0D, 0D, 0D, 16D, 16D, 16D);
 
     public HypertubeBlock() {
         super(PROPERTIES);
@@ -57,19 +49,16 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(DOWN, UP, NORTH, SOUTH, WEST, EAST);
+        builder.add(NORTH_SOUTH, EAST_WEST, UP_DOWN);
     }
 
     @Override
     public @Nullable BlockState getStateForPlacement(@NotNull BlockPlaceContext context) {
         BlockState state = super.getStateForPlacement(context);
         if (state == null) return null;
-        return state.setValue(DOWN, false)
-                .setValue(UP, false)
-                .setValue(NORTH, false)
-                .setValue(SOUTH, false)
-                .setValue(WEST, false)
-                .setValue(EAST, false);
+        return state.setValue(NORTH_SOUTH, false)
+                .setValue(EAST_WEST, false)
+                .setValue(UP_DOWN, false);
     }
 
     @Override
@@ -80,40 +69,30 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
             return VoxelUtils.empty();
         }
 
-        VoxelShape shape = SHAPE_CORE;
-        if (state.getValue(UP)) shape = VoxelUtils.combine(shape, SHAPE_UP);
-        if (state.getValue(DOWN)) shape = VoxelUtils.combine(shape, SHAPE_DOWN);
-        if (state.getValue(SOUTH)) shape = VoxelUtils.combine(shape, SHAPE_SOUTH);
-        if (state.getValue(NORTH)) shape = VoxelUtils.combine(shape, SHAPE_NORTH);
-        if (state.getValue(EAST)) shape = VoxelUtils.combine(shape, SHAPE_EAST);
-        if (state.getValue(WEST)) shape = VoxelUtils.combine(shape, SHAPE_WEST);
-        return shape;
+        return SHAPE_CORE;
     }
 
     @Override
     public void neighborChanged(@NotNull BlockState state, @NotNull Level world, @NotNull BlockPos pos, @NotNull Block block, @NotNull BlockPos pos1, boolean b) {
         super.neighborChanged(state, world, pos, block, pos1, b);
         BlockState newState = getState(world, pos);
-        if (!state.getProperties().stream().allMatch(p -> state.getValue(p).equals(newState.getValue(p)))) {
-            world.setBlockAndUpdate(pos, newState);
-        }
+        world.setBlockAndUpdate(pos, newState);
     }
 
     private BlockState getState(Level world, BlockPos pos) {
-        Set<BlockPos> visited = new HashSet<>();
-        List<Direction> locked = findDominantDirection(world, pos, visited);
+        boolean northSouth = isConnected(world, pos, Direction.NORTH) || isConnected(world, pos, Direction.SOUTH);
+        boolean eastWest = isConnected(world, pos, Direction.EAST) || isConnected(world, pos, Direction.WEST);
+        boolean upDown = isConnected(world, pos, Direction.UP) || isConnected(world, pos, Direction.DOWN);
+
         return defaultBlockState()
-                .setValue(UP, locked.contains(Direction.UP) && isConnected(world, pos, Direction.UP))
-                .setValue(DOWN, locked.contains(Direction.DOWN) && isConnected(world, pos, Direction.DOWN))
-                .setValue(NORTH,locked.contains(Direction.NORTH) && isConnected(world, pos, Direction.NORTH))
-                .setValue(SOUTH,locked.contains(Direction.SOUTH) && isConnected(world, pos, Direction.SOUTH))
-                .setValue(EAST, locked.contains(Direction.EAST) && isConnected(world, pos, Direction.EAST))
-                .setValue(WEST, locked.contains(Direction.WEST) && isConnected(world, pos, Direction.WEST));
+                .setValue(NORTH_SOUTH, northSouth)
+                .setValue(EAST_WEST, eastWest)
+                .setValue(UP_DOWN, upDown);
     }
 
-    private List<Direction> findDominantDirection(Level world, BlockPos pos, Set<BlockPos> visited) {
+    private Direction.Axis findDominantAxis(Level world, BlockPos pos, Set<BlockPos> visited) {
         Queue<BlockPos> queue = new ArrayDeque<>();
-        Map<Direction, Integer> directionCount = new EnumMap<>(Direction.class);
+        Map<Direction.Axis, Integer> axisCount = new EnumMap<>(Direction.Axis.class);
         queue.add(pos);
         visited.add(pos);
 
@@ -125,34 +104,46 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
                 if (!(world.getBlockState(adjacent).getBlock() instanceof TubeConnection)) continue;
                 visited.add(adjacent);
                 queue.add(adjacent);
-                directionCount.put(direction, directionCount.getOrDefault(direction, 0) + 1);
+                axisCount.put(direction.getAxis(), axisCount.getOrDefault(direction.getAxis(), 0) + 1);
             }
         }
 
-        Direction direction = directionCount.entrySet().stream()
+        return axisCount.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
-                .orElse(Direction.NORTH);
-        return List.of(direction, direction.getOpposite());
+                .orElse(Direction.Axis.Z); // Default to Z axis if no connections
     }
 
     public List<Direction> getConnectedFaces(BlockState state) {
         List<Direction> directions = new ArrayList<>();
-        if (state.getValue(UP)) directions.add(Direction.UP);
-        if (state.getValue(DOWN)) directions.add(Direction.DOWN);
-        if (state.getValue(NORTH)) directions.add(Direction.NORTH);
-        if (state.getValue(SOUTH)) directions.add(Direction.SOUTH);
-        if (state.getValue(EAST)) directions.add(Direction.EAST);
-        if (state.getValue(WEST)) directions.add(Direction.WEST);
+        if (state.getValue(NORTH_SOUTH)) {
+            directions.add(Direction.NORTH);
+            directions.add(Direction.SOUTH);
+        }
+        if (state.getValue(EAST_WEST)) {
+            directions.add(Direction.EAST);
+            directions.add(Direction.WEST);
+        }
+        if (state.getValue(UP_DOWN)) {
+            directions.add(Direction.UP);
+            directions.add(Direction.DOWN);
+        }
         return directions;
     }
 
     public boolean isConnected(Level world, BlockPos pos, Direction facing) {
-        return canConnect(world, pos, facing);
+        BlockPos adjacentPos = pos.relative(facing);
+        BlockState adjacentState = world.getBlockState(adjacentPos);
+        return adjacentState.getBlock() instanceof TubeConnection;
     }
 
     public boolean canConnect(LevelAccessor world, BlockPos pos, Direction facing) {
         return world.getBlockState(pos.relative(facing)).getBlock() instanceof TubeConnection;
+    }
+
+    // Helper method to determine if a direction belongs to an axis
+    private boolean isDirectionInAxis(Direction direction, Direction.Axis axis) {
+        return direction.getAxis() == axis;
     }
 
     @Override
@@ -173,11 +164,6 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         return type == ModBlockEntities.HYPERTUBE_ENTITY.get() ? HypertubeBlockEntity::tick : null;
-    }
-
-    @Override
-    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean update) {
-        super.onRemove(state, level, pos, newState, update);
     }
 
     @Override
@@ -208,6 +194,7 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
         return super.playerWillDestroy(level, pos, state, player);
     }
 
+
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
@@ -237,7 +224,8 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
         }
 
         hypertubeEntity.setConnectionFrom(connectionFrom);
-    }
 
+        level.setBlockAndUpdate(pos, getState(level, pos));
+    }
 
 }

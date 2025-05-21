@@ -56,6 +56,7 @@ public class TravelData {
         for (Direction direction : connectedFaces) {
             BlockPos nextPipe = pos.relative(direction);
             if (blockConnections.contains(nextPipe)) continue;
+            if (!(level.getBlockEntity(nextPipe) instanceof HypertubeBlockEntity)) continue;
             travelPoints.add(nextPipe.getCenter());
             blockConnections.add(nextPipe);
             addTravelPoint(nextPipe, level);

@@ -7,6 +7,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -16,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Rok, Pedro Lucas nmm. Created on 22/04/2025
  * @project Create Hypertube
  */
-public abstract class HypertubeBaseBlock extends Block {
+public abstract class HypertubeBaseBlock extends TransparentBlock {
 
     public static final Properties PROPERTIES = Properties.of()
             .destroyTime(2.0f)
