@@ -96,7 +96,7 @@ public class TubePlacement {
         VertexConsumer vb = buffer.getBuffer(RenderType.lines());
         ms.pushPose();
         ms.translate(connection.pos().getX() - camera.x, connection.pos().getY() - camera.y, connection.pos().getZ() - camera.z);
-        TrackBlockOutline.renderShape(HypertubeBlock.SHAPE_CORE, ms, vb, false);
+        TrackBlockOutline.renderShape(HypertubeBlock.SHAPE_NORTH_SOUTH, ms, vb, false);
         ms.popPose();
     }
 }

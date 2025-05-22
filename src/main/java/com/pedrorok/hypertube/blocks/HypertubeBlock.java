@@ -44,7 +44,9 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
     public static final BooleanProperty EAST_WEST = BooleanProperty.create("east_west");
     public static final BooleanProperty UP_DOWN = BooleanProperty.create("up_down");
 
-    public static final VoxelShape SHAPE_CORE = Block.box(0D, 0D, 0D, 16D, 16D, 16D);
+    public static final VoxelShape SHAPE_NORTH_SOUTH = Block.box(0D, 0D, 4D, 16D, 16D, 11D);
+    public static final VoxelShape SHAPE_EAST_WEST = Block.box(5D, 0D, 0D, 12D, 16D, 16D);
+    public static final VoxelShape SHAPE_UP_DOWN = Block.box(0D, 4D, 0D, 16D, 11D, 16D);
 
     public HypertubeBlock() {
         super(PROPERTIES);
@@ -71,8 +73,13 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
             && ecc.getEntity().getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) {
             return VoxelUtils.empty();
         }
-
-        return SHAPE_CORE;
+        if (state.getValue(EAST_WEST)) {
+            return SHAPE_EAST_WEST;
+        }
+        if (state.getValue(UP_DOWN)) {
+            return SHAPE_UP_DOWN;
+        }
+        return SHAPE_NORTH_SOUTH;
     }
 
     @Override
