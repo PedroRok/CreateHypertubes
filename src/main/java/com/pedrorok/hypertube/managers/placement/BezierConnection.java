@@ -17,6 +17,7 @@ import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -200,6 +201,13 @@ public class BezierConnection {
                 .lineWidth(1 / 8f)
                 .disableLineNormals()
                 .colored(color);
+    }
+
+
+    public BezierConnection invert() {
+        List<Vec3> newBezier = new ArrayList<>(bezierPoints);
+        Collections.reverse(newBezier);
+        return new BezierConnection(toPos, fromPos, newBezier);
     }
 
 

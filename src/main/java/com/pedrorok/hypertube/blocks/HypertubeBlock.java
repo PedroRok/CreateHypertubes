@@ -84,38 +84,39 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
 
 
     private BlockState getStateFromBlockEntity(Level world, BlockPos pos) {
-        BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (!(blockEntity instanceof HypertubeBlockEntity hypertubeEntity)) {
+        BlockEntity be = world.getBlockEntity(pos);
+        if (!(be instanceof HypertubeBlockEntity hypertube)) {
             return getState(world, pos);
         }
 
-        Set<Direction> activeDirections = new HashSet<>();
-
-        BezierConnection connectionTo = hypertubeEntity.getConnectionTo();
-        if (connectionTo != null) {
-            Direction direction = connectionTo.getFromPos().direction();
-            if (direction != null) {
-                activeDirections.add(direction);
+        BezierConnection connTo = hypertube.getConnectionTo();
+        if (connTo != null) {
+            Direction dirTo = connTo.getFromPos().direction();
+            if (dirTo != null) {
+                return getState(Set.of(dirTo));
             }
         }
 
-        SimpleConnection connectionFrom = hypertubeEntity.getConnectionFrom();
-        if (connectionFrom != null && activeDirections.isEmpty()) {
-            HypertubeBlockEntity otherBlockEntity = (HypertubeBlockEntity) world.getBlockEntity(connectionFrom.pos());
-            if (otherBlockEntity != null) {
-                Direction direction = otherBlockEntity.getConnectionTo().getToPos().direction();
-                if (direction != null) {
-                    activeDirections.add(direction);
-                }
-            }
-        }
-
-        if (activeDirections.isEmpty()) {
+        SimpleConnection connFrom = hypertube.getConnectionFrom();
+        if (connFrom == null) {
             return getState(world, pos);
         }
 
-        return getState(activeDirections);
+        BlockEntity otherBE = world.getBlockEntity(connFrom.pos());
+        if (!(otherBE instanceof HypertubeBlockEntity other)) {
+            return getState(world, pos);
+        }
+
+        BezierConnection otherTo = other.getConnectionTo();
+        if (otherTo != null) {
+            Direction dirFrom = otherTo.getToPos().direction();
+            if (dirFrom != null) {
+                return getState(Set.of(dirFrom));
+            }
+        }
+        return getState(world, pos);
     }
+
 
     public BlockState getState(Collection<Direction> activeDirections) {
         boolean northSouth = activeDirections.contains(Direction.NORTH) || activeDirections.contains(Direction.SOUTH);
@@ -281,11 +282,26 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
         }
 
         BlockEntity otherBlockEntity = level.getBlockEntity(connectionFrom.pos());
+        boolean inverted = false;
         if (otherBlockEntity instanceof HypertubeBlockEntity otherHypertubeEntity) {
-            otherHypertubeEntity.setConnectionTo(bezierConnection);
+            if (otherHypertubeEntity.getConnectionTo() == null) {
+                otherHypertubeEntity.setConnectionTo(bezierConnection);
+            } else if (otherHypertubeEntity.getConnectionFrom() == null) {
+                bezierConnection = bezierConnection.invert();
+                connectionTo = bezierConnection.getFromPos();
+                otherHypertubeEntity.setConnectionFrom(connectionTo);
+                inverted = true;
+            } else {
+                player.displayClientMessage(Component.literal("Invalid connection"), true);
+                return;
+            }
         }
 
-        hypertubeEntity.setConnectionFrom(connectionFrom);
+
+        if (inverted)
+            hypertubeEntity.setConnectionTo(bezierConnection);
+        else
+            hypertubeEntity.setConnectionFrom(connectionFrom);
 
 
         if (!level.isClientSide()

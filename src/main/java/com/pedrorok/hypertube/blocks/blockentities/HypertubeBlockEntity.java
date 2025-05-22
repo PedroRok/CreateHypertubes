@@ -117,7 +117,7 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
     public List<Direction> getFacesConnectable() {
         if (connectionFrom != null) {
             BlockEntity blockEntity = level.getBlockEntity(connectionFrom.pos());
-            if (blockEntity instanceof HypertubeBlockEntity hypertubeBlockEntity) {
+            if (blockEntity instanceof HypertubeBlockEntity hypertubeBlockEntity && hypertubeBlockEntity.getConnectionTo() != null) {
                 SimpleConnection toPos = hypertubeBlockEntity.getConnectionTo().getToPos();
                 return List.of(toPos.direction(),
                         toPos.direction().getOpposite());
