@@ -34,9 +34,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+/**
+ * @author Rok, Pedro Lucas nmm. Created on 21/05/2025
+ * @project Create Hypertube
+ */
 public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection, IBE<HypertubeBlockEntity> {
 
-    // Only three axis-based connection properties
     public static final BooleanProperty NORTH_SOUTH = BooleanProperty.create("north_south");
     public static final BooleanProperty EAST_WEST = BooleanProperty.create("east_west");
     public static final BooleanProperty UP_DOWN = BooleanProperty.create("up_down");
@@ -75,8 +78,54 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
     @Override
     public void neighborChanged(@NotNull BlockState state, @NotNull Level world, @NotNull BlockPos pos, @NotNull Block block, @NotNull BlockPos pos1, boolean b) {
         super.neighborChanged(state, world, pos, block, pos1, b);
-        BlockState newState = getState(world, pos);
+        BlockState newState = getStateFromBlockEntity(world, pos);
         world.setBlockAndUpdate(pos, newState);
+    }
+
+
+    private BlockState getStateFromBlockEntity(Level world, BlockPos pos) {
+        BlockEntity blockEntity = world.getBlockEntity(pos);
+        if (!(blockEntity instanceof HypertubeBlockEntity hypertubeEntity)) {
+            return getState(world, pos);
+        }
+
+        Set<Direction> activeDirections = new HashSet<>();
+
+        BezierConnection connectionTo = hypertubeEntity.getConnectionTo();
+        if (connectionTo != null) {
+            Direction direction = connectionTo.getFromPos().direction();
+            if (direction != null) {
+                activeDirections.add(direction);
+            }
+        }
+
+        SimpleConnection connectionFrom = hypertubeEntity.getConnectionFrom();
+        if (connectionFrom != null && activeDirections.isEmpty()) {
+            HypertubeBlockEntity otherBlockEntity = (HypertubeBlockEntity) world.getBlockEntity(connectionFrom.pos());
+            if (otherBlockEntity != null) {
+                Direction direction = otherBlockEntity.getConnectionTo().getToPos().direction();
+                if (direction != null) {
+                    activeDirections.add(direction);
+                }
+            }
+        }
+
+        if (activeDirections.isEmpty()) {
+            return getState(world, pos);
+        }
+
+        return getState(activeDirections);
+    }
+
+    public BlockState getState(Collection<Direction> activeDirections) {
+        boolean northSouth = activeDirections.contains(Direction.NORTH) || activeDirections.contains(Direction.SOUTH);
+        boolean eastWest = activeDirections.contains(Direction.EAST) || activeDirections.contains(Direction.WEST);
+        boolean upDown = activeDirections.contains(Direction.UP) || activeDirections.contains(Direction.DOWN);
+
+        return defaultBlockState()
+                .setValue(NORTH_SOUTH, northSouth)
+                .setValue(EAST_WEST, eastWest)
+                .setValue(UP_DOWN, upDown);
     }
 
     private BlockState getState(Level world, BlockPos pos) {
@@ -90,7 +139,24 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
                 .setValue(UP_DOWN, upDown);
     }
 
-    private Direction.Axis findDominantAxis(Level world, BlockPos pos, Set<BlockPos> visited) {
+    public void updateBlockStateFromEntity(Level world, BlockPos pos) {
+        if (world.isClientSide()) return;
+
+        BlockState newState = getStateFromBlockEntity(world, pos);
+        updateBlockState(world, pos, newState);
+    }
+
+    public void updateBlockState(Level world, BlockPos pos, BlockState newState) {
+        if (world.isClientSide()) return;
+
+        BlockState currentState = world.getBlockState(pos);
+
+        if (!currentState.equals(newState)) {
+            world.setBlockAndUpdate(pos, newState);
+        }
+    }
+
+/*    private Direction.Axis findDominantAxis(Level world, BlockPos pos, Set<BlockPos> visited) {
         Queue<BlockPos> queue = new ArrayDeque<>();
         Map<Direction.Axis, Integer> axisCount = new EnumMap<>(Direction.Axis.class);
         queue.add(pos);
@@ -112,7 +178,7 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
                 .orElse(Direction.Axis.Z); // Default to Z axis if no connections
-    }
+    }*/
 
     public List<Direction> getConnectedFaces(BlockState state) {
         List<Direction> directions = new ArrayList<>();
@@ -132,19 +198,16 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
     }
 
     public boolean isConnected(Level world, BlockPos pos, Direction facing) {
-        BlockPos adjacentPos = pos.relative(facing);
-        BlockState adjacentState = world.getBlockState(adjacentPos);
-        return adjacentState.getBlock() instanceof TubeConnection;
+        return canConnect(world, pos, facing);
     }
 
     public boolean canConnect(LevelAccessor world, BlockPos pos, Direction facing) {
         return world.getBlockState(pos.relative(facing)).getBlock() instanceof TubeConnection;
     }
 
-    // Helper method to determine if a direction belongs to an axis
-    private boolean isDirectionInAxis(Direction direction, Direction.Axis axis) {
+/*    private boolean isDirectionInAxis(Direction direction, Direction.Axis axis) {
         return direction.getAxis() == axis;
-    }
+    }*/
 
     @Override
     public Class<HypertubeBlockEntity> getBlockEntityClass() {
@@ -194,7 +257,6 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
         return super.playerWillDestroy(level, pos, state, player);
     }
 
-
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
@@ -225,7 +287,11 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
 
         hypertubeEntity.setConnectionFrom(connectionFrom);
 
-        level.setBlockAndUpdate(pos, getState(level, pos));
-    }
 
+        if (!level.isClientSide()
+            && level.getBlockState(pos).getBlock() instanceof HypertubeBlock hypertubeBlock) {
+            hypertubeBlock.updateBlockState(level, pos, hypertubeBlock.getState(List.of(finalDirection)));
+        }
+
+    }
 }

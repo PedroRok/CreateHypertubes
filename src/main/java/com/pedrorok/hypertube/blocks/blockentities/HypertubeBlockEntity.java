@@ -45,6 +45,11 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
 
     public void setConnectionTo(BezierConnection connection) {
         this.connectionTo = connection;
+        if (level != null && !level.isClientSide()) {
+            if (level.getBlockState(worldPosition).getBlock() instanceof HypertubeBlock hypertubeBlock) {
+                hypertubeBlock.updateBlockStateFromEntity(level, worldPosition);
+            }
+        }
         setChanged();
 
         sync();
@@ -144,8 +149,6 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
         CompoundTag tag = pkt.getTag();
         loadAdditional(tag, registries);
     }
-
-
 
     @Override
     public void transform(BlockEntity blockEntity, StructureTransform transform) {
