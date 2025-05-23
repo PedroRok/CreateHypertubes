@@ -9,14 +9,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.HashMap;
@@ -27,7 +26,6 @@ import java.util.UUID;
  * @author Rok, Pedro Lucas nmm. Created on 22/04/2025
  * @project Create Hypertube
  */
-@EventBusSubscriber(modid = HypertubeMod.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
 public class TravelManager {
 
     public static final String TRAVEL_TAG = "hypertube_travel";
@@ -53,27 +51,32 @@ public class TravelManager {
 
 
     public static void removePlayerFromTravel(Player player) {
-        //if (!travelDataMap.containsKey(player.getUUID())) return;
         travelDataMap.remove(player.getUUID());
         player.getPersistentData().putBoolean(TRAVEL_TAG, false);
         player.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
         PacketDistributor.sendToPlayer((ServerPlayer) player, new ISyncPersistentData.PersistentDataPacket(player));
+        player.refreshDimensions();
     }
 
-    @SubscribeEvent
-    public static void playerTick(PlayerTickEvent.Post tickEvent) {
-        Player entity = tickEvent.getEntity();
-        if (entity.level().isClientSide) {
-            handleClient(entity);
+    public static void playerTick(Player player) {
+        handleCommon(player);
+        if (player.level().isClientSide) {
+            handleClient(player);
             return;
         }
-        handleServer(entity);
+        handleServer(player);
+    }
+
+    private static void handleCommon(Player player) {
+        if (hasHyperTubeData(player)) {
+            player.refreshDimensions();
+        }
     }
 
     @OnlyIn(Dist.CLIENT)
     private static void handleClient(Player player) {
         Minecraft mc = Minecraft.getInstance();
-        if ((!player.getPersistentData().getBoolean(TRAVEL_TAG)
+        if ((!hasHyperTubeData(player)
              || mc.options.getCameraType().isFirstPerson())) {
             DetachedCameraController.get().setDetached(false);
             return;
@@ -82,7 +85,6 @@ public class TravelManager {
             DetachedCameraController.get().startCamera(player);
             DetachedCameraController.get().setDetached(true);
         }
-
     }
 
     private static void handleServer(Player player) {
@@ -101,6 +103,7 @@ public class TravelManager {
             Vec3 lastDir = travelData.getLastDir().scale(3);
             player.teleportRelative(lastDir.x, lastDir.y, lastDir.z);
             player.setDeltaMovement(travelData.getLastDir().scale(travelData.getSpeed() + 0.5));
+            player.setPose(Pose.CROUCHING);
             player.hurtMarked = true;
             return;
         }
@@ -119,5 +122,8 @@ public class TravelManager {
         }
     }
 
+    public static boolean hasHyperTubeData(Entity player) {
+        return player.getPersistentData().getBoolean(TRAVEL_TAG);
+    }
 
 }

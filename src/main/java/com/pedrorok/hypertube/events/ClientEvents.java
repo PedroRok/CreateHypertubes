@@ -34,19 +34,6 @@ public class ClientEvents {
     private static void onTick() {
         if (!isGameActive()) return;
         TubePlacement.clientTick();
-        tickPlayer();
-    }
-
-    private static void tickPlayer() {
-        Player player = Minecraft.getInstance().player;
-        CompoundTag persistentData = player.getPersistentData();
-        if (persistentData.getBoolean(TravelManager.TRAVEL_TAG)) {
-            if (!player.isFallFlying())
-                player.startFallFlying();
-        } else if (persistentData.contains(TravelManager.TRAVEL_TAG)) {
-            player.stopFallFlying();
-            persistentData.remove(TravelManager.TRAVEL_TAG);
-        }
     }
 
 
