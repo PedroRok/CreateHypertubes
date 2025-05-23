@@ -87,7 +87,7 @@ public class ClientEvents {
         poseStack.pushPose();
         poseStack.translate(0,0.2,0);
         poseStack.mulPose(Axis.YP.rotationDegrees(-player.getYRot()));
-        poseStack.mulPose(Axis.XP.rotationDegrees(player.getXRot()+ 80));
+        poseStack.mulPose(Axis.XP.rotationDegrees(player.getXRot()+ 90));
         poseStack.mulPose(Axis.YP.rotationDegrees(player.getYRot()));
         poseStack.translate(0, -0.5, 0);
         poseStack.scale(0.9f,0.9f,0.9f);

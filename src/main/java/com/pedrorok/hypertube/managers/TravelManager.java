@@ -41,6 +41,7 @@ public class TravelManager {
         if (playerPersistData.contains(LAST_TRAVEL_TIME) &&
             playerPersistData.getLong(LAST_TRAVEL_TIME) > System.currentTimeMillis()) return;
         playerPersistData.putBoolean(TRAVEL_TAG, true);
+        player.setNoGravity(true);
 
         PacketDistributor.sendToPlayer(player, new ISyncPersistentData.PersistentDataPacket(player));
         BlockPos relative = pos.relative(state.getValue(HyperEntranceBlock.FACING));
@@ -104,6 +105,7 @@ public class TravelManager {
             player.teleportRelative(lastDir.x, lastDir.y, lastDir.z);
             player.setDeltaMovement(travelData.getLastDir().scale(travelData.getSpeed() + 0.5));
             player.setPose(Pose.CROUCHING);
+            player.setNoGravity(false);
             player.hurtMarked = true;
             return;
         }

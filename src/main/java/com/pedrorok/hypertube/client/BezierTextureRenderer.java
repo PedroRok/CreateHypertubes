@@ -9,16 +9,14 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -64,20 +62,18 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
         poseStack.translate(-blockPos.x, -blockPos.y, -blockPos.z);
 
         Matrix4f pose = poseStack.last().pose();
-        Matrix3f normal = poseStack.last().normal();
-
-        //float totalLength = calculateTotalLength(bezierPoints);
+        Level level = blockEntity.getLevel();
 
         VertexConsumer builderExterior = bufferSource.getBuffer(RenderType.entityTranslucentCull(textureLocation));
-        renderTubeSegments(bezierPoints, builderExterior, pose, normal, packedLight, packedOverlay, false);
+        renderTubeSegments(bezierPoints, builderExterior, pose, level, packedLight, packedOverlay, false);
 
         VertexConsumer builderInterior = bufferSource.getBuffer(RenderType.entityTranslucent(textureLocation));
-        renderTubeSegments(bezierPoints, builderInterior, pose, normal, packedLight, packedOverlay, true);
+        renderTubeSegments(bezierPoints, builderInterior, pose, level, packedLight, packedOverlay, true);
 
         poseStack.popPose();
     }
 
-    private void renderTubeSegments(List<Vec3> points, VertexConsumer builder, Matrix4f pose, Matrix3f normalMatrix, int packedLight, int packedOverlay, boolean isInterior) {
+    private void renderTubeSegments(List<Vec3> points, VertexConsumer builder, Matrix4f pose, Level level, int packedLight, int packedOverlay, boolean isInterior) {
         float currentDistance = 0;
         float radius = isInterior ? INNER_TUBE_RADIUS : TUBE_RADIUS;
 
@@ -92,7 +88,7 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
 
             Vec3 dirNormalized = direction.normalize();
 
-            Vector3f dirVector = new Vector3f((float)dirNormalized.x, (float)dirNormalized.y, (float)dirNormalized.z);
+            Vector3f dirVector = new Vector3f((float) dirNormalized.x, (float) dirNormalized.y, (float) dirNormalized.z);
             Vector3f perpA = findPerpendicularVector(dirVector);
             Vector3f perpB = new Vector3f();
             perpA.cross(dirVector, perpB);
@@ -129,9 +125,9 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
 
     private void addVertex(VertexConsumer builder, Matrix4f pose,
                            Vec3 pos, Vector3f offset, float u, float v, int light, int overlay, boolean invertLight) {
-        float x = (float)pos.x + offset.x;
-        float y = (float)pos.y + offset.y;
-        float z = (float)pos.z + offset.z;
+        float x = (float) pos.x + offset.x;
+        float y = (float) pos.y + offset.y;
+        float z = (float) pos.z + offset.z;
 
         float radius = invertLight ? INNER_TUBE_RADIUS : TUBE_RADIUS;
 
