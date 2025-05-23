@@ -5,11 +5,11 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "create_hypertube.refmap.json",
   "mixins": [
+    "PlayerModelMixin"
   ],
   "client": [
     "CameraAccessorMixin",
     "CameraMixin",
-    "PlayerModelMixin",
     "PlayerMovementMixin"
   ],
   "injectors": {

@@ -2,15 +2,15 @@ package com.pedrorok.hypertube.events;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import com.pedrorok.hypertube.camera.DetachedCameraController;
 import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.managers.placement.TubePlacement;
-import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -18,6 +18,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 23/04/2025
@@ -75,4 +76,29 @@ public class ClientEvents {
         DetachedCameraController.get().updateCameraRotation((float) (dx * factor), (float) (dy * factor), true);
     }
 
+    @SubscribeEvent
+    public static void onRenderPlayer(RenderPlayerEvent.Pre event) {
+        Player player = event.getEntity();
+        if (!player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
+
+
+        PoseStack poseStack = event.getPoseStack();
+
+        poseStack.pushPose();
+        poseStack.translate(0,0.2,0);
+        poseStack.mulPose(Axis.YP.rotationDegrees(-player.getYRot()));
+        poseStack.mulPose(Axis.XP.rotationDegrees(player.getXRot()+ 80));
+        poseStack.mulPose(Axis.YP.rotationDegrees(player.getYRot()));
+        poseStack.translate(0, -0.5, 0);
+        poseStack.scale(0.9f,0.9f,0.9f);
+    }
+
+    @SubscribeEvent
+    public static void onRenderPlayerPost(RenderPlayerEvent.Post event) {
+        Player player = event.getEntity();
+        if (!player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
+
+        event.getPoseStack().popPose();
+
+    }
 }

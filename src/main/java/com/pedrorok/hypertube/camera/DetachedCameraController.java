@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.camera;
 
+import com.simibubi.create.content.trains.CameraDistanceModifier;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.util.Mth;

@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * @author Rok, Pedro Lucas nmm. Created on 22/04/2025
+ * @author Rok, Pedro Lucas nmm. Created on 23/05/2025
  * @project Create Hypertube
  */
 @Mixin(PlayerModel.class)
@@ -54,5 +54,9 @@ public abstract class PlayerModelMixin {
         model.body.xRot = 0;
         model.body.yRot = 0;
         model.body.zRot = 0;
+
+        model.head.xRot = -1.2F;
+        model.head.yRot = 0;
+        model.head.zRot = 0;
     }
 }
