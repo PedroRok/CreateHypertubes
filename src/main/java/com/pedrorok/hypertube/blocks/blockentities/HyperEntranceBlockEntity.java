@@ -31,6 +31,7 @@ public class HyperEntranceBlockEntity extends BlockEntity {
         if (nearbyPlayers.isEmpty()) return;
 
         ServerPlayer player = nearbyPlayers.get();
+        if (player.isShiftKeyDown()) return;
         TravelManager.tryStartTravel(player, pos, state);
     }
 

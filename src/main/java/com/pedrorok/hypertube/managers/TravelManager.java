@@ -33,7 +33,7 @@ public class TravelManager {
     public static final String TRAVEL_TAG = "hypertube_travel";
     public static final String LAST_TRAVEL_TIME = "last_travel_time";
 
-    public static final int DEFAULT_TRAVEL_TIME = 2000;
+    public static final int DEFAULT_TRAVEL_TIME = 200;
 
     private static final Map<UUID, TravelData> travelDataMap = new HashMap<>();
 
@@ -98,9 +98,9 @@ public class TravelManager {
             PacketDistributor.sendToPlayer((ServerPlayer) player, new ISyncPersistentData.PersistentDataPacket(player));
 
             // TODO: Persist velocity
-            Vec3 scale = player.getDeltaMovement().scale(2);
-            player.teleportRelative(scale.x, 0, scale.z);
-            player.setDeltaMovement(scale);
+            Vec3 lastDir = travelData.getLastDir().scale(3);
+            player.teleportRelative(lastDir.x, lastDir.y, lastDir.z);
+            player.setDeltaMovement(travelData.getLastDir().scale(travelData.getSpeed() + 0.5));
             player.hurtMarked = true;
             return;
         }
@@ -112,6 +112,10 @@ public class TravelManager {
             player.hurtMarked = true;
         } else {
             travelData.getNextTravelPoint();
+            if (travelData.getTravelPoint() == null) return;
+            travelData.getNextTravelPoint();
+            if (travelData.getTravelPoint() == null) return;
+            travelData.setLastDir(travelData.getTravelPoint().subtract(point).normalize());
         }
     }
 

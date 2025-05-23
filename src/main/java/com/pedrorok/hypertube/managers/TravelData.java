@@ -6,6 +6,7 @@ import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.managers.placement.BezierConnection;
 import com.pedrorok.hypertube.managers.placement.SimpleConnection;
 import lombok.Getter;
+import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -31,6 +32,10 @@ public class TravelData {
     @Getter
     private final float speed;
     private int travelIndex;
+
+    @Setter
+    @Getter
+    private Vec3 lastDir;
 
     public TravelData(BlockPos firstPipe, Level level, BlockPos entrancePos, float speed) {
         this.travelPoints = new ArrayList<>();
