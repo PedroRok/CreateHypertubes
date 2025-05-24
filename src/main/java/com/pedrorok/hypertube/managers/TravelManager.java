@@ -126,43 +126,34 @@ public class TravelManager {
 
         nextPoint = nextPoint.subtract(0, 0.25, 0);
 
-        // Calcular o segmento atual
         Vec3 segmentDirection = nextPoint.subtract(currentPoint).normalize();
         double segmentLength = currentPoint.distanceTo(nextPoint);
 
-        // Encontrar a posição atual do jogador projetada no segmento
         Vec3 toPlayer = playerPos.subtract(currentPoint);
         double currentProjection = toPlayer.dot(segmentDirection);
         currentProjection = Math.max(0, Math.min(segmentLength, currentProjection));
 
-        // Calcular onde o jogador deveria estar na linha
         Vec3 currentIdealPosition = currentPoint.add(segmentDirection.scale(currentProjection));
 
-        // Calcular a próxima posição ao longo do trajeto
         double nextProjection = currentProjection + speed;
 
         Vec3 targetPosition;
         Vec3 finalDirection;
         boolean shouldAdvanceWaypoint = false;
 
-        if (nextProjection >= segmentLength * 0.95) { // Começar transição um pouco antes do fim
-            // Preparar para transição para o próximo segmento
+        if (nextProjection >= segmentLength * 0.95) {
             shouldAdvanceWaypoint = true;
 
             Vec3 nextNextPoint = getNextPointPreview(travelData, 1);
             if (nextNextPoint != null) {
                 nextNextPoint = nextNextPoint.subtract(0, 0.25, 0);
 
-                // Calcular o overflow
                 double overflow = nextProjection - segmentLength;
 
-                // Direção do próximo segmento
                 Vec3 nextSegmentDirection = nextNextPoint.subtract(nextPoint).normalize();
 
-                // Posição alvo no próximo segmento
                 targetPosition = nextPoint.add(nextSegmentDirection.scale(overflow));
 
-                // Direção suavizada entre segmentos
                 double transitionFactor = Math.min(1.0, (nextProjection - segmentLength * 0.8) / (segmentLength * 0.2));
                 finalDirection = segmentDirection.add(nextSegmentDirection.subtract(segmentDirection).scale(transitionFactor)).normalize();
             } else {
@@ -170,27 +161,21 @@ public class TravelManager {
                 finalDirection = segmentDirection;
             }
         } else {
-            // Movimento normal ao longo do segmento atual
             targetPosition = currentPoint.add(segmentDirection.scale(nextProjection));
             finalDirection = segmentDirection;
         }
 
-        // Aplicar correção suave para manter o jogador na linha
         Vec3 idealMovement = targetPosition.subtract(currentIdealPosition);
         Vec3 actualMovement = targetPosition.subtract(playerPos);
 
-        // Se o jogador está muito fora da linha, aplicar correção mais forte
         double distanceFromLine = playerPos.distanceTo(currentIdealPosition);
-        double correctionStrength = Math.min(1.0, distanceFromLine * 2.0); // Correção proporcional
+        double correctionStrength = Math.min(1.0, distanceFromLine * 2.0);
 
-        // Misturar movimento ideal com correção
         Vec3 correctedMovement = idealMovement.add(actualMovement.subtract(idealMovement).scale(correctionStrength));
 
-        // Normalizar e aplicar velocidade
         if (correctedMovement.length() > 0.001) {
             Vec3 movementDirection = correctedMovement.normalize();
 
-            // Suavizar a direção com a direção do segmento para evitar oscilações
             double smoothingFactor = Math.max(0.3, 1.0 - distanceFromLine);
             movementDirection = movementDirection.add(finalDirection.subtract(movementDirection).scale(smoothingFactor)).normalize();
 
@@ -199,7 +184,6 @@ public class TravelManager {
             player.setDeltaMovement(finalDirection.scale(speed));
         }
 
-        // Avançar waypoint se necessário
         if (shouldAdvanceWaypoint) {
             travelData.getNextTravelPoint();
             if (travelData.getTravelPoint() != null) {
