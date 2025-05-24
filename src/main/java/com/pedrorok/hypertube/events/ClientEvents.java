@@ -10,7 +10,6 @@ import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -81,16 +80,15 @@ public class ClientEvents {
         Player player = event.getEntity();
         if (!player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
 
-
         PoseStack poseStack = event.getPoseStack();
 
         poseStack.pushPose();
-        poseStack.translate(0,0.2,0);
+        poseStack.translate(0, 0.2, 0);
         poseStack.mulPose(Axis.YP.rotationDegrees(-player.getYRot()));
-        poseStack.mulPose(Axis.XP.rotationDegrees(player.getXRot()+ 90));
+        poseStack.mulPose(Axis.XP.rotationDegrees(player.getXRot() + 90));
         poseStack.mulPose(Axis.YP.rotationDegrees(player.getYRot()));
         poseStack.translate(0, -0.5, 0);
-        poseStack.scale(0.9f,0.9f,0.9f);
+        poseStack.scale(0.9f, 0.9f, 0.9f);
     }
 
     @SubscribeEvent
