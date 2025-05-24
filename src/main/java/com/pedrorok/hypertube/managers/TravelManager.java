@@ -3,6 +3,7 @@ package com.pedrorok.hypertube.managers;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.camera.DetachedCameraController;
+import com.pedrorok.hypertube.events.PlayerSyncEvents;
 import com.pedrorok.hypertube.utils.MathUtils;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
 import net.minecraft.client.Minecraft;
@@ -49,6 +50,7 @@ public class TravelManager {
         TravelData travelData = new TravelData(relative, player.level(), pos, MathUtils.getMediumSpeed(player.getDeltaMovement()));
         HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", player.getName().getString(), relative, travelData.getSpeed());
         travelDataMap.put(player.getUUID(), travelData);
+        PlayerSyncEvents.syncPlayerStateToAll(player);
     }
 
 
@@ -58,12 +60,12 @@ public class TravelManager {
         player.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
         PacketDistributor.sendToPlayer((ServerPlayer) player, new ISyncPersistentData.PersistentDataPacket(player));
         player.refreshDimensions();
+        PlayerSyncEvents.syncPlayerStateToAll((ServerPlayer) player);
     }
 
     public static void playerTick(Player player) {
         handleCommon(player);
         if (player.level().isClientSide) {
-            handleClient(player);
             return;
         }
         handleServer(player);
@@ -75,20 +77,27 @@ public class TravelManager {
         }
     }
 
-    @OnlyIn(Dist.CLIENT)
-    private static void handleClient(Player player) {
-        Minecraft mc = Minecraft.getInstance();
-        if ((!hasHyperTubeData(player)
-             || mc.options.getCameraType().isFirstPerson())) {
-            DetachedCameraController.get().setDetached(false);
-            return;
-        }
-        if (!DetachedCameraController.get().isDetached()) {
-            DetachedCameraController.get().startCamera(player);
-            DetachedCameraController.get().setDetached(true);
-        }
-    }
+    private static void finishTravel(ServerPlayer player, TravelData travelData) {
 
+        PlayerSyncEvents.syncPlayerStateToAll(player);
+
+        travelDataMap.remove(player.getUUID());
+        player.getPersistentData().putBoolean(TRAVEL_TAG, false);
+        // --- NOTE: this is just to make easy to debug
+        player.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
+        // ---
+        PacketDistributor.sendToPlayer(player, new ISyncPersistentData.PersistentDataPacket(player));
+
+        // TODO: Persist velocity
+        Vec3 lastDir = travelData.getLastDir().scale(3);
+        player.teleportRelative(lastDir.x, lastDir.y, lastDir.z);
+        player.setDeltaMovement(travelData.getLastDir().scale(travelData.getSpeed() + 0.5));
+        player.setPose(Pose.CROUCHING);
+        player.hurtMarked = true;
+
+
+        PlayerSyncEvents.syncPlayerStateToAll(player);
+    }
 
     private static void handleServer(Player player) {
         if (!travelDataMap.containsKey(player.getUUID())) return;
@@ -96,19 +105,7 @@ public class TravelManager {
         Vec3 currentPoint = travelData.getTravelPoint();
 
         if (travelData.isFinished()) {
-            travelDataMap.remove(player.getUUID());
-            player.getPersistentData().putBoolean(TRAVEL_TAG, false);
-            // --- NOTE: this is just to make easy to debug
-            player.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
-            // ---
-            PacketDistributor.sendToPlayer((ServerPlayer) player, new ISyncPersistentData.PersistentDataPacket(player));
-
-            // TODO: Persist velocity
-            Vec3 lastDir = travelData.getLastDir().scale(3);
-            player.teleportRelative(lastDir.x, lastDir.y, lastDir.z);
-            player.setDeltaMovement(travelData.getLastDir().scale(travelData.getSpeed() + 0.5));
-            player.setPose(Pose.CROUCHING);
-            player.hurtMarked = true;
+            finishTravel((ServerPlayer) player, travelData);
             return;
         }
 

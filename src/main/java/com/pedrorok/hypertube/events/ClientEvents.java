@@ -64,7 +64,7 @@ public class ClientEvents {
     public static void onClientTick(ClientTickEvent.Post event) {
 
         Minecraft mc = Minecraft.getInstance();
-        if (!DetachedCameraController.get().isDetached() || mc.isPaused() || !mc.isWindowActive()) return;
+        if (mc.options.getCameraType().isFirstPerson() || mc.isPaused() || !mc.isWindowActive()) return;
 
         MouseHandler mouse = mc.mouseHandler;
         double dx = mouse.getXVelocity();

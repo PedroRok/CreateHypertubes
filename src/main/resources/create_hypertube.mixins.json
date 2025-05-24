@@ -6,12 +6,12 @@
   "refmap": "create_hypertube.refmap.json",
   "mixins": [
     "EntityTravelingMixin",
-    "PlayerModelMixin"
+    "PlayerModelMixin",
+    "PlayerMovementMixin"
   ],
   "client": [
     "CameraAccessorMixin",
-    "CameraMixin",
-    "PlayerMovementMixin"
+    "CameraMixin"
   ],
   "injectors": {
     "defaultRequire": 1

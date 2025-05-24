@@ -1,17 +1,18 @@
 package com.pedrorok.hypertube.camera;
 
-import com.simibubi.create.content.trains.CameraDistanceModifier;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 22/04/2025
  * @project Create Hypertube
  */
+@OnlyIn(Dist.CLIENT)
 public class DetachedCameraController {
 
     private static DetachedCameraController INSTANCE;
@@ -23,9 +24,6 @@ public class DetachedCameraController {
         return INSTANCE;
     }
 
-    @Getter
-    @Setter
-    private boolean detached = false;
     @Getter
     private float yaw = 0;
     @Getter
@@ -44,6 +42,10 @@ public class DetachedCameraController {
     private static final double SMOOTHING_ROTATION = 0.1;
 
     private float lastMouseMov = 0;
+
+    @Getter
+    @Setter
+    private boolean detached = false;
 
     private DetachedCameraController() {
     }
@@ -73,14 +75,14 @@ public class DetachedCameraController {
     }
 
     private float getCameraYaw(Vec3 entityPos, Vec3 cameraPos) {
-        Vec3 cameraToPlayerNormal = cameraPos.subtract(entityPos).multiply(1,0,1).normalize();
+        Vec3 cameraToPlayerNormal = cameraPos.subtract(entityPos).multiply(1, 0, 1).normalize();
         float yaw = (float) Math.toDegrees(Math.atan2(cameraToPlayerNormal.z, cameraToPlayerNormal.x)) + 90;
-        return (((yaw - this.yaw + 540) % 360) - 180 ) * (1 - Math.min(lastMouseMov, 1));
+        return (((yaw - this.yaw + 540) % 360) - 180) * (1 - Math.min(lastMouseMov, 1));
     }
 
     private float getCameraPitch() {
         // targe 30 degress ignoring player pos, only stay in 30 getting the actual pitch
-        return (((30 - this.pitch + 540) % 360) - 180)  * (1 - Math.min(lastMouseMov, 1));
+        return (((30 - this.pitch + 540) % 360) - 180) * (1 - Math.min(lastMouseMov, 1));
     }
 
     private Vec3 getRelativeCameraPos(Entity renderViewEntity) {
