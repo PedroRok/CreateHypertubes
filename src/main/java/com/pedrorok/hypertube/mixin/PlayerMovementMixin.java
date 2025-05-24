@@ -37,4 +37,5 @@ public abstract class PlayerMovementMixin {
         player.setYRot(yaw);
         player.setXRot(pitch);
     }
+
 }

@@ -26,16 +26,22 @@ import java.util.UUID;
  */
 public class TravelData {
 
+    @Getter
     private final List<Vec3> travelPoints;
     private final List<UUID> bezierConnections;
     private final List<BlockPos> blockConnections;
     @Getter
     private final float speed;
+    @Getter
     private int travelIndex;
 
     @Setter
     @Getter
     private Vec3 lastDir;
+
+    @Getter
+    @Setter
+    private boolean isFinished = false;
 
     public TravelData(BlockPos firstPipe, Level level, BlockPos entrancePos, float speed) {
         this.travelPoints = new ArrayList<>();
