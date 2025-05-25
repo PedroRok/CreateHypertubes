@@ -61,6 +61,13 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
     public @Nullable BlockState getStateForPlacement(@NotNull BlockPlaceContext context) {
         BlockState state = super.getStateForPlacement(context);
         if (state == null) return null;
+        for (Direction direction : Direction.values()) {
+            BlockPos relative = context.getClickedPos().relative(direction);
+            BlockState otherState = context.getLevel().getBlockState(relative);
+            if (otherState.getBlock() instanceof TubeConnection) {
+                return getState(Set.of(direction));
+            }
+        }
         return state.setValue(NORTH_SOUTH, false)
                 .setValue(EAST_WEST, false)
                 .setValue(UP_DOWN, false);
