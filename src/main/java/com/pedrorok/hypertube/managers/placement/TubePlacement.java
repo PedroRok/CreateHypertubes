@@ -32,6 +32,7 @@ import net.neoforged.api.distmarker.OnlyIn;
 public class TubePlacement {
 
     static BlockPos hoveringPos;
+    static boolean canPlace = false;
     static LerpedFloat animation = LerpedFloat.linear()
             .startWithValue(0);
 
@@ -80,7 +81,9 @@ public class TubePlacement {
         SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
         // Exception & visual
-        animation.setValue( !bezierConnection.isValid() ? 0.2 : 0.8);
+        boolean valid = bezierConnection.isValid();
+        animation.setValue( !valid ? 0.2 : 0.8);
+        canPlace = valid;
         bezierConnection.drawPath(animation);
     }
 
@@ -94,10 +97,15 @@ public class TubePlacement {
         SimpleConnection connection = mainHandItem.get(ModDataComponent.TUBE_CONNECTING_FROM);
         if (connection == null) return;
 
+        Minecraft mc = Minecraft.getInstance();
+        BlockState blockState = mc.level.getBlockState(connection.pos());
+        if (!(blockState.getBlock() instanceof HypertubeBlock)) return;
+        HypertubeBlock block = (HypertubeBlock) blockState.getBlock();
+
         VertexConsumer vb = buffer.getBuffer(RenderType.lines());
         ms.pushPose();
         ms.translate(connection.pos().getX() - camera.x, connection.pos().getY() - camera.y, connection.pos().getZ() - camera.z);
-        TrackBlockOutline.renderShape(HypertubeBlock.SHAPE_NORTH_SOUTH, ms, vb, false);
+        TrackBlockOutline.renderShape(block.getShape(blockState), ms, vb, canPlace);
         ms.popPose();
     }
 }

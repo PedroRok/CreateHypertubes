@@ -59,7 +59,6 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
     public void setConnectionFrom(SimpleConnection connectionFrom) {
         this.connectionFrom = connectionFrom;
         setChanged();
-
         sync();
     }
 
