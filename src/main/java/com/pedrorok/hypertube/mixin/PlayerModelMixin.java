@@ -47,9 +47,17 @@ public abstract class PlayerModelMixin {
         model.rightLeg.yRot = 0;
         model.rightLeg.zRot = 0;
 
+        model.rightPants.xRot = 0;
+        model.rightPants.yRot = 0;
+        model.rightPants.zRot = 0;
+
         model.leftLeg.xRot = 0;
         model.leftLeg.yRot = 0;
         model.leftLeg.zRot = 0;
+
+        model.leftPants.xRot = 0;
+        model.leftPants.yRot = 0;
+        model.leftPants.zRot = 0;
 
         model.body.xRot = 0;
         model.body.yRot = 0;
