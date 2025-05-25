@@ -30,7 +30,6 @@ public class ModBlocks {
     public static final BlockEntry<HypertubeBlock> HYPERTUBE = REGISTRATE.block("hypertube", HypertubeBlock::new)
             .item(HypertubeItem::new).build()
             .properties((a) -> PROPERTIES)
-
             .register();
 
     public static final BlockEntry<HyperEntranceBlock> HYPERTUBE_ENTRANCE = REGISTRATE.block("hypertube_entrance", HyperEntranceBlock::new)
