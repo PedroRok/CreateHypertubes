@@ -175,7 +175,7 @@ public class TravelManager {
         if (correctedMovement.length() > 0.001) {
             Vec3 movementDirection = correctedMovement.normalize();
 
-            double smoothingFactor = Math.max(0.3, 1.0 - distanceFromLine);
+            double smoothingFactor = Math.max(0.3, 0.5 - distanceFromLine);
             movementDirection = movementDirection.add(finalDirection.subtract(movementDirection).scale(smoothingFactor)).normalize();
 
             player.setDeltaMovement(movementDirection.scale(speed));
