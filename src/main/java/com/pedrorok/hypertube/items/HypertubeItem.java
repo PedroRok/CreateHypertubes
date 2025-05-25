@@ -88,7 +88,7 @@ public class HypertubeItem extends BlockItem {
         boolean success = true;
 
         if (isHypertubeClicked) {
-            Optional<HypertubeBlockEntity> blockEntity = level.getBlockEntity(pos, ModBlockEntities.HYPERTUBE_ENTITY.get());
+            Optional<HypertubeBlockEntity> blockEntity = level.getBlockEntity(pos, ModBlockEntities.HYPERTUBE.get());
             if (blockEntity.isPresent()) {
                 success = handleHypertubeClicked(blockEntity.get(), player, simpleConnection, pos, direction, level, stack);
             }

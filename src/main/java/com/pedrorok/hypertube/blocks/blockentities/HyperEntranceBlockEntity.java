@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -20,8 +21,8 @@ public class HyperEntranceBlockEntity extends BlockEntity {
 
     private static final float RADIUS = 1.0f;
 
-    public HyperEntranceBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.HYPERTUBE_ENTRANCE_ENTITY.get(), pos, state);
+    public HyperEntranceBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
     }
 
     public static <T extends BlockEntity> void tick(Level level, BlockPos pos, BlockState state, T t) {

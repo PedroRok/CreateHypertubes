@@ -4,7 +4,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.TransparentBlock;
@@ -18,15 +17,6 @@ import org.jetbrains.annotations.NotNull;
  * @project Create Hypertube
  */
 public abstract class HypertubeBaseBlock extends TransparentBlock {
-
-    public static final Properties PROPERTIES = Properties.of()
-            .destroyTime(2.0f)
-            .dynamicShape()
-            .explosionResistance(10.0f)
-            .sound(SoundType.METAL)
-            .noOcclusion()
-            .isViewBlocking((state, level, pos) -> false)
-            .isSuffocating((state, level, pos) -> false);
 
     public HypertubeBaseBlock(Properties properties) {
         super(properties);

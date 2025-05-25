@@ -29,8 +29,8 @@ public class ModClientEvents {
 
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerBlockEntityRenderer(ModBlockEntities.HYPERTUBE_ENTITY.get(),
-                context -> new BezierTextureRenderer<>(context, TUBE_TEXTURE));
+        //event.registerBlockEntityRenderer(ModBlockEntities.HYPERTUBE.get(),
+        //        context -> new BezierTextureRenderer<>(context, TUBE_TEXTURE));
     }
 
 

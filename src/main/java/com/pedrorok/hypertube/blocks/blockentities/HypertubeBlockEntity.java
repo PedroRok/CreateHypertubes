@@ -21,6 +21,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.api.distmarker.Dist;
@@ -39,8 +40,8 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
     private BezierConnection connectionTo;
     private SimpleConnection connectionFrom;
 
-    public HypertubeBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.HYPERTUBE_ENTITY.get(), pos, state);
+    public HypertubeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
     }
 
     public void setConnectionTo(BezierConnection connection) {

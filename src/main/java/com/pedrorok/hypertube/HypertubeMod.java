@@ -1,6 +1,9 @@
 package com.pedrorok.hypertube;
 
 import com.pedrorok.hypertube.registry.*;
+import com.simibubi.create.foundation.data.CreateRegistrate;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.CreativeModeTab;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -18,17 +21,25 @@ public class HypertubeMod {
     public static final String MOD_ID = "create_hypertube";
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
+    public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(HypertubeMod.MOD_ID);
+
     public HypertubeMod(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.addListener(this::commonSetup);
 
-        ModBlocks.register(modEventBus);
-        ModItems.register(modEventBus);
+        REGISTRATE.registerEventListeners(modEventBus);
+
+        ModBlocks.register();
+        ModBlockEntities.register();
+
         ModCreativeTab.register(modEventBus);
-        ModBlockEntities.register(modEventBus);
         ModDataComponent.register(modEventBus);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
 
+    }
+
+    public static CreateRegistrate get() {
+        return REGISTRATE;
     }
 }

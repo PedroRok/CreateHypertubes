@@ -2,6 +2,7 @@ package com.pedrorok.hypertube.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.IBezierProvider;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.managers.placement.BezierConnection;
@@ -38,9 +39,9 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
     private final BlockEntityRendererProvider.Context context;
     private final ResourceLocation textureLocation;
 
-    public BezierTextureRenderer(BlockEntityRendererProvider.Context context, ResourceLocation textureLocation) {
+    public BezierTextureRenderer(BlockEntityRendererProvider.Context context) {
         this.context = context;
-        this.textureLocation = textureLocation;
+        this.textureLocation = ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "textures/block/entity_tube_base.png");
     }
 
     @Override
