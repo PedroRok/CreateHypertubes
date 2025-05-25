@@ -21,7 +21,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -32,7 +31,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 21/05/2025
@@ -171,30 +173,6 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
         }
     }
 
-/*    private Direction.Axis findDominantAxis(Level world, BlockPos pos, Set<BlockPos> visited) {
-        Queue<BlockPos> queue = new ArrayDeque<>();
-        Map<Direction.Axis, Integer> axisCount = new EnumMap<>(Direction.Axis.class);
-        queue.add(pos);
-        visited.add(pos);
-
-        while (!queue.isEmpty()) {
-            BlockPos current = queue.poll();
-            for (Direction direction : Direction.values()) {
-                BlockPos adjacent = current.relative(direction);
-                if (visited.contains(adjacent)) continue;
-                if (!(world.getBlockState(adjacent).getBlock() instanceof TubeConnection)) continue;
-                visited.add(adjacent);
-                queue.add(adjacent);
-                axisCount.put(direction.getAxis(), axisCount.getOrDefault(direction.getAxis(), 0) + 1);
-            }
-        }
-
-        return axisCount.entrySet().stream()
-                .max(Map.Entry.comparingByValue())
-                .map(Map.Entry::getKey)
-                .orElse(Direction.Axis.Z); // Default to Z axis if no connections
-    }*/
-
     public List<Direction> getConnectedFaces(BlockState state) {
         List<Direction> directions = new ArrayList<>();
         if (state.getValue(NORTH_SOUTH)) {
@@ -227,17 +205,13 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
         Block block = otherState.getBlock();
         return block instanceof TubeConnection
                && (!(block instanceof HypertubeBlock hypertubeBlock)
-                || canOtherConnectTo(world, relative, hypertubeBlock, facing));
+                   || canOtherConnectTo(world, relative, hypertubeBlock, facing));
     }
 
     private boolean canOtherConnectTo(LevelAccessor world, BlockPos otherPos, HypertubeBlock otherTube, Direction facing) {
         List<Direction> connectedFaces = otherTube.getConnectedFaces(otherTube.getState((Level) world, otherPos));
         return connectedFaces.isEmpty() || connectedFaces.contains(facing);
     }
-
-/*    private boolean isDirectionInAxis(Direction direction, Direction.Axis axis) {
-        return direction.getAxis() == axis;
-    }*/
 
     @Override
     public Class<HypertubeBlockEntity> getBlockEntityClass() {
@@ -252,11 +226,6 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
     @Override
     public BlockEntity newBlockEntity(BlockPos blockPos, BlockState state) {
         return ModBlockEntities.HYPERTUBE_ENTITY.get().create(blockPos, state);
-    }
-
-    @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return type == ModBlockEntities.HYPERTUBE_ENTITY.get() ? HypertubeBlockEntity::tick : null;
     }
 
     @Override
@@ -283,7 +252,6 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
                 otherHypertubeEntity.setConnectionFrom(null);
             }
         }
-
         return super.playerWillDestroy(level, pos, state, player);
     }
 
@@ -337,6 +305,5 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
             && level.getBlockState(pos).getBlock() instanceof HypertubeBlock hypertubeBlock) {
             hypertubeBlock.updateBlockState(level, pos, hypertubeBlock.getState(List.of(finalDirection)));
         }
-
     }
 }

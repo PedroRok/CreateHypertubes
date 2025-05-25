@@ -22,9 +22,7 @@ public class ModClientEvents {
 
     @SubscribeEvent
     public static void forgeLoad(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> {
-            setupRenderTypes();
-        });
+        event.enqueueWork(ModClientEvents::setupRenderTypes);
     }
 
     public static final ResourceLocation TUBE_TEXTURE = ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "textures/block/entity_tube_base.png");

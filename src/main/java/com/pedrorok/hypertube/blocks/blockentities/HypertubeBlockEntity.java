@@ -72,21 +72,6 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
         }
     }
 
-    public static <T extends BlockEntity> void tick(Level level, BlockPos pos, BlockState state, T t) {
-        //if (!level.isClientSide) return;
-        // NOTE: THIS IS TEMPORARY
-        //if (t == null) return;
-        //if (!(t instanceof HypertubeBlockEntity tubeEntity)) return;
-
-
-        //if (tubeEntity.getConnectionTo() == null) return;
-        //if (!tubeEntity.getConnectionTo().isValid()) return;
-        //tubeEntity.getConnectionTo().drawPath(LerpedFloat.linear()
-        //        .startWithValue(0));
-    }
-
-
-
     @Override
     protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
         super.saveAdditional(tag, registries);

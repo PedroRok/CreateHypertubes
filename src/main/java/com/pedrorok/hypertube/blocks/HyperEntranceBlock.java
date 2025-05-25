@@ -6,13 +6,11 @@ import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.utils.VoxelUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
-import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -58,11 +56,6 @@ public class HyperEntranceBlock extends HypertubeBaseBlock implements EntityBloc
     }
 
     @Override
-    public @NotNull RenderShape getRenderShape(@NotNull BlockState state) {
-        return RenderShape.MODEL;
-    }
-
-    @Override
     public VoxelShape getShape(BlockState state, @Nullable CollisionContext ctx) {
         if (ctx instanceof EntityCollisionContext ecc
             && ecc.getEntity() != null
@@ -94,6 +87,6 @@ public class HyperEntranceBlock extends HypertubeBaseBlock implements EntityBloc
     public boolean canTravelConnect(LevelAccessor world, BlockPos pos, Direction facing) {
         BlockState state = world.getBlockState(pos);
         return facing.getOpposite() == state.getValue(FACING)
-            && state.getBlock() instanceof HyperEntranceBlock;
+               && state.getBlock() instanceof HyperEntranceBlock;
     }
 }
