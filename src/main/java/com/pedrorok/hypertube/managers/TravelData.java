@@ -1,7 +1,9 @@
 package com.pedrorok.hypertube.managers;
 
 
+import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
+import com.pedrorok.hypertube.blocks.TubeConnection;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.managers.placement.BezierConnection;
 import com.pedrorok.hypertube.managers.placement.SimpleConnection;
@@ -67,7 +69,9 @@ public class TravelData {
         for (Direction direction : connectedFaces) {
             BlockPos nextPipe = pos.relative(direction);
             if (blockConnections.contains(nextPipe)) continue;
-            if (!(level.getBlockEntity(nextPipe) instanceof HypertubeBlockEntity)) continue;
+            if (!(level.getBlockState(nextPipe).getBlock() instanceof TubeConnection connection)) continue;
+            if (!connection.canTravelConnect(level, nextPipe, direction)
+                && (level.getBlockEntity(nextPipe) instanceof HypertubeBlockEntity tubeEntity && !tubeEntity.isConnected())) continue;
             travelPoints.add(nextPipe.getCenter());
             blockConnections.add(nextPipe);
             addTravelPoint(nextPipe, level);
@@ -104,7 +108,7 @@ public class TravelData {
         bezierConnections.add(connection.getUuid());
         BlockPos toPos = connection.getToPos().pos();
         BlockPos fromPos = connection.getFromPos().pos();
-        blockConnections.add(inverse ? fromPos :toPos);
+        blockConnections.add(inverse ? fromPos : toPos);
         blockConnections.add(inverse ? toPos : fromPos);
         addTravelPoint(inverse ? fromPos : toPos, level);
         return true;

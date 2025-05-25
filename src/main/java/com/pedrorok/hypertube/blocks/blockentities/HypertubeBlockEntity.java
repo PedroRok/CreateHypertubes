@@ -62,6 +62,10 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
         sync();
     }
 
+    public boolean isConnected() {
+        return connectionTo != null || connectionFrom != null;
+    }
+
     public void sync() {
         if (level != null && !level.isClientSide) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_ALL);

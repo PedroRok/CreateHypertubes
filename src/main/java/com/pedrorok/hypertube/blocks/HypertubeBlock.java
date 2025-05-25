@@ -129,11 +129,11 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
         boolean northSouth = activeDirections.contains(Direction.NORTH) || activeDirections.contains(Direction.SOUTH);
         boolean eastWest = activeDirections.contains(Direction.EAST) || activeDirections.contains(Direction.WEST);
         boolean upDown = activeDirections.contains(Direction.UP) || activeDirections.contains(Direction.DOWN);
-
+        // only one axis can be true at a time
         return defaultBlockState()
                 .setValue(NORTH_SOUTH, northSouth)
-                .setValue(EAST_WEST, eastWest)
-                .setValue(UP_DOWN, upDown);
+                .setValue(EAST_WEST, eastWest && !northSouth)
+                .setValue(UP_DOWN, upDown && !northSouth && !eastWest);
     }
 
     private BlockState getState(Level world, BlockPos pos) {
@@ -143,8 +143,8 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
 
         return defaultBlockState()
                 .setValue(NORTH_SOUTH, northSouth)
-                .setValue(EAST_WEST, eastWest)
-                .setValue(UP_DOWN, upDown);
+                .setValue(EAST_WEST, eastWest && !northSouth)
+                .setValue(UP_DOWN, upDown && !northSouth && !eastWest);
     }
 
     public void updateBlockStateFromEntity(Level world, BlockPos pos) {
@@ -211,6 +211,21 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
 
     public boolean canConnect(LevelAccessor world, BlockPos pos, Direction facing) {
         return world.getBlockState(pos.relative(facing)).getBlock() instanceof TubeConnection;
+    }
+
+    @Override
+    public boolean canTravelConnect(LevelAccessor world, BlockPos posSelf, Direction facing) {
+        BlockPos relative = posSelf.relative(facing);
+        BlockState otherState = world.getBlockState(relative);
+        Block block = otherState.getBlock();
+        return block instanceof TubeConnection
+               && (!(block instanceof HypertubeBlock hypertubeBlock)
+                || canOtherConnectTo(world, relative, hypertubeBlock, facing));
+    }
+
+    private boolean canOtherConnectTo(LevelAccessor world, BlockPos otherPos, HypertubeBlock otherTube, Direction facing) {
+        List<Direction> connectedFaces = otherTube.getConnectedFaces(otherTube.getState((Level) world, otherPos));
+        return connectedFaces.isEmpty() || connectedFaces.contains(facing);
     }
 
 /*    private boolean isDirectionInAxis(Direction direction, Direction.Axis axis) {

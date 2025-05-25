@@ -38,12 +38,19 @@ public class TravelManager {
         if (playerPersistData.getBoolean(TRAVEL_TAG)) return;
         if (playerPersistData.contains(LAST_TRAVEL_TIME) &&
             playerPersistData.getLong(LAST_TRAVEL_TIME) > System.currentTimeMillis()) return;
-        playerPersistData.putBoolean(TRAVEL_TAG, true);
         //player.setNoGravity(true);
 
-        PacketDistributor.sendToPlayer(player, new ISyncPersistentData.PersistentDataPacket(player));
         BlockPos relative = pos.relative(state.getValue(HyperEntranceBlock.FACING));
         TravelData travelData = new TravelData(relative, player.level(), pos, MathUtils.getMediumSpeed(player.getDeltaMovement()));
+
+        if (travelData.getTravelPoints().size() < 3) {
+            // TODO: Handle error
+            return;
+        }
+
+        playerPersistData.putBoolean(TRAVEL_TAG, true);
+        PacketDistributor.sendToPlayer(player, new ISyncPersistentData.PersistentDataPacket(player));
+
         HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", player.getName().getString(), relative, travelData.getSpeed());
         travelDataMap.put(player.getUUID(), travelData);
         PlayerSyncEvents.syncPlayerStateToAll(player);
