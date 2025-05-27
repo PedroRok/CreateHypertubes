@@ -4,7 +4,9 @@ import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.items.HypertubeItem;
 import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.managers.placement.BezierConnection;
+import com.pedrorok.hypertube.managers.placement.ResponseDTO;
 import com.pedrorok.hypertube.managers.placement.SimpleConnection;
+import com.pedrorok.hypertube.managers.placement.TubePlacement;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModDataComponent;
@@ -277,10 +279,18 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
 
         HypertubeItem.clearConnection(stack);
-        if (!bezierConnection.getValidation().valid()) {
-            MessageUtils.sendActionMessage(player, "§c"+bezierConnection.getValidation().errorMessage());
+
+        ResponseDTO validation = bezierConnection.getValidation();
+        if (validation.valid()) {
+            validation = TubePlacement.checkSurvivalItems(player, (int) bezierConnection.distance(), true);
+        }
+
+        if (!validation.valid()) {
+            MessageUtils.sendActionMessage(player, "§c" + validation.errorMessage());
             return;
         }
+        TubePlacement.checkSurvivalItems(player, (int) bezierConnection.distance(), false);
+
 
         BlockEntity otherBlockEntity = level.getBlockEntity(connectionFrom.pos());
         boolean inverted = false;

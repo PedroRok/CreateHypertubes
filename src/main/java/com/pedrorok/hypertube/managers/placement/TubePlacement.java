@@ -16,7 +16,9 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -26,8 +28,6 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-
-import java.awt.*;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 23/04/2025
@@ -87,7 +87,13 @@ public class TubePlacement {
 
         // Exception & visual
         ResponseDTO response = bezierConnection.getValidation();
-        animation.setValue( !response.valid() ? 0.2 : 0.8);
+
+        if (response.valid()) {
+            response = checkSurvivalItems(player, (int) bezierConnection.distance(), true);
+        }
+
+        animation.setValue(!response.valid() ? 0.2 : 0.8);
+
         canPlace = response.valid();
         bezierConnection.drawPath(animation);
 
@@ -98,6 +104,53 @@ public class TubePlacement {
         MessageUtils.sendActionMessage(player, "");
     }
 
+
+    public static ResponseDTO checkSurvivalItems(Player player, int neededTubes, boolean simulate) {
+        if (!player.isCreative()
+            && !checkPlayerInventory(player, neededTubes, simulate)) {
+            return ResponseDTO.invalid("§cYou don't have enough tubes in your inventory!");
+        }
+        return ResponseDTO.get(true);
+    }
+
+    private static boolean checkPlayerInventory(Player player, int neededTubes, boolean simulate) {
+
+        int foundTracks = 0;
+
+        Inventory inv = player.getInventory();
+        int size = inv.items.size();
+        for (int j = 0; j <= size + 1; j++) {
+            int i = j;
+            boolean offhand = j == size + 1;
+            if (j == size)
+                i = inv.selected;
+            else if (offhand)
+                i = 0;
+            else if (j == inv.selected)
+                continue;
+
+            ItemStack stackInSlot = (offhand ? inv.offhand : inv.items).get(i);
+            boolean isTrack = ModBlocks.HYPERTUBE.asStack().is(stackInSlot.getItem());
+            if (!isTrack)
+                continue;
+            if (foundTracks >= neededTubes)
+                continue;
+
+            int count = stackInSlot.getCount();
+
+            if (!simulate) {
+                int remainingItems =
+                        count - Math.min(neededTubes - foundTracks, count);
+                ItemStack newItem = stackInSlot.copyWithCount(remainingItems);
+                if (offhand)
+                    player.setItemInHand(InteractionHand.OFF_HAND, newItem);
+                else
+                    inv.setItem(i, newItem);
+            }
+            foundTracks += count;
+        }
+        return foundTracks >= neededTubes;
+    }
 
 
     @OnlyIn(Dist.CLIENT)

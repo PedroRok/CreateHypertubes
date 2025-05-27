@@ -6,6 +6,7 @@ import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.managers.placement.BezierConnection;
 import com.pedrorok.hypertube.managers.placement.ResponseDTO;
 import com.pedrorok.hypertube.managers.placement.SimpleConnection;
+import com.pedrorok.hypertube.managers.placement.TubePlacement;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModDataComponent;
 import com.pedrorok.hypertube.utils.MessageUtils;
@@ -131,12 +132,21 @@ public class HypertubeItem extends BlockItem {
                 usingConnectingTo ? simpleConnection : new SimpleConnection(pos, direction),
                 usingConnectingTo ? new SimpleConnection(pos, direction.getOpposite()) : new SimpleConnection(simpleConnection.pos(), simpleConnection.direction().getOpposite()));
 
-        connection.drawPath(LerpedFloat.linear()
-                .startWithValue(0));
-        if (!connection.getValidation().valid()) {
-            player.displayClientMessage(Component.literal(connection.getValidation().errorMessage()), true);
+
+        ResponseDTO validation = connection.getValidation();
+        if (validation.valid()) {
+            validation = TubePlacement.checkSurvivalItems(player, (int) connection.distance(), true);
+        }
+
+
+        if (!validation.valid()) {
+            player.displayClientMessage(Component.literal(validation.errorMessage()), true);
             return false;
         }
+        TubePlacement.checkSurvivalItems(player, (int) connection.distance(), false);
+
+        connection.drawPath(LerpedFloat.linear()
+                .startWithValue(0));
 
         if (usingConnectingTo) {
             tubeEntity.setConnectionFrom(connection.getFromPos());
