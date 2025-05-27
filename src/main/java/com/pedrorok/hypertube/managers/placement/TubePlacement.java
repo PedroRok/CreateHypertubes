@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.pedrorok.hypertube.blocks.HypertubeBaseBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
+import com.pedrorok.hypertube.items.HypertubeItem;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModDataComponent;
 import com.pedrorok.hypertube.utils.MessageUtils;
@@ -115,7 +116,7 @@ public class TubePlacement {
 
     private static boolean checkPlayerInventory(Player player, int neededTubes, boolean simulate) {
 
-        int foundTracks = 0;
+        int foundTubes = 0;
 
         Inventory inv = player.getInventory();
         int size = inv.items.size();
@@ -130,26 +131,27 @@ public class TubePlacement {
                 continue;
 
             ItemStack stackInSlot = (offhand ? inv.offhand : inv.items).get(i);
-            boolean isTrack = ModBlocks.HYPERTUBE.asStack().is(stackInSlot.getItem());
-            if (!isTrack)
+            boolean isTube = ModBlocks.HYPERTUBE.asStack().is(stackInSlot.getItem());
+            if (!isTube)
                 continue;
-            if (foundTracks >= neededTubes)
+            if (foundTubes >= neededTubes)
                 continue;
 
             int count = stackInSlot.getCount();
 
             if (!simulate) {
                 int remainingItems =
-                        count - Math.min(neededTubes - foundTracks, count);
+                        count - Math.min(neededTubes - foundTubes, count);
                 ItemStack newItem = stackInSlot.copyWithCount(remainingItems);
                 if (offhand)
                     player.setItemInHand(InteractionHand.OFF_HAND, newItem);
                 else
                     inv.setItem(i, newItem);
             }
-            foundTracks += count;
+
+            foundTubes += count;
         }
-        return foundTracks >= neededTubes;
+        return foundTubes >= neededTubes;
     }
 
 

@@ -151,18 +151,16 @@ public class HypertubeItem extends BlockItem {
         if (usingConnectingTo) {
             tubeEntity.setConnectionFrom(connection.getFromPos());
             otherBlockEntity.setConnectionTo(connection);
-
         } else {
             tubeEntity.setConnectionTo(connection);
             otherBlockEntity.setConnectionFrom(connection.getFromPos());
         }
 
-
         player.displayClientMessage(Component.literal("Connected"), true);
         player.playSound(SoundEvents.ITEM_FRAME_ADD_ITEM, 1.0f, 1.0f);
 
 
-        clearConnection(stack);
+        clearConnection(player.getItemInHand(InteractionHand.MAIN_HAND));
         return true;
     }
 

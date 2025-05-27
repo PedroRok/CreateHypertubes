@@ -9,6 +9,9 @@ import com.tterrag.registrate.util.entry.BlockEntry;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
+import static com.simibubi.create.foundation.data.TagGen.axeOrPickaxe;
+import static com.simibubi.create.foundation.data.TagGen.pickaxeOnly;
+
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 17/04/2025
@@ -17,8 +20,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 public class ModBlocks {
 
     public static final BlockBehaviour.Properties PROPERTIES = BlockBehaviour.Properties.of()
-            .destroyTime(2.0f)
-            .dynamicShape()
+            .destroyTime(1.0f)
             .explosionResistance(10.0f)
             .sound(SoundType.METAL)
             .noOcclusion()
@@ -30,11 +32,13 @@ public class ModBlocks {
     public static final BlockEntry<HypertubeBlock> HYPERTUBE = REGISTRATE.block("hypertube", HypertubeBlock::new)
             .item(HypertubeItem::new).build()
             .properties((a) -> PROPERTIES)
+            .transform(axeOrPickaxe())
             .register();
 
     public static final BlockEntry<HyperEntranceBlock> HYPERTUBE_ENTRANCE = REGISTRATE.block("hypertube_entrance", HyperEntranceBlock::new)
             .simpleItem()
             .properties((a) -> PROPERTIES)
+            .transform(axeOrPickaxe())
             .register();
 
     public static void register() {

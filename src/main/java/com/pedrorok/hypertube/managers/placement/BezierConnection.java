@@ -165,10 +165,6 @@ public class BezierConnection {
         return (float) fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter());
     }
 
-    public float distanceSquared() {
-        if (toPos == null) return 0;
-        return (float) fromPos.pos().getCenter().distanceToSqr(toPos.pos().getCenter());
-    }
 
     public ResponseDTO getValidation() {
         if (valid != null) return valid;

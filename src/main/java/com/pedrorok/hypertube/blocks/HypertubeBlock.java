@@ -17,6 +17,8 @@ import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -243,10 +245,12 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
         SimpleConnection connectionFrom = hypertubeEntity.getConnectionFrom();
         BezierConnection connectionTo = hypertubeEntity.getConnectionTo();
 
+        int toDrop = 0;
         if (connectionFrom != null) {
             BlockPos otherPos = connectionFrom.pos();
             BlockEntity otherBlock = level.getBlockEntity(otherPos);
             if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity) {
+                toDrop += (int) otherHypertubeEntity.getConnectionTo().distance();
                 otherHypertubeEntity.setConnectionTo(null);
             }
         }
@@ -255,9 +259,22 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
             BlockPos otherPos = connectionTo.getToPos().pos();
             BlockEntity otherBlock = level.getBlockEntity(otherPos);
             if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity) {
+                toDrop += (int) connectionTo.distance();
                 otherHypertubeEntity.setConnectionFrom(null);
             }
         }
+
+        if (!player.isCreative()) {
+            if (toDrop != 0) {
+                ItemStack stack = new ItemStack(ModBlocks.HYPERTUBE.get(), toDrop);
+                Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
+            } else {
+                Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(),
+                        ModBlocks.HYPERTUBE.asStack());
+            }
+        }
+
+
         return super.playerWillDestroy(level, pos, state, player);
     }
 
@@ -278,7 +295,6 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
         SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
 
-        HypertubeItem.clearConnection(stack);
 
         ResponseDTO validation = bezierConnection.getValidation();
         if (validation.valid()) {
@@ -294,6 +310,8 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
 
         BlockEntity otherBlockEntity = level.getBlockEntity(connectionFrom.pos());
         boolean inverted = false;
+        HypertubeItem.clearConnection(placer.getItemInHand(InteractionHand.MAIN_HAND));
+
         if (otherBlockEntity instanceof HypertubeBlockEntity otherHypertubeEntity) {
             if (otherHypertubeEntity.getConnectionTo() == null) {
                 otherHypertubeEntity.setConnectionTo(bezierConnection);
