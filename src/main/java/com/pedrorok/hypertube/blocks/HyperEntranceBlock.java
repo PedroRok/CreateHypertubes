@@ -38,9 +38,10 @@ public class HyperEntranceBlock extends HypertubeBaseBlock implements EntityBloc
     public static final VoxelShape SHAPE_UP = Block.box(0D, 6D, 0D, 16D, 16D, 16D);
     public static final VoxelShape SHAPE_DOWN = Block.box(0D, 0D, 0D, 16D, 10D, 16D);
 
-    public HyperEntranceBlock() {
-        super(HypertubeBlock.PROPERTIES);
+    public HyperEntranceBlock(Properties properties) {
+        super(properties);
     }
+
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> pBuilder) {
@@ -75,12 +76,12 @@ public class HyperEntranceBlock extends HypertubeBaseBlock implements EntityBloc
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> type) {
-        return type == ModBlockEntities.HYPERTUBE_ENTRANCE_ENTITY.get() ? HyperEntranceBlockEntity::tick : null;
+        return type == ModBlockEntities.HYPERTUBE_ENTRANCE.get() ? HyperEntranceBlockEntity::tick : null;
     }
 
     @Override
     public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos blockPos, @NotNull BlockState blockState) {
-        return ModBlockEntities.HYPERTUBE_ENTRANCE_ENTITY.get().create(blockPos, blockState);
+        return ModBlockEntities.HYPERTUBE_ENTRANCE.get().create(blockPos, blockState);
     }
 
     @Override

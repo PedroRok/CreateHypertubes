@@ -25,15 +25,6 @@ public class ModClientEvents {
         event.enqueueWork(ModClientEvents::setupRenderTypes);
     }
 
-    public static final ResourceLocation TUBE_TEXTURE = ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "textures/block/entity_tube_base.png");
-
-    @SubscribeEvent
-    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerBlockEntityRenderer(ModBlockEntities.HYPERTUBE_ENTITY.get(),
-                context -> new BezierTextureRenderer<>(context, TUBE_TEXTURE));
-    }
-
-
     private static void setupRenderTypes() {
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.HYPERTUBE.get(), RenderType.translucent());
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.HYPERTUBE_ENTRANCE.get(), RenderType.translucent());

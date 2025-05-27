@@ -1,0 +1,10 @@
+{
+  "suction": {
+    "sounds": ["create_hypertube:suction"],
+    "subtitle": "subtitles.create_hypertube.suction"
+  },
+  "wind_tunnel": {
+    "sounds": ["create_hypertube:wind_tunnel"],
+    "subtitle": "subtitles.create_hypertube.wind_tunnel"
+  }
+}

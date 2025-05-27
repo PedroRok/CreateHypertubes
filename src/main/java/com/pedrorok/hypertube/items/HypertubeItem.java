@@ -59,7 +59,6 @@ public class HypertubeItem extends BlockItem {
         Direction direction = pContext.getClickedFace();
 
         if (!isFoil(stack)) {
-
             if (select(level, pos, direction, stack)) {
                 level.playSound(null, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.75f, 1);
                 return InteractionResult.SUCCESS;
@@ -69,11 +68,7 @@ public class HypertubeItem extends BlockItem {
 
         SimpleConnection simpleConnection = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
         if (player.isShiftKeyDown() && simpleConnection.pos().equals(pos)) {
-            if (!level.isClientSide) {
-                player.displayClientMessage(Component.literal("Connection cleared"), true);
-            } else {
-                level.playSound(player, pos, SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.BLOCKS, 0.75f, 1);
-            }
+            player.displayClientMessage(Component.literal("Connection cleared"), true);
             clearConnection(stack);
             return InteractionResult.SUCCESS;
         }
@@ -88,7 +83,7 @@ public class HypertubeItem extends BlockItem {
         boolean success = true;
 
         if (isHypertubeClicked) {
-            Optional<HypertubeBlockEntity> blockEntity = level.getBlockEntity(pos, ModBlockEntities.HYPERTUBE_ENTITY.get());
+            Optional<HypertubeBlockEntity> blockEntity = level.getBlockEntity(pos, ModBlockEntities.HYPERTUBE.get());
             if (blockEntity.isPresent()) {
                 success = handleHypertubeClicked(blockEntity.get(), player, simpleConnection, pos, direction, level, stack);
             }
@@ -172,6 +167,21 @@ public class HypertubeItem extends BlockItem {
         if (!blockEntity.getFacesConnectable().contains(direction)) {
             HypertubeMod.LOGGER.debug("Tube can't connect to any face");
             return false;
+        }
+        BezierConnection connectionTo = blockEntity.getConnectionTo();
+        SimpleConnection connectionFrom = blockEntity.getConnectionFrom();
+        if (connectionTo != null && connectionTo.getFromPos().direction().equals(direction)) {
+            HypertubeMod.LOGGER.debug("Tube already connected to this face 1 ");
+            return false;
+        }
+
+        if (connectionFrom != null) {
+            HypertubeBlockEntity entity = (HypertubeBlockEntity) world.getBlockEntity(connectionFrom.pos());
+            BezierConnection connectionToOther = entity.getConnectionTo();
+            if (connectionToOther != null &&  connectionToOther.getToPos().direction().equals(direction.getOpposite())) {
+                HypertubeMod.LOGGER.debug("Tube already connected to this face 2 ");
+                return false;
+            }
         }
 
         heldItem.set(ModDataComponent.TUBE_CONNECTING_FROM, new SimpleConnection(pos, direction));
