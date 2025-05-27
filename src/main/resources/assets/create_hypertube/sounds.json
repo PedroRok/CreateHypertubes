@@ -6,5 +6,9 @@
   "wind_tunnel": {
     "sounds": ["create_hypertube:wind_tunnel"],
     "subtitle": "subtitles.create_hypertube.wind_tunnel"
+  },
+  "traveling": {
+    "sounds": ["create_hypertube:wind_tunnel"],
+    "subtitle": "subtitles.create_hypertube.traveling"
   }
 }

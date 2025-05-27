@@ -25,6 +25,9 @@ public class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> WIND_TUNNEL = SOUNDS.register("wind_tunnel",
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "wind_tunnel")));
 
+    public static final DeferredHolder<SoundEvent, SoundEvent> TRAVELING = SOUNDS.register("traveling",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "traveling")));
+
     public static void register(IEventBus eventBus) {
         SOUNDS.register(eventBus);
     }

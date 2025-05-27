@@ -66,7 +66,7 @@ public class TravelManager {
             ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(ModSounds.HYPERTUBE_SUCTION,
                     SoundSource.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), 1, pitch, seed));
         }
-        player.connection.send(new ClientboundSoundEntityPacket(ModSounds.WIND_TUNNEL,
+        player.connection.send(new ClientboundSoundEntityPacket(ModSounds.TRAVELING,
                 SoundSource.BLOCKS, player, 1, 1, 1));
     }
 
@@ -118,7 +118,7 @@ public class TravelManager {
         // Random pitch between 0.8 and 1.2
         float pitch = 0.8F + random.nextFloat() * 0.4F;
         int seed = random.nextInt(1000);
-        player.connection.send(new ClientboundStopSoundPacket(ModSounds.WIND_TUNNEL.getId(),
+        player.connection.send(new ClientboundStopSoundPacket(ModSounds.TRAVELING.getId(),
                 SoundSource.BLOCKS));
         for (Player oPlayer : player.level().players()) {
             ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(ModSounds.HYPERTUBE_SUCTION,
