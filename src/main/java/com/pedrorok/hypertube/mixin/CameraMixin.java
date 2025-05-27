@@ -9,7 +9,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.BlockGetter;
 import net.neoforged.neoforge.client.ClientHooks;
-import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -21,6 +21,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Camera.class)
 public class CameraMixin {
 
+    @Shadow
+    private boolean detached;
+
+    @Unique
+    public void createHypertube$setDetachedExternal(boolean newDetached) {
+        this.detached = newDetached;
+    }
+
     @Inject(method = "setup", at = @At("HEAD"), cancellable = true)
     private void onSetup(BlockGetter p_90576_, Entity renderViewEntity, boolean isFrontView, boolean flipped, float PartialTicks, CallbackInfo ci) {
         if (!TravelManager.hasHyperTubeData(renderViewEntity) ||
@@ -28,13 +36,17 @@ public class CameraMixin {
             DetachedCameraController.get().setDetached(false);
             return;
         }
+
+        Camera cameraObj = (Camera) (Object) this;
+        CameraAccessorMixin camera = (CameraAccessorMixin) cameraObj;
+
         if (!DetachedCameraController.get().isDetached()) {
             DetachedCameraController.get().startCamera(renderViewEntity);
             DetachedCameraController.get().setDetached(true);
+            this.createHypertube$setDetachedExternal(true);
         }
         DetachedCameraController.get().tickCamera(renderViewEntity);
-        Camera cameraObj = (Camera) (Object) this;
-        CameraAccessorMixin camera = (CameraAccessorMixin) cameraObj;
+
         camera.callSetRotation(DetachedCameraController.get().getYaw() * (flipped ? -1 : 1), DetachedCameraController.get().getPitch());
 
 
