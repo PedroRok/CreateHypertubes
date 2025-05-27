@@ -49,7 +49,7 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
                        int packedLight, int packedOverlay) {
         BezierConnection connection = blockEntity.getBezierConnection();
 
-        if (connection == null || !connection.isValid()) {
+        if (connection == null || !connection.getValidation().valid()) {
             return;
         }
 

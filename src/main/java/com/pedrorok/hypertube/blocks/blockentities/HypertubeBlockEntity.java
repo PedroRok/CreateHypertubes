@@ -104,21 +104,19 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
     }
 
     public List<Direction> getFacesConnectable() {
+        if (connectionTo != null && connectionFrom != null) return List.of();
+        if (connectionTo != null) {
+            return List.of(connectionTo.getFromPos().direction().getOpposite());
+        }
         if (connectionFrom != null) {
             BlockEntity blockEntity = level.getBlockEntity(connectionFrom.pos());
-            if (blockEntity instanceof HypertubeBlockEntity hypertubeBlockEntity && hypertubeBlockEntity.getConnectionTo() != null) {
-                SimpleConnection toPos = hypertubeBlockEntity.getConnectionTo().getToPos();
-                return List.of(toPos.direction(),
-                        toPos.direction().getOpposite());
+            if (blockEntity instanceof HypertubeBlockEntity hypertubeBlockEntity
+            && hypertubeBlockEntity.getConnectionTo() != null
+            && hypertubeBlockEntity.getConnectionTo().getToPos().pos().equals(this.worldPosition)) {
+                return List.of(hypertubeBlockEntity.getConnectionTo().getToPos().direction());
             }
         }
-        if (connectionTo != null) {
-            return List.of(connectionTo.getFromPos().direction(), connectionTo.getFromPos().direction().getOpposite());
-        }
-        BlockState blockState = getBlockState();
-        if (!(blockState.getBlock() instanceof HypertubeBlock hypertubeBlock)) return List.of();
-        List<Direction> connectedFaces = hypertubeBlock.getConnectedFaces(blockState);
-        return connectedFaces.isEmpty() ? List.of(Direction.values()) : connectedFaces.stream().map(Direction::getOpposite).toList();
+        return List.of(Direction.values());
     }
 
     @Override

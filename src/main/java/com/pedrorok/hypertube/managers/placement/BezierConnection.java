@@ -41,7 +41,7 @@ public class BezierConnection {
     );
 
 
-    public static final float MAX_DISTANCE = 30.0f;
+    public static final float MAX_DISTANCE = 20.0f;
     public static final float MAX_ANGLE = 0.6f;
 
     @Getter
@@ -52,7 +52,7 @@ public class BezierConnection {
     private @Nullable SimpleConnection toPos;
     private List<Vec3> bezierPoints;
 
-    private Boolean isValid;
+    private ResponseDTO valid;
     private final int detailLevel;
 
 
@@ -81,7 +81,7 @@ public class BezierConnection {
     }
 
     private List<Vec3> calculateBezierCurve(Vec3 from, Direction direction, Vec3 toVec, int detailLevel, @Nullable Direction finalDirection) {
-        isValid = null;
+        valid = null;
         double distance = from.distanceTo(toVec);
 
         Vec3 controlPoint1 = createFirstControlPoint(from, direction, distance);
@@ -165,12 +165,25 @@ public class BezierConnection {
         return (float) fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter());
     }
 
-    public boolean isValid() {
-        if (isValid != null) return isValid;
-        isValid = (fromPos != null && toPos != null)
-                  && getMaxAngleBezierAngle() < MAX_ANGLE
-                  && distance() < MAX_DISTANCE;
-        return isValid;
+    public ResponseDTO getValidation() {
+        if (valid != null) return valid;
+        if (fromPos==null || toPos==null) {
+            valid = ResponseDTO.invalid("Both positions must be set.");
+            return valid;
+        }
+        if (getMaxAngleBezierAngle() >= MAX_ANGLE) {
+            valid = ResponseDTO.invalid("The angle between points is too high.");
+            return valid;
+        }
+        if (distance() >= MAX_DISTANCE) {
+            valid = ResponseDTO.invalid("The distance between points is too high.");
+            return valid;
+        }
+        if (distance() == 0) {
+            valid = ResponseDTO.invalid("");
+            return valid;
+        }
+        return ResponseDTO.get(true);
     }
 
     public static BezierConnection of(SimpleConnection from, @Nullable SimpleConnection toPos) {
@@ -183,7 +196,7 @@ public class BezierConnection {
         Vec3 pos1 = fromPos.pos().getCenter();
         int id = 0;
         for (Vec3 bezierPoint : getBezierPoints()) {
-            line(uuid, id, pos1, bezierPoint, animation, !isValid());
+            line(uuid, id, pos1, bezierPoint, animation, valid != null && !valid.valid());
             pos1 = bezierPoint;
             id++;
         }
@@ -207,7 +220,7 @@ public class BezierConnection {
     public BezierConnection invert() {
         List<Vec3> newBezier = new ArrayList<>(bezierPoints);
         Collections.reverse(newBezier);
-        return new BezierConnection(toPos, fromPos, newBezier);
+        return new BezierConnection(new SimpleConnection(toPos.pos(), toPos.direction().getOpposite()), fromPos, newBezier);
     }
 
 
@@ -216,7 +229,7 @@ public class BezierConnection {
         return "BezierConnection{" +
                "fromPos=" + fromPos +
                ", toPos=" + toPos +
-               ", isValid=" + isValid +
+               ", isValid=" + valid +
                '}';
     }
 }

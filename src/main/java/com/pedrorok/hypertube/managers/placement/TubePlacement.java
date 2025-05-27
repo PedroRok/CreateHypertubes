@@ -6,6 +6,7 @@ import com.pedrorok.hypertube.blocks.HypertubeBaseBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModDataComponent;
+import com.pedrorok.hypertube.utils.MessageUtils;
 import com.pedrorok.hypertube.utils.RayCastUtils;
 import com.simibubi.create.content.trains.track.TrackBlockOutline;
 import net.createmod.catnip.animation.LerpedFloat;
@@ -15,6 +16,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -24,6 +26,8 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+
+import java.awt.*;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 23/04/2025
@@ -80,11 +84,18 @@ public class TubePlacement {
 
         SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
+
         // Exception & visual
-        boolean valid = bezierConnection.isValid();
-        animation.setValue( !valid ? 0.2 : 0.8);
-        canPlace = valid;
+        ResponseDTO response = bezierConnection.getValidation();
+        animation.setValue( !response.valid() ? 0.2 : 0.8);
+        canPlace = response.valid();
         bezierConnection.drawPath(animation);
+
+        if (!response.valid()) {
+            MessageUtils.sendActionMessage(player, "§c" + response.errorMessage());
+            return;
+        }
+        MessageUtils.sendActionMessage(player, "");
     }
 
 

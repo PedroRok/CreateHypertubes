@@ -6,7 +6,9 @@ import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.managers.placement.BezierConnection;
 import com.pedrorok.hypertube.managers.placement.SimpleConnection;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
+import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModDataComponent;
+import com.pedrorok.hypertube.utils.MessageUtils;
 import com.pedrorok.hypertube.utils.RayCastUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;
 import com.simibubi.create.foundation.block.IBE;
@@ -19,6 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -274,8 +277,8 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
 
         HypertubeItem.clearConnection(stack);
-        if (!bezierConnection.isValid()) {
-            player.displayClientMessage(Component.literal("Invalid connection"), true);
+        if (!bezierConnection.getValidation().valid()) {
+            MessageUtils.sendActionMessage(player, "§c"+bezierConnection.getValidation().errorMessage());
             return;
         }
 
@@ -306,5 +309,10 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
             && level.getBlockState(pos).getBlock() instanceof HypertubeBlock hypertubeBlock) {
             hypertubeBlock.updateBlockState(level, pos, hypertubeBlock.getState(List.of(finalDirection)));
         }
+    }
+
+    @Override
+    public @NotNull ItemStack getCloneItemStack(@NotNull LevelReader level, @NotNull BlockPos pos, @NotNull BlockState state) {
+        return ModBlocks.HYPERTUBE.asStack();
     }
 }

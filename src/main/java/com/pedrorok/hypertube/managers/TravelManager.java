@@ -115,7 +115,6 @@ public class TravelManager {
         PlayerSyncEvents.syncPlayerStateToAll(player);
 
         RandomSource random = player.level().random;
-        // Random pitch between 0.8 and 1.2
         float pitch = 0.8F + random.nextFloat() * 0.4F;
         int seed = random.nextInt(1000);
         player.connection.send(new ClientboundStopSoundPacket(ModSounds.TRAVELING.getId(),
