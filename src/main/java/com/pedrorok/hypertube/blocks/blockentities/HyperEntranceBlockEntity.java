@@ -2,9 +2,13 @@ package com.pedrorok.hypertube.blocks.blockentities;
 
 import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
+import com.pedrorok.hypertube.registry.ModSounds;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -26,7 +30,17 @@ public class HyperEntranceBlockEntity extends BlockEntity {
     }
 
     public static <T extends BlockEntity> void tick(Level level, BlockPos pos, BlockState state, T t) {
-        if (level.isClientSide) return;
+        if (level.isClientSide) {
+            return;
+        }
+
+
+        if (level.getServer().getTickCount() % (20 * 7) == 0) { // Play sound every 2 seconds
+            for (Player oPlayer : level.players()) {
+                ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(ModSounds.WIND_TUNNEL,
+                        SoundSource.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), 0.2f, 1.3f, 5));
+            }
+        }
 
         Optional<ServerPlayer> nearbyPlayers = getNearbyPlayers((ServerLevel) level, pos.getCenter());
         if (nearbyPlayers.isEmpty()) return;

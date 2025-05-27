@@ -3,11 +3,17 @@ package com.pedrorok.hypertube.managers;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.events.PlayerSyncEvents;
+import com.pedrorok.hypertube.registry.ModSounds;
 import com.pedrorok.hypertube.utils.MathUtils;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.network.protocol.game.ClientboundStopSoundPacket;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
@@ -15,10 +21,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 22/04/2025
@@ -54,6 +57,17 @@ public class TravelManager {
         HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", player.getName().getString(), relative, travelData.getSpeed());
         travelDataMap.put(player.getUUID(), travelData);
         PlayerSyncEvents.syncPlayerStateToAll(player);
+
+        RandomSource random = player.level().random;
+
+        float pitch = 0.8F + random.nextFloat() * 0.4F;
+        int seed = random.nextInt(1000);
+        for (Player oPlayer : player.level().players()) {
+            ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(ModSounds.HYPERTUBE_SUCTION,
+                    SoundSource.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), 1, pitch, seed));
+        }
+        player.connection.send(new ClientboundSoundEntityPacket(ModSounds.WIND_TUNNEL,
+                SoundSource.BLOCKS, player, 1, 1, 1));
     }
 
 
@@ -99,6 +113,17 @@ public class TravelManager {
         player.hurtMarked = true;
 
         PlayerSyncEvents.syncPlayerStateToAll(player);
+
+        RandomSource random = player.level().random;
+        // Random pitch between 0.8 and 1.2
+        float pitch = 0.8F + random.nextFloat() * 0.4F;
+        int seed = random.nextInt(1000);
+        player.connection.send(new ClientboundStopSoundPacket(ModSounds.WIND_TUNNEL.getId(),
+                SoundSource.BLOCKS));
+        for (Player oPlayer : player.level().players()) {
+            ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(ModSounds.HYPERTUBE_SUCTION,
+                    SoundSource.BLOCKS, player.getX(), player.getY(), player.getZ(), 1, pitch, seed));
+        }
     }
 
     private static void handleServer(Player player) {

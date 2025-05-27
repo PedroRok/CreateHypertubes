@@ -33,6 +33,8 @@ public class HypertubeMod {
 
         ModCreativeTab.register(modEventBus);
         ModDataComponent.register(modEventBus);
+
+        ModSounds.register(modEventBus);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
