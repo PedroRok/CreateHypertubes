@@ -33,6 +33,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -250,7 +251,7 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
             BlockPos otherPos = connectionFrom.pos();
             BlockEntity otherBlock = level.getBlockEntity(otherPos);
             if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity) {
-                toDrop += (int) otherHypertubeEntity.getConnectionTo().distance();
+                toDrop += (int) otherHypertubeEntity.getConnectionTo().distance() -1;
                 otherHypertubeEntity.setConnectionTo(null);
             }
         }
@@ -259,7 +260,7 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
             BlockPos otherPos = connectionTo.getToPos().pos();
             BlockEntity otherBlock = level.getBlockEntity(otherPos);
             if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity) {
-                toDrop += (int) connectionTo.distance();
+                toDrop += (int) connectionTo.distance() -1;
                 otherHypertubeEntity.setConnectionFrom(null);
             }
         }
@@ -273,7 +274,6 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
                         ModBlocks.HYPERTUBE.asStack());
             }
         }
-
 
         return super.playerWillDestroy(level, pos, state, player);
     }
