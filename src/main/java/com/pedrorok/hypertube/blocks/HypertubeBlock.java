@@ -250,7 +250,8 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
         if (connectionFrom != null) {
             BlockPos otherPos = connectionFrom.pos();
             BlockEntity otherBlock = level.getBlockEntity(otherPos);
-            if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity) {
+            if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity
+            && otherHypertubeEntity.getConnectionTo() != null) {
                 toDrop += (int) otherHypertubeEntity.getConnectionTo().distance() -1;
                 otherHypertubeEntity.setConnectionTo(null);
             }
@@ -259,7 +260,8 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
         if (connectionTo != null) {
             BlockPos otherPos = connectionTo.getToPos().pos();
             BlockEntity otherBlock = level.getBlockEntity(otherPos);
-            if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity) {
+            if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity
+            && otherHypertubeEntity.getConnectionFrom() != null) {
                 toDrop += (int) connectionTo.distance() -1;
                 otherHypertubeEntity.setConnectionFrom(null);
             }
@@ -267,7 +269,7 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
 
         if (!player.isCreative()) {
             if (toDrop != 0) {
-                ItemStack stack = new ItemStack(ModBlocks.HYPERTUBE.get(), toDrop);
+                ItemStack stack = new ItemStack(ModBlocks.HYPERTUBE.get(), toDrop + 1);
                 Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
             } else {
                 Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(),
