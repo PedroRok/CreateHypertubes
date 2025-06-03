@@ -3,7 +3,11 @@ package com.pedrorok.hypertube.blocks.blockentities;
 import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModSounds;
+import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
+import com.simibubi.create.content.kinetics.simpleRelays.SimpleKineticBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -21,7 +25,7 @@ import java.util.Optional;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperEntranceBlockEntity extends BlockEntity {
+public class HyperEntranceBlockEntity extends KineticBlockEntity {
 
     private static final float RADIUS = 1.0f;
 
@@ -29,13 +33,25 @@ public class HyperEntranceBlockEntity extends BlockEntity {
         super(type, pos, state);
     }
 
+
+    @Override
+    protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(compound, registries, clientPacket);
+    }
+
+
+    @Override
+    protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(compound, registries, clientPacket);
+    }
+
+
     public static <T extends BlockEntity> void tick(Level level, BlockPos pos, BlockState state, T t) {
         if (level.isClientSide) {
             return;
         }
 
-
-        if (level.getServer().getTickCount() % (20 * 7) == 0) { // Play sound every 2 seconds
+        if (level.getServer().getTickCount() % (20 * 7) == 0) {
             for (Player oPlayer : level.players()) {
                 ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(ModSounds.WIND_TUNNEL,
                         SoundSource.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), 0.2f, 1.3f, 5));
@@ -52,7 +68,9 @@ public class HyperEntranceBlockEntity extends BlockEntity {
 
     private static Optional<ServerPlayer> getNearbyPlayers(ServerLevel level, Vec3 centerPos) {
         return level.players().stream()
-                .filter(player -> player.distanceToSqr(centerPos.x, centerPos.y, centerPos.z) < RADIUS)
+                .filter(player -> player.getBoundingBox()
+                        .inflate(RADIUS)
+                        .contains(centerPos))
                 .findFirst();
     }
 

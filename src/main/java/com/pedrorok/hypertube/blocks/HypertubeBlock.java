@@ -23,10 +23,13 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -49,7 +52,7 @@ import java.util.Set;
  * @author Rok, Pedro Lucas nmm. Created on 21/05/2025
  * @project Create Hypertube
  */
-public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection, IBE<HypertubeBlockEntity> {
+public class HypertubeBlock extends TransparentBlock implements TubeConnection, IBE<HypertubeBlockEntity> {
 
     public static final BooleanProperty NORTH_SOUTH = BooleanProperty.create("north_south");
     public static final BooleanProperty EAST_WEST = BooleanProperty.create("east_west");
@@ -84,7 +87,6 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
                 .setValue(UP_DOWN, false);
     }
 
-    @Override
     public VoxelShape getShape(BlockState state, @Nullable CollisionContext ctx) {
         if (ctx instanceof EntityCollisionContext ecc
             && ecc.getEntity() != null
@@ -344,5 +346,39 @@ public class HypertubeBlock extends HypertubeBaseBlock implements TubeConnection
     @Override
     public @NotNull ItemStack getCloneItemStack(@NotNull LevelReader level, @NotNull BlockPos pos, @NotNull BlockState state) {
         return ModBlocks.HYPERTUBE.asStack();
+    }
+
+    @Override
+    public boolean propagatesSkylightDown(@NotNull BlockState state, @NotNull BlockGetter reader, @NotNull BlockPos pos) {
+        return true;
+    }
+
+    @Override
+    public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos, @NotNull CollisionContext context) {
+        return getShape(state, context);
+    }
+
+    @Override
+    public @NotNull VoxelShape getCollisionShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos, @NotNull CollisionContext context) {
+        return getShape(state, context);
+    }
+
+    @Override
+    public @NotNull VoxelShape getBlockSupportShape(@NotNull BlockState state, @NotNull BlockGetter reader, @NotNull BlockPos pos) {
+        return getShape(state);
+    }
+
+    @Override
+    public @NotNull VoxelShape getInteractionShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos) {
+        return getShape(state);
+    }
+
+    @Override
+    public @NotNull RenderShape getRenderShape(@NotNull BlockState state) {
+        return RenderShape.MODEL;
+    }
+
+    public VoxelShape getShape(BlockState state) {
+        return getShape(state, null);
     }
 }

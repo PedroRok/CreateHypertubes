@@ -2,7 +2,6 @@ package com.pedrorok.hypertube.managers.placement;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.pedrorok.hypertube.blocks.HypertubeBaseBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.items.HypertubeItem;
 import com.pedrorok.hypertube.registry.ModBlocks;
@@ -66,7 +65,7 @@ public class TubePlacement {
         BlockHitResult bhr = (BlockHitResult) hitResult;
         BlockPos pos = bhr.getBlockPos();
         BlockState hitState = level.getBlockState(pos);
-        boolean hypertubeHitResult = hitState.getBlock() instanceof HypertubeBaseBlock;
+        boolean hypertubeHitResult = hitState.getBlock() instanceof HypertubeBlock;
         if (hitState.isAir() || hypertubeHitResult) {
             hoveringPos = pos;
         } else {

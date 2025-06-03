@@ -7,10 +7,12 @@ import com.pedrorok.hypertube.registry.ModSounds;
 import com.pedrorok.hypertube.utils.MathUtils;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.network.protocol.game.ClientboundStopSoundPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -41,7 +43,6 @@ public class TravelManager {
         if (playerPersistData.getBoolean(TRAVEL_TAG)) return;
         if (playerPersistData.contains(LAST_TRAVEL_TIME) &&
             playerPersistData.getLong(LAST_TRAVEL_TIME) > System.currentTimeMillis()) return;
-        //player.setNoGravity(true);
 
         BlockPos relative = pos.relative(state.getValue(HyperEntranceBlock.FACING));
         TravelData travelData = new TravelData(relative, player.level(), pos, MathUtils.getMediumSpeed(player.getDeltaMovement()));
@@ -59,6 +60,8 @@ public class TravelManager {
         PlayerSyncEvents.syncPlayerStateToAll(player);
 
         RandomSource random = player.level().random;
+        Vec3 center = pos.getCenter();
+        player.teleportTo((ServerLevel) player.level(), center.x, center.y, center.z, player.getYRot(), player.getXRot());
 
         float pitch = 0.8F + random.nextFloat() * 0.4F;
         int seed = random.nextInt(1000);
