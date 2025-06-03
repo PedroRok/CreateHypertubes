@@ -28,6 +28,8 @@ public class HypertubeMod {
 
         REGISTRATE.registerEventListeners(modEventBus);
 
+        ModPartialModels.init();
+
         ModBlocks.register();
         ModBlockEntities.register();
 

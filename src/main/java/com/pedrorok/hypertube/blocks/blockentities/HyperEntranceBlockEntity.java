@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.blocks.blockentities;
 
+import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModSounds;
@@ -58,18 +59,37 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity {
             }
         }
 
-        Optional<ServerPlayer> nearbyPlayers = getNearbyPlayers((ServerLevel) level, pos.getCenter());
-        if (nearbyPlayers.isEmpty()) return;
+        Optional<ServerPlayer> nearbyPlayer = getNearbyPlayers((ServerLevel) level, pos.getCenter());
+        if (nearbyPlayer.isEmpty()) {
+            if (state.getValue(HyperEntranceBlock.OPEN)) {
+                level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, false), 3);
+            }
+            return;
+        }
+        if (!state.getValue(HyperEntranceBlock.OPEN)) {
+            level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, true), 3);
+        }
 
-        ServerPlayer player = nearbyPlayers.get();
+        Optional<ServerPlayer> inRangePlayer = getInRangePlayers((ServerLevel) level, pos.getCenter());
+        if (inRangePlayer.isEmpty()) return;
+
+        ServerPlayer player = inRangePlayer.get();
         if (player.isShiftKeyDown()) return;
         TravelManager.tryStartTravel(player, pos, state);
+    }
+
+    private static Optional<ServerPlayer> getInRangePlayers(ServerLevel level, Vec3 centerPos) {
+        return level.players().stream()
+                .filter(player -> player.getBoundingBox()
+                        .inflate(RADIUS)
+                        .contains(centerPos))
+                .findFirst();
     }
 
     private static Optional<ServerPlayer> getNearbyPlayers(ServerLevel level, Vec3 centerPos) {
         return level.players().stream()
                 .filter(player -> player.getBoundingBox()
-                        .inflate(RADIUS)
+                        .inflate(RADIUS * 3)
                         .contains(centerPos))
                 .findFirst();
     }

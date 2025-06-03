@@ -3,6 +3,8 @@ package com.pedrorok.hypertube.client.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
+import com.pedrorok.hypertube.registry.ModBlockEntities;
+import com.pedrorok.hypertube.registry.ModPartialModels;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import net.createmod.catnip.render.CachedBuffers;
@@ -33,7 +35,7 @@ public class EntranceBlockEntityRenderer extends KineticBlockEntityRenderer<Hype
         }
 
         Direction facing = blockState.getValue(HyperEntranceBlock.FACING);
-        SuperByteBuffer cogwheelModel = CachedBuffers.partialFacingVertical(AllPartialModels.SHAFTLESS_COGWHEEL, blockState, facing);
+        SuperByteBuffer cogwheelModel = CachedBuffers.partialFacingVertical(ModPartialModels.COGWHEEL_HOLE, blockState, facing);
 
         float angle = getAngleForBe(be, be.getBlockPos(), facing.getAxis());
         Direction.Axis rotationAxisOf = getRotationAxisOf(be);

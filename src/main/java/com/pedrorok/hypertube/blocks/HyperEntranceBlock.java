@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
@@ -34,22 +35,25 @@ import org.jetbrains.annotations.Nullable;
 public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICogWheel, TubeConnection {
 
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
+    public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 
     public HyperEntranceBlock(Properties properties) {
         super(properties);
-        registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
+        registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING);
+        builder.add(OPEN);
         super.createBlockStateDefinition(builder);
     }
 
     @Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return this.defaultBlockState().setValue(FACING, context.getClickedFace().getOpposite());
+        return this.defaultBlockState().setValue(FACING, context.getClickedFace().getOpposite())
+                .setValue(OPEN, false);
     }
 
     @Override

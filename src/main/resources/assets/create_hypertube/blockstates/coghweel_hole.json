@@ -1,0 +1,17 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "create_hypertube:block/cogwheel_hole",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "create_hypertube:block/cogwheel_hole"
+    },
+    "axis=z": {
+      "model": "create_hypertube:block/cogwheel_hole",
+      "x": 90,
+      "y": 180
+    }
+  }
+}
