@@ -8,6 +8,7 @@ import com.pedrorok.hypertube.registry.ModSounds;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -30,6 +31,7 @@ public class TravelManager {
 
     public static final String TRAVEL_TAG = "hypertube_travel";
     public static final String LAST_TRAVEL_TIME = "last_travel_time";
+    public static final String LAST_POSITION = "last_travel_position";
 
     public static final int DEFAULT_TRAVEL_TIME = 200;
 
@@ -114,6 +116,9 @@ public class TravelManager {
         player.teleportRelative(lastDir.x, lastDir.y, lastDir.z);
         player.setDeltaMovement(travelData.getLastDir().scale(travelData.getSpeed() + 0.5));
         player.setPose(Pose.CROUCHING);
+        player.getPersistentData().remove(LAST_POSITION + "_x");
+        player.getPersistentData().remove(LAST_POSITION + "_y");
+        player.getPersistentData().remove(LAST_POSITION + "_z");
         player.hurtMarked = true;
 
         PlayerSyncEvents.syncPlayerStateToAll(player);
@@ -213,8 +218,32 @@ public class TravelManager {
                 }
             }
         }
+        checkAndCorrectStuck(player, travelData);
 
         player.hurtMarked = true;
+    }
+
+
+    private static void checkAndCorrectStuck(Player player, TravelData travelData) {
+        if (!travelData.hasNextTravelPoint()) return;
+
+        float x = player.getPersistentData().getFloat(LAST_POSITION + "_x");
+        float y = player.getPersistentData().getFloat(LAST_POSITION + "_y");
+        float z = player.getPersistentData().getFloat(LAST_POSITION + "_z");
+        Vec3 lastPosition = new Vec3(x, y, z);
+
+
+        if (player.position().distanceTo(lastPosition) < 0.01) {
+            // player is stuck
+            System.out.println("Player is stuck, teleporting to next travel point");
+            travelData.getNextTravelPoint();
+            Vec3 travelPoint = travelData.getTravelPoint();
+            player.teleportTo(travelPoint.x, travelPoint.y, travelPoint.z);
+            return;
+        }
+        player.getPersistentData().putFloat(LAST_POSITION + "_x", (float) player.position().x);
+        player.getPersistentData().putFloat(LAST_POSITION + "_y", (float) player.position().y);
+        player.getPersistentData().putFloat(LAST_POSITION + "_z", (float) player.position().z);
     }
 
     private static Vec3 getNextPointPreview(TravelData travelData, int offset) {

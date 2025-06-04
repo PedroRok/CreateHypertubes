@@ -123,4 +123,8 @@ public class TravelData {
         if (travelIndex >= travelPoints.size()) return;
         travelIndex++;
     }
+
+    public boolean hasNextTravelPoint() {
+        return travelIndex + 1 < travelPoints.size();
+    }
 }
