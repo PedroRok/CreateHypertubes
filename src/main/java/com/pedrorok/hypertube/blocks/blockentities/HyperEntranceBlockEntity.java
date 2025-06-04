@@ -3,6 +3,7 @@ package com.pedrorok.hypertube.blocks.blockentities;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
+import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -10,6 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -18,6 +20,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -143,7 +146,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity {
     private Optional<ServerPlayer> getInRangePlayers(ServerLevel level, Vec3 centerPos, Direction facing) {
         return level.players().stream()
                 .filter(player -> player.getBoundingBox()
-                        .inflate(RADIUS -0.25)
+                        .inflate(RADIUS - 0.25)
                         .contains(centerPos.add(Vec3.atLowerCornerOf(facing.getOpposite().getNormal()))))
                 .findFirst();
     }
@@ -154,5 +157,13 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity {
                         .inflate(RADIUS * 3)
                         .contains(centerPos))
                 .findFirst();
+    }
+
+    @Override
+    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+        super.addToGoggleTooltip(tooltip, isPlayerSneaking);
+        IRotate.SpeedLevel.getFormattedSpeedText(speed, speed < 16)
+                .forGoggles(tooltip);
+        return true;
     }
 }
