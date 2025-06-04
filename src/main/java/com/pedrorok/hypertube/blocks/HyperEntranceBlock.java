@@ -85,7 +85,7 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> type) {
-        return type == ModBlockEntities.HYPERTUBE_ENTRANCE.get() ? HyperEntranceBlockEntity::tick : null;
+        return (level1, pos, state1, be) -> ((HyperEntranceBlockEntity) be).tick();
     }
 
     public boolean canTravelConnect(LevelAccessor world, BlockPos pos, Direction facing) {
@@ -130,5 +130,10 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
 
     public VoxelShape getShape(BlockState state) {
         return getShape(state, null);
+    }
+
+    @Override
+    public boolean isSmallCog() {
+        return true;
     }
 }

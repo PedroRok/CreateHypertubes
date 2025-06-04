@@ -2,10 +2,10 @@ package com.pedrorok.hypertube.blocks.blockentities;
 
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.managers.TravelManager;
-import com.pedrorok.hypertube.registry.ModBlockEntities;
+import com.pedrorok.hypertube.managers.sound.TubeTravelSound;
 import com.pedrorok.hypertube.registry.ModSounds;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
-import com.simibubi.create.content.kinetics.simpleRelays.SimpleKineticBlockEntity;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -13,6 +13,8 @@ import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -29,6 +31,8 @@ import java.util.Optional;
 public class HyperEntranceBlockEntity extends KineticBlockEntity {
 
     private static final float RADIUS = 1.0f;
+
+    private static final float SPEED_TO_START = 16;
 
     public HyperEntranceBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -47,8 +51,22 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity {
     }
 
 
-    public static <T extends BlockEntity> void tick(Level level, BlockPos pos, BlockState state, T t) {
+    @Override
+    public void tick() {
+        super.tick();
         if (level.isClientSide) {
+            return;
+        }
+        BlockState state = this.getBlockState();
+        BlockPos pos = this.getBlockPos();
+
+        float actualSpeed = Math.abs(this.getSpeed());
+        Boolean isOpen = state.getValue(HyperEntranceBlock.OPEN);
+
+        if (actualSpeed < SPEED_TO_START) {
+            if (isOpen) {
+                level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, false), 3);
+            }
             return;
         }
 
@@ -61,12 +79,12 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity {
 
         Optional<ServerPlayer> nearbyPlayer = getNearbyPlayers((ServerLevel) level, pos.getCenter());
         if (nearbyPlayer.isEmpty()) {
-            if (state.getValue(HyperEntranceBlock.OPEN)) {
+            if (isOpen) {
                 level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, false), 3);
             }
             return;
         }
-        if (!state.getValue(HyperEntranceBlock.OPEN)) {
+        if (!isOpen) {
             level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, true), 3);
         }
 
@@ -78,7 +96,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity {
         TravelManager.tryStartTravel(player, pos, state);
     }
 
-    private static Optional<ServerPlayer> getInRangePlayers(ServerLevel level, Vec3 centerPos) {
+    private Optional<ServerPlayer> getInRangePlayers(ServerLevel level, Vec3 centerPos) {
         return level.players().stream()
                 .filter(player -> player.getBoundingBox()
                         .inflate(RADIUS)
@@ -86,12 +104,11 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity {
                 .findFirst();
     }
 
-    private static Optional<ServerPlayer> getNearbyPlayers(ServerLevel level, Vec3 centerPos) {
+    private Optional<ServerPlayer> getNearbyPlayers(ServerLevel level, Vec3 centerPos) {
         return level.players().stream()
                 .filter(player -> player.getBoundingBox()
                         .inflate(RADIUS * 3)
                         .contains(centerPos))
                 .findFirst();
     }
-
 }

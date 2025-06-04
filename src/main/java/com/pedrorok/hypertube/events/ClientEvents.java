@@ -27,12 +27,22 @@ import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 public class ClientEvents {
 
     @SubscribeEvent
-    public static void onTickPost(ClientTickEvent.Post event) {
-        onTick();
+    public static void onTickPre(ClientTickEvent.Pre event) {
+        onTick(true);
     }
 
-    private static void onTick() {
+    @SubscribeEvent
+    public static void onTickPost(ClientTickEvent.Post event) {
+        onTick(false);
+    }
+
+    private static void onTick(boolean isPreEvent) {
         if (!isGameActive()) return;
+
+        if (isPreEvent) {
+            TravelManager.Client.tickClientPlayerSounds();
+            return;
+        }
         TubePlacement.clientTick();
     }
 

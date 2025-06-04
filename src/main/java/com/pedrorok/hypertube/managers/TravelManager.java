@@ -3,9 +3,11 @@ package com.pedrorok.hypertube.managers;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.events.PlayerSyncEvents;
+import com.pedrorok.hypertube.managers.sound.TubeTravelSound;
 import com.pedrorok.hypertube.registry.ModSounds;
 import com.pedrorok.hypertube.utils.MathUtils;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -69,8 +71,8 @@ public class TravelManager {
             ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(ModSounds.HYPERTUBE_SUCTION,
                     SoundSource.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), 1, pitch, seed));
         }
-        player.connection.send(new ClientboundSoundEntityPacket(ModSounds.TRAVELING,
-                SoundSource.BLOCKS, player, 1, 1, 1));
+        //player.connection.send(new ClientboundSoundEntityPacket(ModSounds.TRAVELING,
+        //        SoundSource.BLOCKS, player, 1, 1, 1));
     }
 
 
@@ -86,6 +88,7 @@ public class TravelManager {
     public static void playerTick(Player player) {
         handleCommon(player);
         if (player.level().isClientSide) {
+            clientTick(player);
             return;
         }
         handleServer(player);
@@ -94,6 +97,12 @@ public class TravelManager {
     private static void handleCommon(Player player) {
         if (hasHyperTubeData(player)) {
             player.refreshDimensions();
+        }
+    }
+
+    private static void clientTick(Player player) {
+        if (hasHyperTubeData(player)) {
+            Client.enableClientPlayerSound(player, 0.5F, 1.0F);
         }
     }
 
@@ -120,8 +129,7 @@ public class TravelManager {
         RandomSource random = player.level().random;
         float pitch = 0.8F + random.nextFloat() * 0.4F;
         int seed = random.nextInt(1000);
-        player.connection.send(new ClientboundStopSoundPacket(ModSounds.TRAVELING.getId(),
-                SoundSource.BLOCKS));
+        //player.connection.send(new ClientboundStopSoundPacket(ModSounds.TRAVELING.getId(), SoundSource.BLOCKS));
         for (Player oPlayer : player.level().players()) {
             ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(ModSounds.HYPERTUBE_SUCTION,
                     SoundSource.BLOCKS, player.getX(), player.getY(), player.getZ(), 1, pitch, seed));
@@ -240,4 +248,36 @@ public class TravelManager {
         return player.getPersistentData().getBoolean(TRAVEL_TAG);
     }
 
+
+    public static class Client {
+        private static boolean isClientPlayerInTravel4;
+
+        private static TubeTravelSound travelSound;
+
+        public static void enableClientPlayerSound(Entity e, float maxVolume, float pitch) {
+            if (e != Minecraft.getInstance()
+                    .getCameraEntity())
+                return;
+
+            isClientPlayerInTravel4 = true;
+
+            if (travelSound == null || travelSound.isStopped()) {
+                travelSound = new TubeTravelSound(ModSounds.TRAVELING.get(), pitch);
+                Minecraft.getInstance()
+                        .getSoundManager()
+                        .play(travelSound);
+            }
+            travelSound.setPitch(pitch);
+            travelSound.fadeIn(maxVolume);
+        }
+
+        public static void tickClientPlayerSounds() {
+            if (!isClientPlayerInTravel4 && travelSound != null)
+                if (travelSound.isFaded())
+                    travelSound.stopSound();
+                else
+                    travelSound.fadeOut();
+            isClientPlayerInTravel4 = false;
+        }
+    }
 }
