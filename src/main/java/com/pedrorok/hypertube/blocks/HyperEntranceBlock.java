@@ -8,6 +8,7 @@ import com.simibubi.create.content.kinetics.base.KineticBlock;
 import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -37,6 +38,14 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 
+    private static final VoxelShape SHAPE_NORTH = Block.box(0D, 0D, 0D, 16D, 16D, 23D);
+    private static final VoxelShape SHAPE_SOUTH = Block.box(0D, 0D, -7D, 16D, 16D, 16D);
+    private static final VoxelShape SHAPE_EAST = Block.box(-7D, 0D, 0D, 16D, 16D, 16D);
+    private static final VoxelShape SHAPE_WEST = Block.box(0D, 0D, 0D, 23D, 16D, 16D);
+    private static final VoxelShape SHAPE_UP = Block.box(0D, -7D, 0D, 16D, 16D, 16D);
+    private static final VoxelShape SHAPE_DOWN = Block.box(0D, 0D, 0D, 16D, 23D, 16D);
+
+
     public HyperEntranceBlock(Properties properties) {
         super(properties);
         registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false));
@@ -52,7 +61,14 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
     @Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return this.defaultBlockState().setValue(FACING, context.getClickedFace().getOpposite())
+        Player player = context.getPlayer();
+        if (player == null) {
+            return this.defaultBlockState().setValue(FACING, context.getClickedFace().getOpposite())
+                    .setValue(OPEN, false);
+        }
+        Direction direction = player.getDirection();
+        return this.defaultBlockState()
+                .setValue(FACING, direction)
                 .setValue(OPEN, false);
     }
 
@@ -100,7 +116,14 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
             && ecc.getEntity().getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) {
             return VoxelUtils.empty();
         }
-        return Block.box(0, 0, 0, 16, 16, 16);
+        return switch (state.getValue(FACING)) {
+            case SOUTH -> SHAPE_SOUTH;
+            case EAST -> SHAPE_EAST;
+            case WEST -> SHAPE_WEST;
+            case UP -> SHAPE_UP;
+            case DOWN -> SHAPE_DOWN;
+            default -> SHAPE_NORTH;
+        };
     }
 
     @Override
