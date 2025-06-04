@@ -4,13 +4,9 @@ import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.IBezierProvider;
 import com.pedrorok.hypertube.managers.placement.BezierConnection;
 import com.pedrorok.hypertube.managers.placement.SimpleConnection;
-import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.simibubi.create.api.contraption.transformable.TransformableBlockEntity;
 import com.simibubi.create.content.contraptions.StructureTransform;
-import com.simibubi.create.foundation.blockEntity.CachedRenderBBBlockEntity;
-import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import lombok.Getter;
-import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -18,14 +14,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -111,8 +103,8 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
         if (connectionFrom != null) {
             BlockEntity blockEntity = level.getBlockEntity(connectionFrom.pos());
             if (blockEntity instanceof HypertubeBlockEntity hypertubeBlockEntity
-            && hypertubeBlockEntity.getConnectionTo() != null
-            && hypertubeBlockEntity.getConnectionTo().getToPos().pos().equals(this.worldPosition)) {
+                && hypertubeBlockEntity.getConnectionTo() != null
+                && hypertubeBlockEntity.getConnectionTo().getToPos().pos().equals(this.worldPosition)) {
                 return List.of(hypertubeBlockEntity.getConnectionTo().getToPos().direction());
             }
         }

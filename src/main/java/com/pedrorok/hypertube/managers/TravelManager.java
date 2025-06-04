@@ -3,7 +3,7 @@ package com.pedrorok.hypertube.managers;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.events.PlayerSyncEvents;
-import com.pedrorok.hypertube.managers.sound.TravelSoundManager;
+import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
 import com.pedrorok.hypertube.registry.ModSounds;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
 import net.minecraft.core.BlockPos;
@@ -98,7 +98,7 @@ public class TravelManager {
 
     private static void clientTick(Player player) {
         if (hasHyperTubeData(player)) {
-            TravelSoundManager.enableClientPlayerSound(player, 0.8F, 1.0F);
+            TubeSoundManager.TravelSound.enableClientPlayerSound(player, 0.8F, 1.0F);
         }
     }
 

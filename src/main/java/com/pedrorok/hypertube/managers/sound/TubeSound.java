@@ -5,13 +5,14 @@ import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.phys.Vec3;
 
 @Setter
-public class TubeTravelSound extends AbstractTickableSoundInstance {
+public class TubeSound extends AbstractTickableSoundInstance {
 
 	private float pitch;
 
-	public TubeTravelSound(SoundEvent soundEvent, float pitch) {
+	public TubeSound(SoundEvent soundEvent, float pitch) {
 		super(soundEvent, SoundSource.BLOCKS, SoundInstance.createUnseededRandom());
 		this.pitch = pitch;
 		volume = 0.01f;
@@ -44,4 +45,14 @@ public class TubeTravelSound extends AbstractTickableSoundInstance {
 		stop();
 	}
 
+	public void updateLocation(Vec3 pos) {
+		x = pos.x;
+		y = pos.y;
+		z = pos.z;
+	}
+
+	@Override
+	public boolean isRelative() {
+		return true;
+	}
 }

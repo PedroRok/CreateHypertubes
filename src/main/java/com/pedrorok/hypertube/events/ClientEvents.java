@@ -6,7 +6,7 @@ import com.mojang.math.Axis;
 import com.pedrorok.hypertube.camera.DetachedCameraController;
 import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.managers.placement.TubePlacement;
-import com.pedrorok.hypertube.managers.sound.TravelSoundManager;
+import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
 import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.minecraft.client.Minecraft;
@@ -41,7 +41,7 @@ public class ClientEvents {
         if (!isGameActive()) return;
 
         if (isPreEvent) {
-            TravelSoundManager.tickClientPlayerSounds();
+            TubeSoundManager.tickClientPlayerSounds();
             return;
         }
         TubePlacement.clientTick();
