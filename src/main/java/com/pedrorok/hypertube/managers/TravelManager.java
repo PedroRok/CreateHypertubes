@@ -20,10 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 22/04/2025
@@ -59,16 +56,15 @@ public class TravelManager {
         travelDataMap.put(player.getUUID(), travelData);
         PlayerSyncEvents.syncPlayerStateToAll(player);
 
-        RandomSource random = player.level().random;
         Vec3 center = pos.getCenter();
-        player.teleportTo((ServerLevel) player.level(), center.x, center.y, center.z, player.getYRot(), player.getXRot());
 
-        float pitch = 0.8F + random.nextFloat() * 0.4F;
-        int seed = random.nextInt(1000);
-        for (Player oPlayer : player.level().players()) {
-            ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(ModSounds.HYPERTUBE_SUCTION,
-                    SoundSource.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), 1, pitch, seed));
+        Vec3 eyePos = player.getEyePosition();
+        Vec3 playerPos = player.position();
+        if (playerPos.distanceTo(center) > eyePos.distanceTo(center)) {
+            player.teleportRelative(0,1,0);
         }
+
+        playHypertubeSuctionSound(player, center);
     }
 
 
@@ -122,14 +118,7 @@ public class TravelManager {
 
         PlayerSyncEvents.syncPlayerStateToAll(player);
 
-        RandomSource random = player.level().random;
-        float pitch = 0.8F + random.nextFloat() * 0.4F;
-        int seed = random.nextInt(1000);
-        //player.connection.send(new ClientboundStopSoundPacket(ModSounds.TRAVELING.getId(), SoundSource.BLOCKS));
-        for (Player oPlayer : player.level().players()) {
-            ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(ModSounds.HYPERTUBE_SUCTION,
-                    SoundSource.BLOCKS, player.getX(), player.getY(), player.getZ(), 1, pitch, seed));
-        }
+        playHypertubeSuctionSound(player, player.position());
     }
 
     private static void handleServer(Player player) {
@@ -238,6 +227,16 @@ public class TravelManager {
         }
         travelData.setFinished(true);
         return null;
+    }
+
+    private static void playHypertubeSuctionSound(ServerPlayer player, Vec3 pos) {
+        RandomSource random = player.level().random;
+        float pitch = 0.8F + random.nextFloat() * 0.4F;
+        int seed = random.nextInt(1000);
+        for (Player oPlayer : player.level().players()) {
+            ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(ModSounds.HYPERTUBE_SUCTION,
+                    SoundSource.BLOCKS, pos.x, pos.y, pos.z, 1, pitch, seed));
+        }
     }
 
     public static boolean hasHyperTubeData(Entity player) {

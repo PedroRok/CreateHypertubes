@@ -7,6 +7,7 @@ import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -87,7 +88,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity {
             level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, true), 3);
         }
 
-        Optional<ServerPlayer> inRangePlayer = getInRangePlayers((ServerLevel) level, pos.getCenter());
+        Optional<ServerPlayer> inRangePlayer = getInRangePlayers((ServerLevel) level, pos.getCenter(), state.getValue(HyperEntranceBlock.FACING));
         if (inRangePlayer.isEmpty()) return;
 
         ServerPlayer player = inRangePlayer.get();
@@ -139,11 +140,11 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity {
     }
 
 
-    private Optional<ServerPlayer> getInRangePlayers(ServerLevel level, Vec3 centerPos) {
+    private Optional<ServerPlayer> getInRangePlayers(ServerLevel level, Vec3 centerPos, Direction facing) {
         return level.players().stream()
                 .filter(player -> player.getBoundingBox()
-                        .inflate(RADIUS)
-                        .contains(centerPos))
+                        .inflate(RADIUS -0.25)
+                        .contains(centerPos.add(Vec3.atLowerCornerOf(facing.getOpposite().getNormal()))))
                 .findFirst();
     }
 
