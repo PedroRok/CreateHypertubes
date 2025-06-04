@@ -3,17 +3,12 @@ package com.pedrorok.hypertube.managers;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.events.PlayerSyncEvents;
-import com.pedrorok.hypertube.managers.sound.TubeTravelSound;
+import com.pedrorok.hypertube.managers.sound.TravelSoundManager;
 import com.pedrorok.hypertube.registry.ModSounds;
-import com.pedrorok.hypertube.utils.MathUtils;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
-import net.minecraft.network.protocol.game.ClientboundStopSoundPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -25,7 +20,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 22/04/2025
@@ -40,14 +38,14 @@ public class TravelManager {
 
     private static final Map<UUID, TravelData> travelDataMap = new HashMap<>();
 
-    public static void tryStartTravel(ServerPlayer player, BlockPos pos, BlockState state) {
+    public static void tryStartTravel(ServerPlayer player, BlockPos pos, BlockState state, float speed) {
         CompoundTag playerPersistData = player.getPersistentData();
         if (playerPersistData.getBoolean(TRAVEL_TAG)) return;
         if (playerPersistData.contains(LAST_TRAVEL_TIME) &&
             playerPersistData.getLong(LAST_TRAVEL_TIME) > System.currentTimeMillis()) return;
 
         BlockPos relative = pos.relative(state.getValue(HyperEntranceBlock.FACING));
-        TravelData travelData = new TravelData(relative, player.level(), pos, MathUtils.getMediumSpeed(player.getDeltaMovement()));
+        TravelData travelData = new TravelData(relative, player.level(), pos, speed);
 
         if (travelData.getTravelPoints().size() < 3) {
             // TODO: Handle error
@@ -71,8 +69,6 @@ public class TravelManager {
             ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(ModSounds.HYPERTUBE_SUCTION,
                     SoundSource.BLOCKS, pos.getX(), pos.getY(), pos.getZ(), 1, pitch, seed));
         }
-        //player.connection.send(new ClientboundSoundEntityPacket(ModSounds.TRAVELING,
-        //        SoundSource.BLOCKS, player, 1, 1, 1));
     }
 
 
@@ -102,7 +98,7 @@ public class TravelManager {
 
     private static void clientTick(Player player) {
         if (hasHyperTubeData(player)) {
-            Client.enableClientPlayerSound(player, 0.5F, 1.0F);
+            TravelSoundManager.enableClientPlayerSound(player, 0.8F, 1.0F);
         }
     }
 
@@ -246,38 +242,5 @@ public class TravelManager {
 
     public static boolean hasHyperTubeData(Entity player) {
         return player.getPersistentData().getBoolean(TRAVEL_TAG);
-    }
-
-
-    public static class Client {
-        private static boolean isClientPlayerInTravel4;
-
-        private static TubeTravelSound travelSound;
-
-        public static void enableClientPlayerSound(Entity e, float maxVolume, float pitch) {
-            if (e != Minecraft.getInstance()
-                    .getCameraEntity())
-                return;
-
-            isClientPlayerInTravel4 = true;
-
-            if (travelSound == null || travelSound.isStopped()) {
-                travelSound = new TubeTravelSound(ModSounds.TRAVELING.get(), pitch);
-                Minecraft.getInstance()
-                        .getSoundManager()
-                        .play(travelSound);
-            }
-            travelSound.setPitch(pitch);
-            travelSound.fadeIn(maxVolume);
-        }
-
-        public static void tickClientPlayerSounds() {
-            if (!isClientPlayerInTravel4 && travelSound != null)
-                if (travelSound.isFaded())
-                    travelSound.stopSound();
-                else
-                    travelSound.fadeOut();
-            isClientPlayerInTravel4 = false;
-        }
     }
 }

@@ -93,7 +93,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity {
 
         ServerPlayer player = inRangePlayer.get();
         if (player.isShiftKeyDown()) return;
-        TravelManager.tryStartTravel(player, pos, state);
+        TravelManager.tryStartTravel(player, pos, state, actualSpeed / 512);
     }
 
     private Optional<ServerPlayer> getInRangePlayers(ServerLevel level, Vec3 centerPos) {
