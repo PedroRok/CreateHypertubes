@@ -3,6 +3,7 @@ package com.pedrorok.hypertube.events;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.camera.DetachedCameraController;
 import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.managers.placement.TubePlacement;
@@ -24,7 +25,7 @@ import net.neoforged.neoforge.client.event.RenderPlayerEvent;
  * @author Rok, Pedro Lucas nmm. Created on 23/04/2025
  * @project Create Hypertube
  */
-@EventBusSubscriber(Dist.CLIENT)
+@EventBusSubscriber(value = Dist.CLIENT, modid = HypertubeMod.MOD_ID)
 public class ClientEvents {
 
     @SubscribeEvent
@@ -108,6 +109,5 @@ public class ClientEvents {
         if (!player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
 
         event.getPoseStack().popPose();
-
     }
 }
