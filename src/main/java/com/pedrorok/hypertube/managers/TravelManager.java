@@ -8,9 +8,7 @@ import com.pedrorok.hypertube.registry.ModSounds;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -63,7 +61,7 @@ public class TravelManager {
         Vec3 eyePos = player.getEyePosition();
         Vec3 playerPos = player.position();
         if (playerPos.distanceTo(center) > eyePos.distanceTo(center)) {
-            player.teleportRelative(0,1,0);
+            player.teleportRelative(0, 1, 0);
         }
 
         playHypertubeSuctionSound(player, center);
@@ -116,9 +114,6 @@ public class TravelManager {
         player.teleportRelative(lastDir.x, lastDir.y, lastDir.z);
         player.setDeltaMovement(travelData.getLastDir().scale(travelData.getSpeed() + 0.5));
         player.setPose(Pose.CROUCHING);
-        player.getPersistentData().remove(LAST_POSITION + "_x");
-        player.getPersistentData().remove(LAST_POSITION + "_y");
-        player.getPersistentData().remove(LAST_POSITION + "_z");
         player.hurtMarked = true;
 
         PlayerSyncEvents.syncPlayerStateToAll(player);
@@ -127,7 +122,15 @@ public class TravelManager {
     }
 
     private static void handleServer(Player player) {
-        if (!travelDataMap.containsKey(player.getUUID())) return;
+        if (!travelDataMap.containsKey(player.getUUID())) {
+            if (!player.getPersistentData().getBoolean(TRAVEL_TAG)) return;
+            player.getPersistentData().putBoolean(TRAVEL_TAG, false);
+            return;
+        }
+        handlePlayerTraveling(player);
+    }
+
+    private static void handlePlayerTraveling(Player player) {
         TravelData travelData = travelDataMap.get(player.getUUID());
         Vec3 currentPoint = travelData.getTravelPoint();
 
