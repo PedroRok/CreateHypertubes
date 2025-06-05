@@ -271,11 +271,8 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
 
         if (!player.isCreative()) {
             if (toDrop != 0) {
-                ItemStack stack = new ItemStack(ModBlocks.HYPERTUBE.get(), toDrop + 1);
+                ItemStack stack = new ItemStack(ModBlocks.HYPERTUBE.get(), toDrop +1);
                 Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
-            } else {
-                Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(),
-                        ModBlocks.HYPERTUBE.asStack());
             }
         }
 
@@ -309,7 +306,7 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
             MessageUtils.sendActionMessage(player, "§c" + validation.errorMessage());
             return;
         }
-        TubePlacement.checkSurvivalItems(player, (int) bezierConnection.distance(), false);
+        TubePlacement.checkSurvivalItems(player, (int) bezierConnection.distance() + 1, false);
 
 
         BlockEntity otherBlockEntity = level.getBlockEntity(connectionFrom.pos());

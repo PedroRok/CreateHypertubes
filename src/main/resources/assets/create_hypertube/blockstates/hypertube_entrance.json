@@ -1,41 +1,41 @@
 {
   "multipart": [
     { "when": { "facing": "north", "open": true },
-      "apply": { "model": "create_hypertube:block/tube_entrance_open", "uvlock": false }
+      "apply": { "model": "create_hypertube:block/hypertube_entrance/tube_entrance_open", "uvlock": false }
     },
     { "when": { "facing": "east", "open": true },
-      "apply": { "model": "create_hypertube:block/tube_entrance_open", "y": 90, "uvlock": false }
+      "apply": { "model": "create_hypertube:block/hypertube_entrance/tube_entrance_open", "y": 90, "uvlock": false }
     },
     { "when": { "facing": "south", "open": true },
-      "apply": { "model": "create_hypertube:block/tube_entrance_open", "y": 180, "uvlock": false }
+      "apply": { "model": "create_hypertube:block/hypertube_entrance/tube_entrance_open", "y": 180, "uvlock": false }
     },
     { "when": { "facing": "west", "open": true },
-      "apply": { "model": "create_hypertube:block/tube_entrance_open", "y": 270, "uvlock": false }
+      "apply": { "model": "create_hypertube:block/hypertube_entrance/tube_entrance_open", "y": 270, "uvlock": false }
     },
     { "when": { "facing": "up", "open": true },
-      "apply": { "model": "create_hypertube:block/tube_entrance_open", "x": 270, "uvlock": false }
+      "apply": { "model": "create_hypertube:block/hypertube_entrance/tube_entrance_open", "x": 270, "uvlock": false }
     },
     { "when": { "facing": "down", "open": true },
-      "apply": { "model": "create_hypertube:block/tube_entrance_open", "x": 90, "uvlock": false }
+      "apply": { "model": "create_hypertube:block/hypertube_entrance/tube_entrance_open", "x": 90, "uvlock": false }
     },
 
     { "when": { "facing": "north", "open": false },
-      "apply": { "model": "create_hypertube:block/tube_entrance", "uvlock": false }
+      "apply": { "model": "create_hypertube:block/hypertube_entrance/tube_entrance", "uvlock": false }
     },
     { "when": { "facing": "east", "open": false },
-      "apply": { "model": "create_hypertube:block/tube_entrance", "y": 90, "uvlock": false }
+      "apply": { "model": "create_hypertube:block/hypertube_entrance/tube_entrance", "y": 90, "uvlock": false }
     },
     { "when": { "facing": "south", "open": false },
-      "apply": { "model": "create_hypertube:block/tube_entrance", "y": 180, "uvlock": false }
+      "apply": { "model": "create_hypertube:block/hypertube_entrance/tube_entrance", "y": 180, "uvlock": false }
     },
     { "when": { "facing": "west", "open": false },
-      "apply": { "model": "create_hypertube:block/tube_entrance", "y": 270, "uvlock": false }
+      "apply": { "model": "create_hypertube:block/hypertube_entrance/tube_entrance", "y": 270, "uvlock": false }
     },
     { "when": { "facing": "up", "open": false },
-      "apply": { "model": "create_hypertube:block/tube_entrance", "x": 270, "uvlock": false }
+      "apply": { "model": "create_hypertube:block/hypertube_entrance/tube_entrance", "x": 270, "uvlock": false }
     },
     { "when": { "facing": "down", "open": false },
-      "apply": { "model": "create_hypertube:block/tube_entrance", "x": 90, "uvlock": false }
+      "apply": { "model": "create_hypertube:block/hypertube_entrance/tube_entrance", "x": 90, "uvlock": false }
     }
   ]
 }

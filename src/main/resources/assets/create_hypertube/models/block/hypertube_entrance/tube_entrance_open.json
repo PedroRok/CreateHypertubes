@@ -1,5 +1,5 @@
 {
-	"parent": "create_hypertube:block/tube_entrance",
+	"parent": "create_hypertube:block/hypertube_entrance/tube_entrance",
 	"textures": {
 		"1": "create_hypertube:block/tube_entrance_open"
 	}

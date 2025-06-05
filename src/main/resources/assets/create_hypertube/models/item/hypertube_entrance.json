@@ -1,4 +1,4 @@
 {
 	"credit": "Made with Blockbench",
-	"parent": "create_hypertube:block/tube_entrance"
+	"parent": "create_hypertube:block/hypertube_entrance/item"
 }

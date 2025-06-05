@@ -5,10 +5,13 @@ import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.items.HypertubeItem;
 import com.simibubi.create.foundation.data.CreateRegistrate;
+import com.simibubi.create.foundation.data.SharedProperties;
 import com.tterrag.registrate.util.entry.BlockEntry;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
+import static com.simibubi.create.foundation.data.ModelGen.customItemModel;
 import static com.simibubi.create.foundation.data.TagGen.axeOrPickaxe;
 
 
@@ -31,12 +34,18 @@ public class ModBlocks {
     public static final BlockEntry<HypertubeBlock> HYPERTUBE = REGISTRATE.block("hypertube", HypertubeBlock::new)
             .item(HypertubeItem::new).build()
             .properties((a) -> PROPERTIES)
+            .defaultLoot()
+            .defaultBlockstate()
             .register();
 
     public static final BlockEntry<HyperEntranceBlock> HYPERTUBE_ENTRANCE = REGISTRATE.block("hypertube_entrance", HyperEntranceBlock::new)
             .simpleItem()
             .properties((a) -> PROPERTIES)
             .transform(axeOrPickaxe())
+            .defaultBlockstate()
+            .defaultLoot()
+            .item(BlockItem::new)
+            .transform(customItemModel())
             .register();
 
     public static void register() {

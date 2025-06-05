@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "create:brass_sheet"
+    },
+    "G": {
+      "tag": "c:glass_panes"
+    }
+  },
+  "pattern": [
+    "BGB",
+    "G G",
+    "BGB"
+  ],
+  "result": {
+    "count": 16,
+    "id": "create_hypertube:hypertube"
+  }
+}
