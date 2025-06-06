@@ -22,6 +22,7 @@ import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
@@ -33,8 +34,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity {
 
     private static final float SPEED_TO_START = 16;
 
-    @OnlyIn(Dist.CLIENT)
-    private TubeSoundManager.TubeAmbientSound tubeAmbientSound = new TubeSoundManager.TubeAmbientSound();
+    private final UUID tubeSoundId = UUID.randomUUID();
 
     public HyperEntranceBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -55,9 +55,15 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity {
     @Override
     public void remove() {
         if (level.isClientSide) {
-            tubeAmbientSound.stopSound();
+            removeClient();
         }
         super.remove();
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private void removeClient() {
+        TubeSoundManager.getAmbientSound(tubeSoundId).stopSound();
+        TubeSoundManager.removeAmbientSound(tubeSoundId);
     }
 
     @Override
@@ -109,8 +115,9 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity {
 
         float actualSpeed = Math.abs(this.getSpeed());
 
+        TubeSoundManager.TubeAmbientSound sound = TubeSoundManager.getAmbientSound(tubeSoundId);
         if (actualSpeed < SPEED_TO_START) {
-            tubeAmbientSound.tickClientPlayerSounds();
+            sound.tickClientPlayerSounds();
             return;
         }
 
@@ -134,7 +141,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity {
 
         double distance = player.distanceToSqr(source);
 
-        tubeAmbientSound.enableClientPlayerSound(
+        sound.enableClientPlayerSound(
                 player,
                 rotatedDirection,
                 distance,

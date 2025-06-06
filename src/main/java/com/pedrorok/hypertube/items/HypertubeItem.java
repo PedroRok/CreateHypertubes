@@ -145,8 +145,10 @@ public class HypertubeItem extends BlockItem {
         }
         TubePlacement.checkSurvivalItems(player, (int) connection.distance(), false);
 
-        connection.drawPath(LerpedFloat.linear()
-                .startWithValue(0));
+        if (level.isClientSide) {
+            connection.drawPath(LerpedFloat.linear()
+                    .startWithValue(0));
+        }
 
         if (usingConnectingTo) {
             tubeEntity.setConnectionFrom(connection.getFromPos(), direction);

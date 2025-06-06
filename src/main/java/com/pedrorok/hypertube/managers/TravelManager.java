@@ -101,7 +101,6 @@ public class TravelManager {
     }
 
     private static boolean isTraveling;
-    private static boolean enterWithFpv;
 
     @OnlyIn(Dist.CLIENT)
     private static void clientTick(Player player) {
@@ -111,8 +110,7 @@ public class TravelManager {
             return;
         }
         if (isTraveling
-            && !ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get()
-            && !enterWithFpv) {
+            && !ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get()) {
             Minecraft.getInstance().options.setCameraType(CameraType.FIRST_PERSON);
             isTraveling = false;
         }

@@ -10,6 +10,7 @@ displayName = "${mod_name}"
 displayURL = "pedrorok.com"
 authors = "${mod_authors}"
 description = '''${mod_description}'''
+logoFile="icon.png"
 
 [[mixins]]
 config = "${mod_id}.mixins.json"

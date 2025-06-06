@@ -4,15 +4,35 @@ import com.pedrorok.hypertube.registry.ModSounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 04/06/2025
  * @project Create Hypertube
  */
+@OnlyIn(Dist.CLIENT)
 public class TubeSoundManager {
+
+    private static final Map<UUID, TubeAmbientSound> ambientSounds = new HashMap<>();
 
     public static void tickClientPlayerSounds() {
         TravelSound.tickClientPlayerSounds();
+    }
+
+    public static TubeAmbientSound getAmbientSound(UUID uuid) {
+        return ambientSounds.computeIfAbsent(uuid, k -> new TubeAmbientSound());
+    }
+
+    public static void removeAmbientSound(UUID uuid) {
+        TubeAmbientSound sound = ambientSounds.remove(uuid);
+        if (sound != null) {
+            sound.stopSound();
+        }
     }
 
     public static class TubeAmbientSound {
