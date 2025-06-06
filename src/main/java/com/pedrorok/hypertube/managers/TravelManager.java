@@ -256,9 +256,8 @@ public class TravelManager {
         Vec3 lastPosition = new Vec3(x, y, z);
 
 
-        if (player.position().distanceTo(lastPosition) < 0.01) {
+        if (player.position().distanceTo(lastPosition) < 0.0000001) {
             // player is stuck
-            System.out.println("Player is stuck, teleporting to next travel point");
             travelData.getNextTravelPoint();
             Vec3 travelPoint = travelData.getTravelPoint();
             player.teleportTo(travelPoint.x, travelPoint.y, travelPoint.z);
