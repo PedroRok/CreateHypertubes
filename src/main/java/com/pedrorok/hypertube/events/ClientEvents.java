@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.pedrorok.hypertube.camera.DetachedCameraController;
+import com.pedrorok.hypertube.config.ClientConfig;
 import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.managers.placement.TubePlacement;
 import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
@@ -50,14 +51,12 @@ public class ClientEvents {
 
     @SubscribeEvent
     public static void onRenderWorld(RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES)
-            return;
+        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) return;
 
         PoseStack ms = event.getPoseStack();
         ms.pushPose();
         SuperRenderTypeBuffer buffer = DefaultSuperRenderTypeBuffer.getInstance();
-        Vec3 camera = Minecraft.getInstance().gameRenderer.getMainCamera()
-                .getPosition();
+        Vec3 camera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
 
         TubePlacement.drawCustomBlockSelection(ms, buffer, camera);
 
@@ -74,7 +73,10 @@ public class ClientEvents {
     public static void onClientTick(ClientTickEvent.Post event) {
 
         Minecraft mc = Minecraft.getInstance();
-        if (mc.options.getCameraType().isFirstPerson() || mc.isPaused() || !mc.isWindowActive()) return;
+        if ((mc.options.getCameraType().isFirstPerson() && ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get())
+            || mc.isPaused()
+            || !mc.isWindowActive())
+            return;
 
         MouseHandler mouse = mc.mouseHandler;
         double dx = mouse.getXVelocity();

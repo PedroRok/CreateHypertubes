@@ -2,10 +2,13 @@ package com.pedrorok.hypertube.managers;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
+import com.pedrorok.hypertube.config.ClientConfig;
 import com.pedrorok.hypertube.events.PlayerSyncEvents;
 import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
 import com.pedrorok.hypertube.registry.ModSounds;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
+import net.minecraft.client.CameraType;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
@@ -17,9 +20,14 @@ import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 22/04/2025
@@ -92,9 +100,21 @@ public class TravelManager {
         }
     }
 
+    private static boolean isTraveling;
+    private static boolean enterWithFpv;
+
+    @OnlyIn(Dist.CLIENT)
     private static void clientTick(Player player) {
         if (hasHyperTubeData(player)) {
             TubeSoundManager.TravelSound.enableClientPlayerSound(player, 0.8F, 1.0F);
+            isTraveling = true;
+            return;
+        }
+        if (isTraveling
+            && !ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get()
+            && !enterWithFpv) {
+            Minecraft.getInstance().options.setCameraType(CameraType.FIRST_PERSON);
+            isTraveling = false;
         }
     }
 

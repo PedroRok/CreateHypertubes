@@ -149,11 +149,11 @@ public class HypertubeItem extends BlockItem {
                 .startWithValue(0));
 
         if (usingConnectingTo) {
-            tubeEntity.setConnectionFrom(connection.getFromPos());
+            tubeEntity.setConnectionFrom(connection.getFromPos(), direction);
             otherBlockEntity.setConnectionTo(connection);
         } else {
             tubeEntity.setConnectionTo(connection);
-            otherBlockEntity.setConnectionFrom(connection.getFromPos());
+            otherBlockEntity.setConnectionFrom(connection.getFromPos(), direction);
         }
 
         player.displayClientMessage(Component.literal("Connected"), true);

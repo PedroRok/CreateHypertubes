@@ -44,12 +44,21 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
             }
         }
         setChanged();
-
         sync();
     }
 
-    public void setConnectionFrom(SimpleConnection connectionFrom) {
+    public void setConnectionFrom(SimpleConnection connectionFrom, Direction direction) {
         this.connectionFrom = connectionFrom;
+
+        if (level != null && !level.isClientSide()) {
+            if (level.getBlockState(worldPosition).getBlock() instanceof HypertubeBlock hypertubeBlock) {
+                hypertubeBlock.updateBlockStateFromEntity(level, worldPosition);
+                if (direction != null) {
+                    BlockState state = hypertubeBlock.getState(List.of(direction));
+                    hypertubeBlock.updateBlockState(level, worldPosition, state);
+                }
+            }
+        }
         setChanged();
         sync();
     }

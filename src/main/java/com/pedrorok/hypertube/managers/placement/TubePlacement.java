@@ -3,6 +3,7 @@ package com.pedrorok.hypertube.managers.placement;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
+import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.items.HypertubeItem;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModDataComponent;
@@ -73,6 +74,12 @@ public class TubePlacement {
         }
 
         SimpleConnection connectionFrom = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
+        if (!(level.getBlockEntity(new BlockPos(connectionFrom.pos())) instanceof HypertubeBlockEntity)) {
+            HypertubeItem.clearConnection(stack);
+            MessageUtils.sendActionMessage(player, "§cConnection cleared, the block is invalid!");
+            return;
+        }
+
         animation.setValue(0.8);
         if (connectionFrom == null) {
             animation.setValue(0);

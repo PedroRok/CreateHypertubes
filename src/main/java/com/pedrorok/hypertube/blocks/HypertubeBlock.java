@@ -109,7 +109,6 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
         world.setBlockAndUpdate(pos, newState);
     }
 
-
     private BlockState getStateFromBlockEntity(Level world, BlockPos pos) {
         BlockEntity be = world.getBlockEntity(pos);
         if (!(be instanceof HypertubeBlockEntity hypertube)) {
@@ -146,6 +145,12 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
 
 
     public BlockState getState(Collection<Direction> activeDirections) {
+        if (activeDirections == null) {
+            return defaultBlockState()
+                    .setValue(NORTH_SOUTH, false)
+                    .setValue(EAST_WEST, false)
+                    .setValue(UP_DOWN, false);
+        }
         boolean northSouth = activeDirections.contains(Direction.NORTH) || activeDirections.contains(Direction.SOUTH);
         boolean eastWest = activeDirections.contains(Direction.EAST) || activeDirections.contains(Direction.WEST);
         boolean upDown = activeDirections.contains(Direction.UP) || activeDirections.contains(Direction.DOWN);
@@ -265,7 +270,7 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
             if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity
             && otherHypertubeEntity.getConnectionFrom() != null) {
                 toDrop += (int) connectionTo.distance() -1;
-                otherHypertubeEntity.setConnectionFrom(null);
+                otherHypertubeEntity.setConnectionFrom(null, null);
             }
         }
 
@@ -319,7 +324,7 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
             } else if (otherHypertubeEntity.getConnectionFrom() == null) {
                 bezierConnection = bezierConnection.invert();
                 connectionTo = bezierConnection.getFromPos();
-                otherHypertubeEntity.setConnectionFrom(connectionTo);
+                otherHypertubeEntity.setConnectionFrom(connectionTo, bezierConnection.getToPos().direction());
                 inverted = true;
             } else {
                 player.displayClientMessage(Component.literal("Invalid connection"), true);
@@ -331,7 +336,7 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
         if (inverted)
             hypertubeEntity.setConnectionTo(bezierConnection);
         else
-            hypertubeEntity.setConnectionFrom(connectionFrom);
+            hypertubeEntity.setConnectionFrom(connectionFrom, bezierConnection.getToPos().direction());
 
 
         if (!level.isClientSide()
