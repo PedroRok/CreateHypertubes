@@ -4,14 +4,12 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.pedrorok.hypertube.camera.DetachedCameraController;
-import com.pedrorok.hypertube.config.ClientConfig;
 import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.managers.placement.TubePlacement;
 import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
 import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.MouseHandler;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -46,6 +44,7 @@ public class ClientEvents {
             return;
         }
         TubePlacement.clientTick();
+        DetachedCameraController.tickCamera();
     }
 
 
@@ -67,25 +66,6 @@ public class ClientEvents {
 
     protected static boolean isGameActive() {
         return !(Minecraft.getInstance().level == null || Minecraft.getInstance().player == null);
-    }
-
-    @SubscribeEvent
-    public static void onClientTick(ClientTickEvent.Post event) {
-
-        Minecraft mc = Minecraft.getInstance();
-        if ((mc.options.getCameraType().isFirstPerson() && ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get())
-            || mc.isPaused()
-            || !mc.isWindowActive())
-            return;
-
-        MouseHandler mouse = mc.mouseHandler;
-        double dx = mouse.getXVelocity();
-        double dy = mouse.getYVelocity();
-
-        double sensitivity = mc.options.sensitivity().get();
-        double factor = sensitivity * 0.6 + 0.2;
-        factor = factor * factor * factor * 8.0;
-        DetachedCameraController.get().updateCameraRotation((float) (dx * factor), (float) (dy * factor), true);
     }
 
     @SubscribeEvent

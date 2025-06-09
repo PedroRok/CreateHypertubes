@@ -1,7 +1,10 @@
 package com.pedrorok.hypertube.camera;
 
+import com.pedrorok.hypertube.config.ClientConfig;
 import lombok.Getter;
 import lombok.Setter;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.MouseHandler;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -111,5 +114,23 @@ public class DetachedCameraController {
         this.currentPos = this.currentPos.lerp(this.targetPos, SMOOTHING);
         this.yaw = (float) Mth.lerp(SMOOTHING_ROTATION, this.yaw, this.targetYaw);
         this.pitch = (float) Mth.lerp(SMOOTHING_ROTATION, this.pitch, this.targetPitch);
+    }
+
+
+    public static void tickCamera() {
+        Minecraft mc = Minecraft.getInstance();
+        if ((mc.options.getCameraType().isFirstPerson() && ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get())
+            || mc.isPaused()
+            || !mc.isWindowActive())
+            return;
+
+        MouseHandler mouse = mc.mouseHandler;
+        double dx = mouse.getXVelocity();
+        double dy = mouse.getYVelocity();
+
+        double sensitivity = mc.options.sensitivity().get();
+        double factor = sensitivity * 0.6 + 0.2;
+        factor = factor * factor * factor * 8.0;
+        get().updateCameraRotation((float) (dx * factor), (float) (dy * factor), true);
     }
 }
