@@ -66,5 +66,13 @@ public abstract class PlayerModelMixin {
         model.head.xRot = -1.2F;
         model.head.yRot = 0;
         model.head.zRot = 0;
+
+        model.hat.xRot = -1.2F;
+        model.hat.yRot = 0;
+        model.hat.zRot = 0;
+
+        model.jacket.xRot = 0;
+        model.jacket.yRot = 0;
+        model.jacket.zRot = 0;
     }
 }
