@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -125,7 +126,7 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
     public @NotNull CompoundTag getUpdateTag() {
         CompoundTag tag = super.getUpdateTag();
         saveAdditional(tag);
-        return super.getUpdateTag();
+        return tag;
     }
 
     @Override
@@ -149,5 +150,10 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
     @Override
     public BezierConnection getBezierConnection() {
         return connectionTo;
+    }
+
+    @Override
+    public AABB getRenderBoundingBox() {
+        return new AABB(worldPosition).inflate(80);
     }
 }

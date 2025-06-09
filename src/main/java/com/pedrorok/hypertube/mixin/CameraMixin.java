@@ -58,7 +58,6 @@ public class CameraMixin {
 
         camera.callSetRotation(DetachedCameraController.get().getYaw() * (flipped ? -1 : 1), DetachedCameraController.get().getPitch());
 
-
         camera.callSetPosition(
                 Mth.lerp(PartialTicks, renderViewEntity.xo, renderViewEntity.getX()),
                 Mth.lerp(PartialTicks, renderViewEntity.yo, renderViewEntity.getY()),
@@ -70,7 +69,7 @@ public class CameraMixin {
         } else {
             f = 1.0F;
         }
-        camera.callMove(-camera.callGetMaxZoom(ClientHooks.getDetachedCameraDistance(cameraObj, flipped, f, 4.0F) * f), 0.0F, 0.0F);
+        camera.callMove(-camera.callGetMaxZoom(4.0F), 0.0F, 0.0F);
 
         ci.cancel();
     }

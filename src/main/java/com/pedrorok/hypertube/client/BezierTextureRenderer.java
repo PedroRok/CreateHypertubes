@@ -143,7 +143,8 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
                 .uv(u, v)
                 .overlayCoords(overlay)
                 .uv2(light & 0xFFFF, light >> 16)
-                .normal(nx, ny, nz);
+                .normal(nx, ny, nz)
+                .endVertex();
     }
 
     private Vector3f findPerpendicularVector(Vector3f vec) {
@@ -187,11 +188,5 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
     public boolean shouldRender(HypertubeBlockEntity p_173568_, Vec3 p_173569_) {
         return true;
     }
-
-    /*@Override
-    public @NotNull AABB getRenderBoundingBox(HypertubeBlockEntity blockEntity) {
-        return AABB.INFINITE;
-    }*/
-
 
 }
