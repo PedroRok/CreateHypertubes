@@ -3,9 +3,9 @@
 	"parent": "block/block",
 	"texture_size": [64, 64],
 	"textures": {
-		"1": "create_hypertube:block/tube_entrance",
-		"2": "create_hypertube:block/tube_base",
-		"particle": "create_hypertube:block/tube_entrance"
+		"1": "create_hypertube:block/hypertube_entrance",
+		"2": "create_hypertube:block/hypertube",
+		"particle": "create_hypertube:block/hypertube_entrance"
 	},
 	"elements": [
 		{

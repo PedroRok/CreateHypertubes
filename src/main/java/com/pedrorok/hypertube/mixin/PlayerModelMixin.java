@@ -66,6 +66,7 @@ public abstract class PlayerModelMixin {
         model.head.yRot = 0;
         model.head.zRot = 0;
 
+        // Fixing issue #6
         model.hat.xRot = -1.2F;
         model.hat.yRot = 0;
         model.hat.zRot = 0;
