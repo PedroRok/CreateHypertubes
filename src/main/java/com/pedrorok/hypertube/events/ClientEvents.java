@@ -48,6 +48,7 @@ public class ClientEvents {
             return;
         }
         TubePlacement.clientTick();
+        DetachedCameraController.cameraTick();
     }
 
 
@@ -69,32 +70,6 @@ public class ClientEvents {
 
     protected static boolean isGameActive() {
         return !(Minecraft.getInstance().level == null || Minecraft.getInstance().player == null);
-    }
-
-
-    private static double lastMouseX = 0;
-    private static double lastMouseY = 0;
-
-    @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
-
-        Minecraft mc = Minecraft.getInstance();
-        if ((mc.options.getCameraType().isFirstPerson() && ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get())
-            || mc.isPaused()
-            || !mc.isWindowActive())
-            return;
-
-        MouseHandler mouse = mc.mouseHandler;
-        double dx = mouse.xpos() - lastMouseX;
-        double dy = mouse.ypos() - lastMouseY;
-
-        double sensitivity = mc.options.sensitivity().get();
-        double factor = sensitivity * 0.3 + 0.1;
-        factor = factor * factor * factor * 8.0;
-        DetachedCameraController.get().updateCameraRotation((float) (dx * factor), (float) (dy * factor), true);
-        lastMouseX = mc.mouseHandler.xpos();
-        lastMouseY = mc.mouseHandler.ypos();
     }
 
     @SubscribeEvent
