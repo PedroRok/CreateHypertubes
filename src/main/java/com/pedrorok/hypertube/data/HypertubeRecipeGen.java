@@ -45,5 +45,6 @@ public class HypertubeRecipeGen extends RecipeProvider {
                 .define('G', AllBlocks.COGWHEEL)
                 .unlockedBy("has_brass_sheet", has(AllItems.BRASS_SHEET))
                 .save(consumer);
+        System.out.println("REGISTREI TUDO");
     }
 }

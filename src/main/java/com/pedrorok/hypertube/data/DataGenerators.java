@@ -2,6 +2,9 @@ package com.pedrorok.hypertube.data;
 
 
 import com.pedrorok.hypertube.HypertubeMod;
+import com.simibubi.create.foundation.data.recipe.CreateRecipeProvider;
+import com.simibubi.create.foundation.data.recipe.ProcessingRecipeGen;
+import com.tterrag.registrate.providers.RegistrateDataProvider;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
@@ -25,9 +28,5 @@ public class DataGenerators {
         CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
 
         generator.addProvider(event.includeServer(), new HypertubeRecipeGen(packOutput));
-        /*if (event.includeServer()) {
-            CreateRecipeProvider.registerAllProcessing(generator, packOutput);
-        }*/
-
     }
 }

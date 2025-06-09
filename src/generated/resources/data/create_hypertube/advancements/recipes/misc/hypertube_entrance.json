@@ -5,7 +5,9 @@
       "conditions": {
         "items": [
           {
-            "items": "create:brass_sheet"
+            "items": [
+              "create:brass_sheet"
+            ]
           }
         ]
       },
@@ -20,13 +22,14 @@
   },
   "requirements": [
     [
-      "has_the_recipe",
-      "has_brass_sheet"
+      "has_brass_sheet",
+      "has_the_recipe"
     ]
   ],
   "rewards": {
     "recipes": [
       "create_hypertube:hypertube_entrance"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }

@@ -6,7 +6,7 @@
       "item": "create:brass_sheet"
     },
     "G": {
-      "tag": "c:glass_panes"
+      "tag": "forge:glass_panes"
     }
   },
   "pattern": [
@@ -16,6 +16,7 @@
   ],
   "result": {
     "count": 16,
-    "id": "create_hypertube:hypertube"
-  }
+    "item": "create_hypertube:hypertube"
+  },
+  "show_notification": true
 }
