@@ -121,7 +121,7 @@ public class TravelManager {
         player.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
         // ---
         AllPackets.getChannel().send(
-                PacketDistributor.PLAYER.with(() -> player),
+                PacketDistributor.ALL.noArg(),
                 new ISyncPersistentData.PersistentDataPacket(player)
         );
 
