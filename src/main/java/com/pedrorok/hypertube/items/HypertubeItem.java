@@ -193,6 +193,6 @@ public class HypertubeItem extends BlockItem {
 
     @Override
     public boolean isFoil(ItemStack stack) {
-        return stack.getTag().contains("foil") || stack.isEnchanted();
+        return stack.getTag() != null && (stack.getTag().contains("foil") || stack.isEnchanted());
     }
 }

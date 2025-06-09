@@ -38,7 +38,7 @@ public class ModCreativeTab {
     }
 
     @SubscribeEvent
-    private static void addCreative(BuildCreativeModeTabContentsEvent event) {
+    public static void addCreative(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey().equals(TUBE_TAB.getKey())) {
             CreateRegistrate REGISTRATE = HypertubeMod.get();
             for (RegistryEntry<Block> entry : REGISTRATE.getAll(Registries.BLOCK)) {

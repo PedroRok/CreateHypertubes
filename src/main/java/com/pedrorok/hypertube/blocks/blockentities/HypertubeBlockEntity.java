@@ -92,7 +92,7 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
     }
 
     @Override
-    public void load(CompoundTag tag) {
+    public void load(@NotNull CompoundTag tag) {
         super.load(tag);
 
         if (tag.contains("ConnectionTo")) {
@@ -136,6 +136,9 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
         CompoundTag tag = pkt.getTag();
+        if (tag == null) {
+            return;
+        }
         load(tag);
     }
 

@@ -59,10 +59,14 @@ public class TravelManager {
         }
 
         playerPersistData.putBoolean(TRAVEL_TAG, true);
-        AllPackets.getChannel().send(PacketDistributor.TRACKING_ENTITY.with(() -> player), new ISyncPersistentData.PersistentDataPacket(player));
+        AllPackets.getChannel().send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new ISyncPersistentData.PersistentDataPacket(player)
+        );
 
         HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", player.getName().getString(), relative, travelData.getSpeed());
         travelDataMap.put(player.getUUID(), travelData);
+        player.setNoGravity(true);
         PlayerSyncEvents.syncPlayerStateToAll(player);
 
         Vec3 center = pos.getCenter();
@@ -116,7 +120,10 @@ public class TravelManager {
         // --- NOTE: this is just to make easy to debug
         player.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
         // ---
-        AllPackets.getChannel().send(PacketDistributor.TRACKING_ENTITY.with(() -> player), new ISyncPersistentData.PersistentDataPacket(player));
+        AllPackets.getChannel().send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new ISyncPersistentData.PersistentDataPacket(player)
+        );
 
         // TODO: Persist velocity
         Vec3 lastDir = travelData.getLastDir().scale(3);
@@ -124,7 +131,7 @@ public class TravelManager {
         player.setDeltaMovement(travelData.getLastDir().scale(travelData.getSpeed() + 0.5));
         player.setPose(Pose.CROUCHING);
         player.hurtMarked = true;
-
+        player.setNoGravity(false);
         PlayerSyncEvents.syncPlayerStateToAll(player);
 
         playHypertubeSuctionSound(player, player.position());
@@ -134,6 +141,7 @@ public class TravelManager {
         if (!travelDataMap.containsKey(player.getUUID())) {
             if (!player.getPersistentData().getBoolean(TRAVEL_TAG)) return;
             player.getPersistentData().putBoolean(TRAVEL_TAG, false);
+            player.setNoGravity(false);
             return;
         }
         handlePlayerTraveling(player);

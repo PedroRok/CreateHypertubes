@@ -70,7 +70,7 @@ public class CameraMixin {
         } else {
             f = 1.0F;
         }
-        //camera.callMove(-camera.callGetMaxZoom(ClientHooks.getDetachedCameraDistance(cameraObj, flipped, f, 4.0F) * f), 0.0F, 0.0F);
+        camera.callMove(-camera.callGetMaxZoom(ClientHooks.getDetachedCameraDistance(cameraObj, flipped, f, 4.0F) * f), 0.0F, 0.0F);
 
         ci.cancel();
     }

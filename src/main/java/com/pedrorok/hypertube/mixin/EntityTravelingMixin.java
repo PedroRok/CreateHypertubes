@@ -16,6 +16,6 @@ public class EntityTravelingMixin {
     private void cancelLerpMotion(CallbackInfoReturnable<Boolean> cir) {
         if (!(((Entity) (Object) this) instanceof Player player)
             || !player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
-        cir.setReturnValue(true);
+        //cir.setReturnValue(true);
     }
 }
