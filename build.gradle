@@ -100,6 +100,11 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
 sourceSets.main.resources.srcDir generateModMetadata
 neoForge.ideSyncTask generateModMetadata
 
+
+tasks.withType(Jar).configureEach {
+    archiveFileName = "${mod_id}-${version}-${archive_classifier}.jar"
+}
+
 publishing {
     publications {
         register('mavenJava', MavenPublication) {
