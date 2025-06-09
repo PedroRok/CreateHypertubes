@@ -5,29 +5,30 @@ import com.pedrorok.hypertube.managers.TravelManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.EntityEvent;
-import net.neoforged.neoforge.event.level.BlockEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.event.entity.EntityEvent;
+import net.minecraftforge.event.level.BlockEvent;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 22/04/2025
  * @project Create Hypertube
  */
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = HypertubeMod.MOD_ID)
+@SuppressWarnings("removal")
+@Mod.EventBusSubscriber(bus = EventBusSubscriber.Bus.FORGE, modid = HypertubeMod.MOD_ID)
 public class ModServerEvents {
 
     @SubscribeEvent
-    public static void onPlayerTick(PlayerTickEvent.Post event) {
-        TravelManager.playerTick(event.getEntity());
+    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
+        TravelManager.playerTick(event.player);
     }
 
     @SubscribeEvent
     public static void playerHitboxChangesWhenInHypertube(EntityEvent.Size event) {
         Entity entity = event.getEntity();
-        if (!entity.isAddedToLevel())
-            return;
         if (!TravelManager.hasHyperTubeData(entity))
             return;
 

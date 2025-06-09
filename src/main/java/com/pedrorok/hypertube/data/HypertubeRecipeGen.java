@@ -1,25 +1,18 @@
 package com.pedrorok.hypertube.data;
 
-import com.google.common.base.Supplier;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
-import com.simibubi.create.foundation.data.recipe.CreateRecipeProvider;
-import com.simibubi.create.foundation.data.recipe.StandardRecipeGen;
-import com.tterrag.registrate.util.entry.ItemProviderEntry;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
+import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
-import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.ItemLike;
-import net.neoforged.neoforge.common.Tags;
+import net.minecraftforge.common.Tags;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 05/06/2025
@@ -27,12 +20,13 @@ import java.util.concurrent.CompletableFuture;
  */
 public class HypertubeRecipeGen extends RecipeProvider {
 
-    public HypertubeRecipeGen(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
-        super(output, lookupProvider);
+
+    public HypertubeRecipeGen(PackOutput p_248933_) {
+        super(p_248933_);
     }
 
     @Override
-    protected void buildRecipes(RecipeOutput consumer) {
+    protected void buildRecipes(@NotNull Consumer<FinishedRecipe> consumer) {
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.HYPERTUBE.get(), 16)
                 .pattern("BGB")
                 .pattern("G G")

@@ -1,6 +1,6 @@
 package com.pedrorok.hypertube.config;
 
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
@@ -8,12 +8,12 @@ import org.apache.commons.lang3.tuple.Pair;
  * @project Create Hypertube
  */
 public class ClientConfig {
-    public static final ModConfigSpec SPEC;
+    public static final ForgeConfigSpec SPEC;
     private static final ClientConfig INSTANCE;
 
-    public final ModConfigSpec.BooleanValue ALLOW_FPV_INSIDE_TUBE;
+    public final ForgeConfigSpec.BooleanValue ALLOW_FPV_INSIDE_TUBE;
 
-    private ClientConfig(ModConfigSpec.Builder builder) {
+    private ClientConfig(ForgeConfigSpec.Builder builder) {
         builder.comment("Change these settings to customize the client-side behavior of the mod.")
                 .push("Gameplay");
 
@@ -26,7 +26,7 @@ public class ClientConfig {
     }
 
     static {
-        Pair<ClientConfig, ModConfigSpec> pair = new ModConfigSpec.Builder().configure(ClientConfig::new);
+        Pair<ClientConfig, ForgeConfigSpec> pair = new ForgeConfigSpec.Builder().configure(ClientConfig::new);
         INSTANCE = pair.getLeft();
         SPEC = pair.getRight();
     }

@@ -1,14 +1,9 @@
 package com.pedrorok.hypertube.registry;
 
-import com.pedrorok.hypertube.HypertubeMod;
-import com.pedrorok.hypertube.managers.placement.BezierConnection;
 import com.pedrorok.hypertube.managers.placement.SimpleConnection;
-import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.registries.Registries;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredRegister;
-
-import java.util.function.UnaryOperator;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 23/04/2025
@@ -16,25 +11,29 @@ import java.util.function.UnaryOperator;
  */
 public class ModDataComponent {
 
-    private static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, HypertubeMod.MOD_ID);
+    public static final String TUBE_SIMPLE_POS = "tube_simple_pos";
+    public static final String TUBE_SIMPLE_DIR = "tube_simple_dir";
 
-    public static final DataComponentType<SimpleConnection> TUBE_CONNECTING_FROM = register(
-            "tube_connecting_from",
-            builder -> builder.persistent(SimpleConnection.CODEC).networkSynchronized(SimpleConnection.STREAM_CODEC)
-    );
-
-    public static final DataComponentType<BezierConnection> BEZIER_CONNECTION = register(
-            "bezier_connection",
-            builder -> builder.persistent(BezierConnection.CODEC).networkSynchronized(BezierConnection.STREAM_CODEC)
-    );
-
-    private static <T> DataComponentType<T> register(String name, UnaryOperator<DataComponentType.Builder<T>> builder) {
-        DataComponentType<T> type = builder.apply(DataComponentType.builder()).build();
-        DATA_COMPONENTS.register(name, () -> type);
-        return type;
+    public static void encodeSimpleConnection(SimpleConnection connection, ItemStack stack) {
+        encodeSimpleConnection(connection.pos(), connection.direction(), stack);
     }
 
-    public static void register(IEventBus eventBus) {
-        DATA_COMPONENTS.register(eventBus);
+    public static void encodeSimpleConnection(BlockPos pos, Direction direction, ItemStack stack) {
+        stack.getOrCreateTag().putLong(TUBE_SIMPLE_POS, pos.asLong());
+        stack.getOrCreateTag().putInt(TUBE_SIMPLE_DIR, direction.ordinal());
+    }
+
+    public static SimpleConnection decodeSimpleConnection(ItemStack stack) {
+        if (!stack.hasTag()) return null;
+        long pos = stack.getOrCreateTag().getLong(TUBE_SIMPLE_POS);
+        int dir = stack.getOrCreateTag().getInt(TUBE_SIMPLE_DIR);
+        return new SimpleConnection(BlockPos.of(pos), Direction.values()[dir]);
+    }
+
+    public static void removeSimpleConnection(ItemStack stack) {
+        if (stack.hasTag()) {
+            stack.getOrCreateTag().remove(TUBE_SIMPLE_POS);
+            stack.getOrCreateTag().remove(TUBE_SIMPLE_DIR);
+        }
     }
 }

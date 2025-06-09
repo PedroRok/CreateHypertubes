@@ -18,8 +18,8 @@ public interface CameraAccessorMixin {
     void callSetRotation(float yaw, float pitch);
 
     @Invoker("move")
-    void callMove(float x, float y, float z);
+    void callMove(double x, double y, double z);
 
     @Invoker("getMaxZoom")
-    float callGetMaxZoom(float f);
+    double callGetMaxZoom(double f);
 }

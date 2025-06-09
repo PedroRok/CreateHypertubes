@@ -15,8 +15,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -41,7 +41,7 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
 
     public BezierTextureRenderer(BlockEntityRendererProvider.Context context) {
         this.context = context;
-        this.textureLocation = ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "textures/block/entity_tube_base.png");
+        this.textureLocation = new ResourceLocation(HypertubeMod.MOD_ID, "textures/block/entity_tube_base.png");
     }
 
     @Override
@@ -138,12 +138,12 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
         float ny = (offset.y / radius) * normalMultiplier;
         float nz = (offset.z / radius) * normalMultiplier;
 
-        builder.addVertex(pose, x, y, z)
-                .setColor(255, 255, 255, 255)
-                .setUv(u, v)
-                .setOverlay(overlay)
-                .setUv2(light & 0xFFFF, light >> 16)
-                .setNormal(nx, ny, nz);
+        builder.vertex(pose, x, y, z)
+                .color(255, 255, 255, 255)
+                .uv(u, v)
+                .overlayCoords(overlay)
+                .uv2(light & 0xFFFF, light >> 16)
+                .normal(nx, ny, nz);
     }
 
     private Vector3f findPerpendicularVector(Vector3f vec) {
@@ -188,8 +188,10 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
         return true;
     }
 
-    @Override
+    /*@Override
     public @NotNull AABB getRenderBoundingBox(HypertubeBlockEntity blockEntity) {
         return AABB.INFINITE;
-    }
+    }*/
+
+
 }

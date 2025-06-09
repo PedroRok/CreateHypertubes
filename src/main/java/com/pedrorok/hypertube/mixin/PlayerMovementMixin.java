@@ -35,11 +35,11 @@ public abstract class PlayerMovementMixin {
         player.setXRot(pitch);
     }
 
-    @Inject(method = "canPlayerFitWithinBlocksAndEntitiesWhen", at = @At("HEAD"), cancellable = true)
+    /*@Inject(method = "canPlayerFitWithinBlocksAndEntitiesWhen", at = @At("HEAD"), cancellable = true)
     private void onCanPlayerFitWithinBlocksAndEntitiesWhen(Pose p_294172_, CallbackInfoReturnable<Boolean> cir) {
         Player player = (Player) (Object) this;
         if (!player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
         cir.setReturnValue(true);
-    }
+    }*/
 
 }

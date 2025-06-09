@@ -6,6 +6,7 @@ import com.pedrorok.hypertube.config.ClientConfig;
 import com.pedrorok.hypertube.events.PlayerSyncEvents;
 import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
 import com.pedrorok.hypertube.registry.ModSounds;
+import com.simibubi.create.AllPackets;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -20,9 +21,9 @@ import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.network.PacketDistributor;
 
 import java.util.HashMap;
 import java.util.List;
@@ -58,7 +59,7 @@ public class TravelManager {
         }
 
         playerPersistData.putBoolean(TRAVEL_TAG, true);
-        PacketDistributor.sendToPlayer(player, new ISyncPersistentData.PersistentDataPacket(player));
+        AllPackets.getChannel().send(PacketDistributor.TRACKING_ENTITY.with(() -> player), new ISyncPersistentData.PersistentDataPacket(player));
 
         HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", player.getName().getString(), relative, travelData.getSpeed());
         travelDataMap.put(player.getUUID(), travelData);
@@ -73,16 +74,6 @@ public class TravelManager {
         }
 
         playHypertubeSuctionSound(player, center);
-    }
-
-
-    public static void removePlayerFromTravel(Player player) {
-        travelDataMap.remove(player.getUUID());
-        player.getPersistentData().putBoolean(TRAVEL_TAG, false);
-        player.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
-        PacketDistributor.sendToPlayer((ServerPlayer) player, new ISyncPersistentData.PersistentDataPacket(player));
-        player.refreshDimensions();
-        PlayerSyncEvents.syncPlayerStateToAll((ServerPlayer) player);
     }
 
     public static void playerTick(Player player) {
@@ -125,7 +116,7 @@ public class TravelManager {
         // --- NOTE: this is just to make easy to debug
         player.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
         // ---
-        PacketDistributor.sendToPlayer(player, new ISyncPersistentData.PersistentDataPacket(player));
+        AllPackets.getChannel().send(PacketDistributor.TRACKING_ENTITY.with(() -> player), new ISyncPersistentData.PersistentDataPacket(player));
 
         // TODO: Persist velocity
         Vec3 lastDir = travelData.getLastDir().scale(3);
@@ -283,7 +274,7 @@ public class TravelManager {
         float pitch = 0.8F + random.nextFloat() * 0.4F;
         int seed = random.nextInt(1000);
         for (Player oPlayer : player.level().players()) {
-            ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(ModSounds.HYPERTUBE_SUCTION,
+            ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(ModSounds.HYPERTUBE_SUCTION.getHolder().get(),
                     SoundSource.BLOCKS, pos.x, pos.y, pos.z, 1, pitch, seed));
         }
     }

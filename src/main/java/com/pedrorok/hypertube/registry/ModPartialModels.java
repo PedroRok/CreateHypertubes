@@ -14,7 +14,7 @@ public class ModPartialModels {
     public static PartialModel COGWHEEL_HOLE = block("hypertube_entrance/cogwheel_hole");
 
     private static PartialModel block(String path) {
-        return PartialModel.of(ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "block/" + path));
+        return PartialModel.of(new ResourceLocation(HypertubeMod.MOD_ID, "block/" + path));
     }
 
     public static void init() {

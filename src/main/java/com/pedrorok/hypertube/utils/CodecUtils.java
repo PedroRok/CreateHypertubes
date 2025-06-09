@@ -1,20 +1,12 @@
 package com.pedrorok.hypertube.utils;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * @author Rok, Pedro Lucas nmm. Created on 25/04/2025
  * @project Create Hypertube
  */
 public class CodecUtils {
 
-    public static StreamCodec<ByteBuf, Vec3> VEC3 = new StreamCodec<>() {
+    /*public static StreamCodec<ByteBuf, Vec3> VEC3 = new StreamCodec<>() {
         @Override
         public @NotNull Vec3 decode(ByteBuf buffer) {
             return new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
@@ -49,5 +41,5 @@ public class CodecUtils {
         }
 
 
-    };
+    };*/
 }

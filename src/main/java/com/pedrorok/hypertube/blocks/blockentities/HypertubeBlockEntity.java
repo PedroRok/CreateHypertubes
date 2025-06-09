@@ -73,34 +73,35 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
         }
     }
 
+
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
-        super.saveAdditional(tag, registries);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         writeConnection(tag);
     }
 
     private void writeConnection(CompoundTag tag) {
         if (connectionTo != null) {
             tag.put("ConnectionTo", BezierConnection.CODEC.encodeStart(NbtOps.INSTANCE, connectionTo)
-                    .getOrThrow());
+                    .get().orThrow());
         }
         if (connectionFrom != null) {
             tag.put("ConnectionFrom", SimpleConnection.CODEC.encodeStart(NbtOps.INSTANCE, connectionFrom)
-                    .getOrThrow());
+                    .get().orThrow());
         }
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
-        super.loadAdditional(tag, registries);
+    public void load(CompoundTag tag) {
+        super.load(tag);
 
         if (tag.contains("ConnectionTo")) {
             this.connectionTo = BezierConnection.CODEC.parse(NbtOps.INSTANCE, tag.get("ConnectionTo"))
-                    .getOrThrow();
+                    .get().orThrow();
         }
         if (tag.contains("ConnectionFrom")) {
             this.connectionFrom = SimpleConnection.CODEC.parse(NbtOps.INSTANCE, tag.get("ConnectionFrom"))
-                    .getOrThrow();
+                    .get().orThrow();
         }
     }
 
@@ -121,10 +122,10 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
     }
 
     @Override
-    public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registries) {
-        CompoundTag tag = super.getUpdateTag(registries);
-        saveAdditional(tag, registries);
-        return tag;
+    public @NotNull CompoundTag getUpdateTag() {
+        CompoundTag tag = super.getUpdateTag();
+        saveAdditional(tag);
+        return super.getUpdateTag();
     }
 
     @Override
@@ -133,9 +134,9 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
     }
 
     @Override
-    public void onDataPacket(@NotNull Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.@NotNull Provider registries) {
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
         CompoundTag tag = pkt.getTag();
-        loadAdditional(tag, registries);
+        load(tag);
     }
 
     @Override

@@ -12,10 +12,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Entity.class)
 public class EntityTravelingMixin {
 
-    @Inject(method = "getGravity", at = @At("HEAD"), cancellable = true)
-    private void cancelLerpMotion(CallbackInfoReturnable<Double> cir) {
+    @Inject(method = "isNoGravity", at = @At("HEAD"), cancellable = true)
+    private void cancelLerpMotion(CallbackInfoReturnable<Boolean> cir) {
         if (!(((Entity) (Object) this) instanceof Player player)
             || !player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
-        cir.setReturnValue(0.0D);
+        cir.setReturnValue(true);
     }
 }

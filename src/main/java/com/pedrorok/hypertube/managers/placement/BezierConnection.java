@@ -2,18 +2,15 @@ package com.pedrorok.hypertube.managers.placement;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.pedrorok.hypertube.utils.CodecUtils;
-import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.outliner.Outliner;
 import net.createmod.catnip.theme.Color;
 import net.minecraft.core.Direction;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -32,14 +29,6 @@ public class BezierConnection {
             SimpleConnection.CODEC.fieldOf("toPos").forGetter(BezierConnection::getToPos),
             Vec3.CODEC.listOf().fieldOf("curvePoints").forGetter(BezierConnection::getBezierPoints)
     ).apply(i, BezierConnection::new));
-
-    public static final StreamCodec<ByteBuf, BezierConnection> STREAM_CODEC = StreamCodec.composite(
-            SimpleConnection.STREAM_CODEC, BezierConnection::getFromPos,
-            SimpleConnection.STREAM_CODEC, BezierConnection::getToPos,
-            CodecUtils.VEC3_LIST, BezierConnection::getBezierPoints,
-            BezierConnection::new
-    );
-
 
     public static final float MAX_DISTANCE = 80.0f;
     public static final float MAX_ANGLE = 0.6f;
@@ -168,7 +157,7 @@ public class BezierConnection {
 
     public ResponseDTO getValidation() {
         if (valid != null) return valid;
-        if (fromPos==null || toPos==null) {
+        if (fromPos == null || toPos == null) {
             valid = ResponseDTO.invalid("Both positions must be set.");
             return valid;
         }

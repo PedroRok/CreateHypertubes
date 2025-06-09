@@ -2,19 +2,20 @@ package com.pedrorok.hypertube.events;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.managers.TravelManager;
+import com.simibubi.create.AllPackets;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.network.PacketDistributor;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 24/05/2025
  * @project Create Hypertube
  */
-@EventBusSubscriber(modid = HypertubeMod.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+@Mod.EventBusSubscriber(modid = HypertubeMod.MOD_ID, bus = EventBusSubscriber.Bus.FORGE)
 public class PlayerSyncEvents {
     
     @SubscribeEvent
@@ -37,8 +38,8 @@ public class PlayerSyncEvents {
     private static void syncAllStatesToPlayer(ServerPlayer targetPlayer) {
         for (ServerPlayer otherPlayer : targetPlayer.getServer().getPlayerList().getPlayers()) {
             if (otherPlayer != targetPlayer && TravelManager.hasHyperTubeData(otherPlayer)) {
-                PacketDistributor.sendToPlayer(targetPlayer,
-                    new ISyncPersistentData.PersistentDataPacket(otherPlayer));
+                AllPackets.getChannel().send(PacketDistributor.TRACKING_ENTITY.with(() -> targetPlayer), new ISyncPersistentData.PersistentDataPacket(targetPlayer));
+
             }
         }
     }
@@ -47,8 +48,8 @@ public class PlayerSyncEvents {
         if (TravelManager.hasHyperTubeData(sourcePlayer)) {
             for (ServerPlayer otherPlayer : sourcePlayer.getServer().getPlayerList().getPlayers()) {
                 if (otherPlayer != sourcePlayer) {
-                    PacketDistributor.sendToPlayer(otherPlayer, 
-                        new ISyncPersistentData.PersistentDataPacket(sourcePlayer));
+                    AllPackets.getChannel().send(PacketDistributor.TRACKING_ENTITY.with(() -> sourcePlayer), new ISyncPersistentData.PersistentDataPacket(sourcePlayer));
+
                 }
             }
         }

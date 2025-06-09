@@ -1,6 +1,5 @@
 package com.pedrorok.hypertube.items;
 
-import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.managers.placement.BezierConnection;
@@ -10,11 +9,9 @@ import com.pedrorok.hypertube.managers.placement.TubePlacement;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModDataComponent;
 import com.pedrorok.hypertube.utils.MessageUtils;
-import com.simibubi.create.AllDataComponents;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -73,7 +70,7 @@ public class HypertubeItem extends BlockItem {
             return super.useOn(pContext);
         }
 
-        SimpleConnection simpleConnection = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
+        SimpleConnection simpleConnection = ModDataComponent.decodeSimpleConnection(stack);
         if (player.isShiftKeyDown() && simpleConnection.pos().equals(pos)) {
             MessageUtils.sendActionMessage(player, "§eConnection cleared");
             clearConnection(stack);
@@ -184,18 +181,18 @@ public class HypertubeItem extends BlockItem {
             return ResponseDTO.get(false, "§cTube can't connect to this face");
         }
 
-        heldItem.set(ModDataComponent.TUBE_CONNECTING_FROM, new SimpleConnection(pos, direction));
-        heldItem.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
+        ModDataComponent.encodeSimpleConnection(pos,direction, heldItem);
+        heldItem.getTag().putBoolean("foil", true);
         return ResponseDTO.get(true);
     }
 
     public static void clearConnection(ItemStack stack) {
-        stack.remove(ModDataComponent.TUBE_CONNECTING_FROM);
-        stack.remove(DataComponents.ENCHANTMENT_GLINT_OVERRIDE);
+        ModDataComponent.removeSimpleConnection(stack);
+        stack.getTag().remove("foil");
     }
 
     @Override
     public boolean isFoil(ItemStack stack) {
-        return stack.has(AllDataComponents.TRACK_CONNECTING_FROM) || stack.has(DataComponents.ENCHANTMENT_GLINT_OVERRIDE);
+        return stack.getTag().contains("foil") || stack.isEnchanted();
     }
 }

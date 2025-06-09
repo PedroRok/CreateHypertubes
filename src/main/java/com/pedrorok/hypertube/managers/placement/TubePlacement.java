@@ -27,8 +27,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 23/04/2025
@@ -52,7 +52,7 @@ public class TubePlacement {
         if (hitResult.getType() != HitResult.Type.BLOCK)
             return;
 
-        Item tubeItem = ModBlocks.HYPERTUBE.asItem();
+        Item tubeItem = ModBlocks.HYPERTUBE.get().asItem();
         if (!stack.getItem().equals(tubeItem)) {
             stack = player.getOffhandItem();
             if (!stack.getItem().equals(tubeItem))
@@ -73,7 +73,7 @@ public class TubePlacement {
             pos = pos.relative(bhr.getDirection());
         }
 
-        SimpleConnection connectionFrom = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
+        SimpleConnection connectionFrom = ModDataComponent.decodeSimpleConnection(stack);
         if (!(level.getBlockEntity(new BlockPos(connectionFrom.pos())) instanceof HypertubeBlockEntity)) {
             HypertubeItem.clearConnection(stack);
             MessageUtils.sendActionMessage(player, "§cConnection cleared, the block is invalid!");
@@ -164,9 +164,9 @@ public class TubePlacement {
     @OnlyIn(Dist.CLIENT)
     public static void drawCustomBlockSelection(PoseStack ms, MultiBufferSource buffer, Vec3 camera) {
         ItemStack mainHandItem = Minecraft.getInstance().player.getMainHandItem();
-        if (!mainHandItem.is(ModBlocks.HYPERTUBE.asItem())) return;
+        if (!mainHandItem.is(ModBlocks.HYPERTUBE.get().asItem())) return;
         if (!mainHandItem.hasFoil()) return;
-        SimpleConnection connection = mainHandItem.get(ModDataComponent.TUBE_CONNECTING_FROM);
+        SimpleConnection connection = ModDataComponent.decodeSimpleConnection(mainHandItem);
         if (connection == null) return;
 
         Minecraft mc = Minecraft.getInstance();

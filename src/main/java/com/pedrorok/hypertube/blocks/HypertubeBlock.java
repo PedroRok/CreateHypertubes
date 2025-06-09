@@ -26,17 +26,15 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.HalfTransparentBlock;
 import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -52,7 +50,7 @@ import java.util.Set;
  * @author Rok, Pedro Lucas nmm. Created on 21/05/2025
  * @project Create Hypertube
  */
-public class HypertubeBlock extends TransparentBlock implements TubeConnection, IBE<HypertubeBlockEntity> {
+public class HypertubeBlock extends HalfTransparentBlock implements TubeConnection, IBE<HypertubeBlockEntity> {
 
     public static final BooleanProperty NORTH_SOUTH = BooleanProperty.create("north_south");
     public static final BooleanProperty EAST_WEST = BooleanProperty.create("east_west");
@@ -245,10 +243,10 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
     }
 
     @Override
-    public @NotNull BlockState playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Player player) {
+    public void playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Player player) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof HypertubeBlockEntity hypertubeEntity))
-            return super.playerWillDestroy(level, pos, state, player);
+            return;
 
         SimpleConnection connectionFrom = hypertubeEntity.getConnectionFrom();
         BezierConnection connectionTo = hypertubeEntity.getConnectionTo();
@@ -258,8 +256,8 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
             BlockPos otherPos = connectionFrom.pos();
             BlockEntity otherBlock = level.getBlockEntity(otherPos);
             if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity
-            && otherHypertubeEntity.getConnectionTo() != null) {
-                toDrop += (int) otherHypertubeEntity.getConnectionTo().distance() -1;
+                && otherHypertubeEntity.getConnectionTo() != null) {
+                toDrop += (int) otherHypertubeEntity.getConnectionTo().distance() - 1;
                 otherHypertubeEntity.setConnectionTo(null);
             }
         }
@@ -268,20 +266,18 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
             BlockPos otherPos = connectionTo.getToPos().pos();
             BlockEntity otherBlock = level.getBlockEntity(otherPos);
             if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity
-            && otherHypertubeEntity.getConnectionFrom() != null) {
-                toDrop += (int) connectionTo.distance() -1;
+                && otherHypertubeEntity.getConnectionFrom() != null) {
+                toDrop += (int) connectionTo.distance() - 1;
                 otherHypertubeEntity.setConnectionFrom(null, null);
             }
         }
 
         if (!player.isCreative()) {
             if (toDrop != 0) {
-                ItemStack stack = new ItemStack(ModBlocks.HYPERTUBE.get(), toDrop +1);
+                ItemStack stack = new ItemStack(ModBlocks.HYPERTUBE.get(), toDrop + 1);
                 Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
             }
         }
-
-        return super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override
@@ -294,7 +290,7 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
         if (!(blockEntity instanceof HypertubeBlockEntity hypertubeEntity)) return;
         if (!stack.hasFoil()) return;
 
-        SimpleConnection connectionFrom = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
+        SimpleConnection connectionFrom = ModDataComponent.decodeSimpleConnection(stack);
         if (connectionFrom == null) return;
 
         Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, null, true);
@@ -346,7 +342,7 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
     }
 
     @Override
-    public @NotNull ItemStack getCloneItemStack(@NotNull LevelReader level, @NotNull BlockPos pos, @NotNull BlockState state) {
+    public ItemStack getCloneItemStack(BlockGetter p_49823_, BlockPos p_49824_, BlockState p_49825_) {
         return ModBlocks.HYPERTUBE.asStack();
     }
 
