@@ -247,6 +247,7 @@ public class TravelManager {
 
     private static void checkAndCorrectStuck(Player player, TravelData travelData) {
         if (!travelData.hasNextTravelPoint()) return;
+        if (player.tickCount % 5 != 0) return;
 
         float x = player.getPersistentData().getFloat(LAST_POSITION + "_x");
         float y = player.getPersistentData().getFloat(LAST_POSITION + "_y");
@@ -254,7 +255,7 @@ public class TravelManager {
         Vec3 lastPosition = new Vec3(x, y, z);
 
 
-        if (player.position().distanceTo(lastPosition) < 0.0000001) {
+        if (player.position().distanceTo(lastPosition) < 0.01) {
             // player is stuck
             travelData.getNextTravelPoint();
             Vec3 travelPoint = travelData.getTravelPoint();
