@@ -74,11 +74,6 @@ public class TubePlacement {
         }
 
         SimpleConnection connectionFrom = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
-        if (!(level.getBlockEntity(new BlockPos(connectionFrom.pos())) instanceof HypertubeBlockEntity)) {
-            HypertubeItem.clearConnection(stack);
-            MessageUtils.sendActionMessage(player, "§cConnection cleared, the block is invalid!");
-            return;
-        }
 
         animation.setValue(0.8);
         if (connectionFrom == null) {
@@ -158,6 +153,19 @@ public class TubePlacement {
             foundTubes += count;
         }
         return foundTubes >= neededTubes;
+    }
+
+    public static void tickPlayerServer(Player player) {
+        ItemStack itemInHand = player.getItemInHand(InteractionHand.MAIN_HAND);
+        Level level = player.level();
+        if (!(itemInHand.getItem() instanceof HypertubeItem)) return;
+        if (!itemInHand.hasFoil()) return;
+        SimpleConnection connection = itemInHand.get(ModDataComponent.TUBE_CONNECTING_FROM);
+        if (connection == null) return;
+        if (!(level.getBlockEntity(new BlockPos(connection.pos())) instanceof HypertubeBlockEntity)) {
+            HypertubeItem.clearConnection(itemInHand);
+            MessageUtils.sendActionMessage(player, "§cConnection cleared, the block is invalid!");
+        }
     }
 
 
