@@ -41,7 +41,7 @@ public class BezierConnection {
     );
 
 
-    public static final float MAX_DISTANCE = 80.0f;
+    public static final float MAX_DISTANCE = 40.0f;
     public static final float MAX_ANGLE = 0.6f;
 
     @Getter
