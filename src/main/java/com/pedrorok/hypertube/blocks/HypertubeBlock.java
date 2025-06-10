@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.blocks;
 
+import com.mojang.datafixers.kinds.IdF;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.items.HypertubeItem;
 import com.pedrorok.hypertube.managers.TravelManager;
@@ -13,16 +14,20 @@ import com.pedrorok.hypertube.registry.ModDataComponent;
 import com.pedrorok.hypertube.utils.MessageUtils;
 import com.pedrorok.hypertube.utils.RayCastUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;
+import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -37,9 +42,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.level.BlockEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,7 +60,7 @@ import java.util.Set;
  * @author Rok, Pedro Lucas nmm. Created on 21/05/2025
  * @project Create Hypertube
  */
-public class HypertubeBlock extends TransparentBlock implements TubeConnection, IBE<HypertubeBlockEntity> {
+public class HypertubeBlock extends TransparentBlock implements TubeConnection, IBE<HypertubeBlockEntity>, IWrenchable {
 
     public static final BooleanProperty NORTH_SOUTH = BooleanProperty.create("north_south");
     public static final BooleanProperty EAST_WEST = BooleanProperty.create("east_west");
@@ -246,6 +254,10 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
 
     @Override
     public @NotNull BlockState playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Player player) {
+        return playerWillDestroy(level, pos, state, player, false);
+    }
+
+    private BlockState playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Player player, boolean wrenched) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof HypertubeBlockEntity hypertubeEntity))
             return super.playerWillDestroy(level, pos, state, player);
@@ -258,7 +270,7 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
             BlockPos otherPos = connectionFrom.pos();
             BlockEntity otherBlock = level.getBlockEntity(otherPos);
             if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity
-            && otherHypertubeEntity.getConnectionTo() != null) {
+                && otherHypertubeEntity.getConnectionTo() != null) {
                 toDrop += (int) otherHypertubeEntity.getConnectionTo().distance() -1;
                 otherHypertubeEntity.setConnectionTo(null);
             }
@@ -268,16 +280,19 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
             BlockPos otherPos = connectionTo.getToPos().pos();
             BlockEntity otherBlock = level.getBlockEntity(otherPos);
             if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity
-            && otherHypertubeEntity.getConnectionFrom() != null) {
+                && otherHypertubeEntity.getConnectionFrom() != null) {
                 toDrop += (int) connectionTo.distance() -1;
                 otherHypertubeEntity.setConnectionFrom(null, null);
             }
         }
 
         if (!player.isCreative()) {
-            if (toDrop != 0) {
+            if (toDrop != 0 || wrenched) {
                 ItemStack stack = new ItemStack(ModBlocks.HYPERTUBE.get(), toDrop +1);
-                Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
+                if (wrenched)
+                    player.getInventory().placeItemBackInInventory(stack);
+                else
+                    Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
             }
         }
 
@@ -313,7 +328,6 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
         }
         TubePlacement.checkSurvivalItems(player, (int) bezierConnection.distance() + 1, false);
 
-
         BlockEntity otherBlockEntity = level.getBlockEntity(connectionFrom.pos());
         boolean inverted = false;
         HypertubeItem.clearConnection(placer.getItemInHand(InteractionHand.MAIN_HAND));
@@ -332,12 +346,10 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
             }
         }
 
-
         if (inverted)
             hypertubeEntity.setConnectionTo(bezierConnection);
         else
             hypertubeEntity.setConnectionFrom(connectionFrom, bezierConnection.getToPos().direction());
-
 
         if (!level.isClientSide()
             && level.getBlockState(pos).getBlock() instanceof HypertubeBlock hypertubeBlock) {
@@ -382,5 +394,28 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
 
     public VoxelShape getShape(BlockState state) {
         return getShape(state, null);
+    }
+
+
+    @Override
+    public InteractionResult onSneakWrenched(BlockState state, UseOnContext context) {
+        if (context.getPlayer() == null) return InteractionResult.PASS;
+        Level world = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+        Player player = context.getPlayer();
+
+        playerWillDestroy(world, context.getClickedPos(), state, context.getPlayer(), true);
+
+        if (!(world instanceof ServerLevel))
+            return InteractionResult.SUCCESS;
+
+        BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(world, pos, world.getBlockState(pos), player);
+        NeoForge.EVENT_BUS.post(event);
+        if (event.isCanceled())
+            return InteractionResult.SUCCESS;
+
+        world.destroyBlock(pos, false);
+        IWrenchable.playRemoveSound(world, pos);
+        return InteractionResult.SUCCESS;
     }
 }
