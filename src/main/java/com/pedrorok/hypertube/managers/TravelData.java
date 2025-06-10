@@ -135,6 +135,6 @@ public class TravelData {
 
     public BlockPos getLastBlockPos() {
         if (blockConnections.isEmpty()) return null;
-        return blockConnections.getLast();
+        return blockConnections.get(blockConnections.size() - 1);
     }
 }
