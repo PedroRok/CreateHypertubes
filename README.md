@@ -6,6 +6,8 @@
 </h1>
 
 > [!IMPORTANT]
+> If you are looking for the Fabric version, check out the community fork: [Create: Hypertubes [Fabric]](https://github.com/JXSnack/CreateHypertubes-Fabric)
+> 
 > This mod is currently in active development. Features may change, and bugs are expected. [Please report any issues](https://github.com/PedroRok/CreateHypertubes/issues)!
 
 ### Welcome to Create: Hypertubes!
