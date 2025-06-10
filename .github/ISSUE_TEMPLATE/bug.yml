@@ -6,7 +6,7 @@ body:
   - type: textarea
     attributes:
       label: Description
-      value: |
+      placeholder: |
         Please describe the bug clearly with as much detail as possible.
         Include any relevant information such as:
         - What you were doing when the bug occurred
