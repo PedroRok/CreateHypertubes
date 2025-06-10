@@ -135,6 +135,11 @@ tasks.named('jar', Jar).configure {
 }
 
 
+
+tasks.withType(Jar).configureEach {
+    archiveFileName = "${mod_id}-${version}-${archive_classifier}.jar"
+}
+
 publishing {
     publications {
         register('mavenJava', MavenPublication) {

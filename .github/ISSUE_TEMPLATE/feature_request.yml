@@ -1,0 +1,17 @@
+name: I have a suggestion or idea!
+description: Suggest an improvement or new feature.
+title: "[FEATURE] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Describe your idea
+      description: What is your suggestion?
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an idea!

@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * @author Rok, Pedro Lucas nmm. Created on 23/05/2025
  * @project Create Hypertube
  */
-@Mixin(PlayerModel.class)
+@Mixin(value = PlayerModel.class, priority = 1001)
 public abstract class PlayerModelMixin {
 
     @Inject(method = "setupAnim*", at = @At("RETURN"))
@@ -41,7 +41,6 @@ public abstract class PlayerModelMixin {
         model.leftSleeve.xRot = 0;
         model.leftSleeve.yRot = 0;
         model.leftSleeve.zRot = 0;
-
 
         model.rightLeg.xRot = 0;
         model.rightLeg.yRot = 0;

@@ -69,6 +69,11 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
                     .setValue(OPEN, false);
         }
         Direction direction = player.getDirection();
+        if (player.getXRot() < -45) {
+            direction = Direction.UP;
+        } else if (player.getXRot() > 45) {
+            direction = Direction.DOWN;
+        }
         return this.defaultBlockState()
                 .setValue(FACING, direction)
                 .setValue(OPEN, false);

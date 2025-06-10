@@ -1,0 +1,43 @@
+name: I found a bug!
+description: Report some other kind of issue.
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: textarea
+    attributes:
+      label: Description
+      placeholder: |
+        Please describe the bug clearly with as much detail as possible.
+        Include any relevant information such as:
+        - What you were doing when the bug occurred
+        - What you expected to happen
+        - What actually happened
+        - Mod version and modloader version
+        - Any other relevant information...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce this bug?
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: false
+
+  - type: input
+    attributes:
+      label: Game Log
+      description: >
+        If you have a game log that contains information about this bug, please provide a link to it.
+        Please upload the file to https://mclo.gs/ and paste the link here.
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: Thanks for helping us improve the project! I will look into this issue as soon as possible.

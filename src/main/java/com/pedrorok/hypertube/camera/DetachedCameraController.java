@@ -1,10 +1,7 @@
 package com.pedrorok.hypertube.camera;
 
-import com.pedrorok.hypertube.config.ClientConfig;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.MouseHandler;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;

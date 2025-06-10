@@ -10,6 +10,7 @@ import net.minecraft.client.Options;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -28,6 +29,8 @@ public class CameraMixin {
     @Shadow
     private boolean detached;
 
+    @Shadow private Entity entity;
+
     @Unique
     public void createHypertube$setDetachedExternal(boolean newDetached) {
         this.detached = newDetached;
@@ -36,8 +39,15 @@ public class CameraMixin {
     @Inject(method = "setup", at = @At("HEAD"), cancellable = true)
     private void onSetup(BlockGetter p_90576_, Entity renderViewEntity, boolean isFrontView, boolean flipped, float PartialTicks, CallbackInfo ci) {
         Options options = Minecraft.getInstance().options;
+        Player player = Minecraft.getInstance().player;
+        if (renderViewEntity != player) return;
         if (!TravelManager.hasHyperTubeData(renderViewEntity) || (
                 options.getCameraType().isFirstPerson() && ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get())) {
+
+            if (DetachedCameraController.get().isDetached()) {
+                renderViewEntity.setYRot(DetachedCameraController.get().getYaw());
+                renderViewEntity.setXRot(DetachedCameraController.get().getPitch());
+            }
             DetachedCameraController.get().setDetached(false);
             return;
         }
