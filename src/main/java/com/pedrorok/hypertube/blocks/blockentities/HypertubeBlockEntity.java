@@ -154,6 +154,6 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
 
     @Override
     public AABB getRenderBoundingBox() {
-        return new AABB(worldPosition).inflate(80);
+        return new AABB(worldPosition).inflate(512);
     }
 }
