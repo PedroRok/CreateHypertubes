@@ -2,6 +2,7 @@ package com.pedrorok.hypertube.events;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.managers.TravelManager;
+import com.pedrorok.hypertube.managers.placement.TubePlacement;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.LivingEntity;
@@ -24,6 +25,10 @@ public class ModServerEvents {
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.START) return;
         TravelManager.playerTick(event.player);
+        if (event.player.level().isClientSide) {
+            return;
+        }
+        TubePlacement.tickPlayerServer(event.player);
     }
 
     @SubscribeEvent
