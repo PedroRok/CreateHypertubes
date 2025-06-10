@@ -10,6 +10,7 @@ import com.simibubi.create.foundation.networking.ISyncPersistentData;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -37,17 +38,34 @@ public class TravelManager {
 
     public static final String TRAVEL_TAG = "hypertube_travel";
     public static final String LAST_TRAVEL_TIME = "last_travel_time";
+    public static final String LAST_TRAVEL_BLOCKPOS = "last_travel_blockpos";
+    public static final String LAST_TRAVEL_SPEED = "last_travel_speed";
     public static final String LAST_POSITION = "last_travel_position";
 
-    public static final int DEFAULT_TRAVEL_TIME = 200;
+    public static final int DEFAULT_TRAVEL_TIME = 2000;
+    public static final int DEFAULT_AFTER_TUBE_CAMERA = 1500; // 0.5 seconds (subtracting default travel time)
 
     private static final Map<UUID, TravelData> travelDataMap = new HashMap<>();
 
     public static void tryStartTravel(ServerPlayer player, BlockPos pos, BlockState state, float speed) {
         CompoundTag playerPersistData = player.getPersistentData();
         if (playerPersistData.getBoolean(TRAVEL_TAG)) return;
-        if (playerPersistData.contains(LAST_TRAVEL_TIME) &&
-            playerPersistData.getLong(LAST_TRAVEL_TIME) > System.currentTimeMillis()) return;
+        long lastTravelTime = playerPersistData.getLong(LAST_TRAVEL_TIME);
+
+        if (playerPersistData.contains(LAST_TRAVEL_BLOCKPOS)) {
+            BlockPos lastTravelPos = BlockPos.of(playerPersistData.getLong(LAST_TRAVEL_BLOCKPOS));
+            Direction value = state.getValue(HyperEntranceBlock.FACING);
+            if (lastTravelPos.equals(pos)
+                && lastTravelTime > System.currentTimeMillis()
+                && !value.equals(Direction.DOWN)) {
+                // Player is trying to travel too fast
+                return;
+            }
+        }
+
+        if (lastTravelTime - TravelManager.DEFAULT_AFTER_TUBE_CAMERA > System.currentTimeMillis()) {
+            speed += playerPersistData.getFloat(LAST_TRAVEL_SPEED); // Increase speed if player is trying to fast travel
+        }
 
         BlockPos relative = pos.relative(state.getValue(HyperEntranceBlock.FACING));
         TravelData travelData = new TravelData(relative, player.level(), pos, speed);
@@ -104,6 +122,10 @@ public class TravelManager {
 
     @OnlyIn(Dist.CLIENT)
     private static void clientTick(Player player) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return;
+        if (!mc.player.is(player)) return;
+
         if (hasHyperTubeData(player)) {
             TubeSoundManager.TravelSound.enableClientPlayerSound(player, 0.8F, 1.0F);
             isTraveling = true;
@@ -124,14 +146,16 @@ public class TravelManager {
         player.getPersistentData().putBoolean(TRAVEL_TAG, false);
         // --- NOTE: this is just to make easy to debug
         player.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
+        player.getPersistentData().putLong(LAST_TRAVEL_BLOCKPOS, travelData.getLastBlockPos().asLong());
+        player.getPersistentData().putFloat(LAST_TRAVEL_SPEED, travelData.getSpeed());
         // ---
         PacketDistributor.sendToPlayer(player, new ISyncPersistentData.PersistentDataPacket(player));
 
         // TODO: Persist velocity
         Vec3 lastDir = travelData.getLastDir().scale(3);
         player.teleportRelative(lastDir.x, lastDir.y, lastDir.z);
-        player.setDeltaMovement(travelData.getLastDir().scale(travelData.getSpeed() + 0.5));
         player.setPose(Pose.CROUCHING);
+        player.setDeltaMovement(travelData.getLastDir().scale(travelData.getSpeed() + 0.5));
         player.hurtMarked = true;
 
         PlayerSyncEvents.syncPlayerStateToAll(player);

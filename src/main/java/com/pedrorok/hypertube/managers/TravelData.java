@@ -108,9 +108,15 @@ public class TravelData {
         bezierConnections.add(connection.getUuid());
         BlockPos toPos = connection.getToPos().pos();
         BlockPos fromPos = connection.getFromPos().pos();
-        blockConnections.add(inverse ? fromPos : toPos);
-        blockConnections.add(inverse ? toPos : fromPos);
-        addTravelPoint(inverse ? fromPos : toPos, level);
+
+        final BlockPos toPosFinal = inverse ? fromPos : toPos;
+        final BlockPos fromPosFinal = inverse ? toPos : fromPos;
+
+        if (!blockConnections.contains(toPosFinal))
+            blockConnections.add(toPosFinal);
+        if (!blockConnections.contains(fromPosFinal))
+            blockConnections.add(fromPosFinal);
+        addTravelPoint(toPosFinal, level);
         return true;
     }
 
@@ -126,5 +132,10 @@ public class TravelData {
 
     public boolean hasNextTravelPoint() {
         return travelIndex + 1 < travelPoints.size();
+    }
+
+    public BlockPos getLastBlockPos() {
+        if (blockConnections.isEmpty()) return null;
+        return blockConnections.getLast();
     }
 }
