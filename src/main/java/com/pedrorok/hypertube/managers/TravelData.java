@@ -62,7 +62,6 @@ public class TravelData {
         BlockState blockState = level.getBlockState(pos);
 
         if (addCurvedTravelPoint(pos, level)) return;
-
         Block block = blockState.getBlock();
         if (!(block instanceof HypertubeBlock pipeBlock)) return;
         List<Direction> connectedFaces = pipeBlock.getConnectedFaces(blockState);

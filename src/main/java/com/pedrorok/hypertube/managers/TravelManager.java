@@ -13,6 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -38,6 +39,7 @@ public class TravelManager {
 
     public static final String TRAVEL_TAG = "hypertube_travel";
     public static final String LAST_TRAVEL_TIME = "last_travel_time";
+
     public static final String LAST_TRAVEL_BLOCKPOS = "last_travel_blockpos";
     public static final String LAST_TRAVEL_SPEED = "last_travel_speed";
     public static final String LAST_POSITION = "last_travel_position";
@@ -151,8 +153,9 @@ public class TravelManager {
         // ---
         PacketDistributor.sendToPlayer(player, new ISyncPersistentData.PersistentDataPacket(player));
 
-        // TODO: Persist velocity
-        Vec3 lastDir = travelData.getLastDir().scale(3);
+        Vec3 lastDir = travelData.getLastDir();
+        Vec3 lastBlockPos = travelData.getLastBlockPos().getCenter();
+        player.teleportTo((ServerLevel) player.level(), lastBlockPos.x, lastBlockPos.y, lastBlockPos.z, player.getYRot(), player.getXRot());
         player.teleportRelative(lastDir.x, lastDir.y, lastDir.z);
         player.setPose(Pose.CROUCHING);
         player.setDeltaMovement(travelData.getLastDir().scale(travelData.getSpeed() + 0.5));
