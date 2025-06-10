@@ -2,6 +2,7 @@ package com.pedrorok.hypertube.mixin;
 
 import com.pedrorok.hypertube.managers.TravelManager;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,5 +18,12 @@ public class EntityTravelingMixin {
         if (!(((Entity) (Object) this) instanceof Player player)
             || !player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
         cir.setReturnValue(0.0D);
+    }
+
+    @Inject(method = "getPose", at = @At("HEAD"), cancellable = true)
+    private void cancelPose(CallbackInfoReturnable<Pose> cir) {
+        if (!(((Entity) (Object) this) instanceof Player player)
+            || !player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
+        cir.setReturnValue(Pose.STANDING);
     }
 }
