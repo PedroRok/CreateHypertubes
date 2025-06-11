@@ -30,9 +30,12 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 23/04/2025
@@ -116,7 +119,7 @@ public class TubePlacement {
 
 
     // UTILITY - CHECK PLACEMENT
-    public static boolean checkPlayerPlacingBlock(Player player, Level level, BlockPos pos) {
+    public static boolean checkPlayerPlacingBlock(@NotNull Player player, Level level, BlockPos pos) {
 
         ItemStack itemInHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         if (itemInHand.getItem() != ModBlocks.HYPERTUBE.asItem()) {
@@ -135,7 +138,7 @@ public class TubePlacement {
         return checkPlayerPlacingBlockValidation(player, bezierConnection, level);
     }
 
-    public static boolean checkPlayerPlacingBlockValidation(Player player, BezierConnection bezierConnection, Level level) {
+    public static boolean checkPlayerPlacingBlockValidation(Player player, @NotNull BezierConnection bezierConnection, Level level) {
         ResponseDTO validation = bezierConnection.getValidation();
         if (validation.valid()) {
             validation = TubePlacement.checkSurvivalItems(player, (int) bezierConnection.distance(), true);
@@ -156,32 +159,32 @@ public class TubePlacement {
     }
 
 
-    public static ResponseDTO checkBlockCollision(Level level, BezierConnection bezierConnection) {
-        List<Vec3> positions = new ArrayList<>(bezierConnection.getBezierPoints());
-        positions.removeFirst();
-        positions.removeLast();
-        boolean isServerSide = !level.isClientSide;
+    public static ResponseDTO checkBlockCollision(@NotNull Level level, @NotNull BezierConnection bezierConnection) {
+        List<Vec3> positions = bezierConnection.getBezierPoints();
 
-        ResponseDTO canPlace = null;
-        for (Vec3 pos : positions) {
-            BlockPos blockPos = BlockPos.containing(pos);
-            if (!level.getBlockState(blockPos)
-                    .getCollisionShape(level, blockPos).isEmpty()) {
-                if (level.isClientSide) {
-                    BezierConnection.outlineBlocks(blockPos);
-                }
-                canPlace = ResponseDTO.invalid("placement.create_hypertube.block_collision");
-                if (isServerSide) return canPlace;
+        for (int i = 1; i < positions.size() - 1; i++) {
+            Vec3 pos = positions.get(i);
+            if (hasCollision(level, pos) ||
+                hasCollision(level, pos.add(0.5, 0, 0)) ||
+                hasCollision(level, pos.add(0, 0, 0.5)) ||
+                hasCollision(level, pos.add(-0.5, 0, -0.5))) {
+                return ResponseDTO.invalid("placement.create_hypertube.block_collision");
             }
         }
-        if (canPlace == null) {
-            canPlace = ResponseDTO.get(true);
+        return ResponseDTO.get(true);
+    }
+
+    private static boolean hasCollision(Level level, Vec3 pos) {
+        BlockPos blockPos = BlockPos.containing(pos);
+        boolean hasCollision = !level.getBlockState(blockPos).getCollisionShape(level, blockPos).isEmpty();
+        if (hasCollision && level.isClientSide) {
+            BezierConnection.outlineBlocks(blockPos);
         }
-        return canPlace;
+        return hasCollision;
     }
 
 
-    public static ResponseDTO checkSurvivalItems(Player player, int neededTubes, boolean simulate) {
+    public static ResponseDTO checkSurvivalItems(@NotNull Player player, int neededTubes, boolean simulate) {
         if (!player.isCreative()
             && !checkPlayerInventory(player, neededTubes, simulate)) {
             return ResponseDTO.invalid("placement.create_hypertube.no_enough_tubes");
@@ -189,7 +192,7 @@ public class TubePlacement {
         return ResponseDTO.get(true);
     }
 
-    private static boolean checkPlayerInventory(Player player, int neededTubes, boolean simulate) {
+    private static boolean checkPlayerInventory(@NotNull Player player, int neededTubes, boolean simulate) {
         int foundTubes = 0;
 
         Inventory inv = player.getInventory();
@@ -230,7 +233,8 @@ public class TubePlacement {
 
 
     // SERVER BLOCK VALIDATION
-    public static void tickPlayerServer(Player player) {
+    public static void tickPlayerServer(@NotNull Player player) {
+        if (player.tickCount % 20 != 0) return;
         ItemStack itemInHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         Level level = player.level();
         if (!(itemInHand.getItem() instanceof HypertubeItem)) return;
