@@ -56,11 +56,8 @@ public class TravelManager {
 
         if (playerPersistData.contains(LAST_TRAVEL_BLOCKPOS)) {
             BlockPos lastTravelPos = BlockPos.of(playerPersistData.getLong(LAST_TRAVEL_BLOCKPOS));
-            Direction value = state.getValue(HyperEntranceBlock.FACING);
             if (lastTravelPos.equals(pos)
-                && lastTravelTime > System.currentTimeMillis()
-                && !value.equals(Direction.DOWN)) {
-                // Player is trying to travel too fast
+                && lastTravelTime > System.currentTimeMillis()) {
                 return;
             }
         }
