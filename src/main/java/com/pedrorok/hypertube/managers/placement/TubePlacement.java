@@ -97,6 +97,10 @@ public class TubePlacement {
         // Exception & visual
         ResponseDTO response = bezierConnection.getValidation();
 
+        if (response.valid() && hypertubeHitResult) {
+            response = checkClickedHypertube(level, pos, finalDirection.getOpposite());
+        }
+
         if (response.valid()) {
             response = checkSurvivalItems(player, (int) bezierConnection.distance(), true);
         }
@@ -114,11 +118,20 @@ public class TubePlacement {
             return;
         }
 
-        MessageUtils.sendActionMessage(player, "");
+        MessageUtils.sendActionMessage(player, Component.empty(), true);
     }
 
 
     // UTILITY - CHECK PLACEMENT
+
+    public static ResponseDTO checkClickedHypertube(Level level, BlockPos pos, Direction direction) {
+        if (level.getBlockEntity(pos) instanceof HypertubeBlockEntity tubeEntity
+               && !tubeEntity.getFacesConnectable().contains(direction)) {
+            return ResponseDTO.invalid("placement.create_hypertube.cant_conn_to_face");
+        }
+        return ResponseDTO.get(true);
+    }
+
     public static boolean checkPlayerPlacingBlock(@NotNull Player player, Level level, BlockPos pos) {
 
         ItemStack itemInHand = player.getItemInHand(InteractionHand.MAIN_HAND);
@@ -159,15 +172,22 @@ public class TubePlacement {
     }
 
 
+    private static final float CHECK_DISTANCE_THRESHOLD = 0.4f;
+
     public static ResponseDTO checkBlockCollision(@NotNull Level level, @NotNull BezierConnection bezierConnection) {
-        List<Vec3> positions = bezierConnection.getBezierPoints();
+        List<Vec3> positions = new ArrayList<>(bezierConnection.getBezierPoints());
+        positions.removeLast();
+        positions.removeFirst();
 
         for (int i = 1; i < positions.size() - 1; i++) {
             Vec3 pos = positions.get(i);
             if (hasCollision(level, pos) ||
-                hasCollision(level, pos.add(0.5, 0, 0)) ||
-                hasCollision(level, pos.add(0, 0, 0.5)) ||
-                hasCollision(level, pos.add(-0.5, 0, -0.5))) {
+                hasCollision(level, pos.add(CHECK_DISTANCE_THRESHOLD, 0, 0)) ||
+                hasCollision(level, pos.add(0, 0, CHECK_DISTANCE_THRESHOLD)) ||
+                hasCollision(level, pos.add(CHECK_DISTANCE_THRESHOLD, 0, CHECK_DISTANCE_THRESHOLD)) ||
+                hasCollision(level, pos.add(-CHECK_DISTANCE_THRESHOLD, 0, 0)) ||
+                hasCollision(level, pos.add(0, 0, -CHECK_DISTANCE_THRESHOLD)) ||
+                hasCollision(level, pos.add(-CHECK_DISTANCE_THRESHOLD, 0, -CHECK_DISTANCE_THRESHOLD))) {
                 return ResponseDTO.invalid("placement.create_hypertube.block_collision");
             }
         }

@@ -10,10 +10,20 @@ import net.minecraft.world.entity.player.Player;
 public class MessageUtils {
 
     public static void sendActionMessage(Player player, Component message) {
+        sendActionMessage(player, message, false);
+    }
+
+    public static void sendActionMessage(Player player, Component message, boolean forceStay) {
+        if (player.getPersistentData().getLong("last_action_message_stay") > System.currentTimeMillis()) {
+            return; // Don't send if the last message is still active
+        }
+        if (forceStay) {
+            player.getPersistentData().putLong("last_action_message_stay", System.currentTimeMillis() + 2000);
+        }
         player.displayClientMessage(message, true);
     }
 
     public static void sendActionMessage(Player player, String message) {
-        player.displayClientMessage(Component.literal(message), true);
+        sendActionMessage(player, Component.translatable(message));
     }
 }

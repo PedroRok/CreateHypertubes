@@ -106,60 +106,59 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
     }
 
     public List<Direction> getFacesConnectable() {
+        // Se já tem conexões em ambas as direções, não pode mais conectar
         if (connectionTo != null && connectionFrom != null) return List.of();
-        if (connectionTo != null) {
-            return List.of(connectionTo.getFromPos().direction().getOpposite());
-        }
-        if (connectionFrom != null) {
-            BlockEntity blockEntity = level.getBlockEntity(connectionFrom.pos());
-            if (blockEntity instanceof HypertubeBlockEntity hypertubeBlockEntity
-                && hypertubeBlockEntity.getConnectionTo() != null
-                && hypertubeBlockEntity.getConnectionTo().getToPos().pos().equals(this.worldPosition)) {
-                return List.of(hypertubeBlockEntity.getConnectionTo().getToPos().direction());
-            }
-        }
 
-        Boolean eastWest = getBlockState().getValue(HypertubeBlock.EAST_WEST);
+        // Primeiro, determinar as direções possíveis baseadas no estado do bloco
+        List<Direction> possibleDirections = new ArrayList<>();
+
+        boolean eastWest = Boolean.TRUE.equals(getBlockState().getValue(HypertubeBlock.EAST_WEST));
         if (eastWest) {
-            List<Direction> directions = new ArrayList<>();
-            boolean hasBlockInEast = level.getBlockState(worldPosition.relative(Direction.EAST)).getBlock() instanceof HypertubeBlock;
-            if (!hasBlockInEast) {
-                directions.add(Direction.EAST);
-            }
-            boolean hasBlockInWest = level.getBlockState(worldPosition.relative(Direction.WEST)).getBlock() instanceof HypertubeBlock;
-            if (!hasBlockInWest) {
-                directions.add(Direction.WEST);
-            }
-            return directions;
-        }
-        Boolean upDown = getBlockState().getValue(HypertubeBlock.UP_DOWN);
-        if (upDown) {
-            List<Direction> directions = new ArrayList<>();
-            boolean hasBlockInUp = level.getBlockState(worldPosition.relative(Direction.UP)).getBlock() instanceof HypertubeBlock;
-            if (!hasBlockInUp) {
-                directions.add(Direction.UP);
-            }
-            boolean hasBlockInDown = level.getBlockState(worldPosition.relative(Direction.DOWN)).getBlock() instanceof HypertubeBlock;
-            if (!hasBlockInDown) {
-                directions.add(Direction.DOWN);
-            }
-            return directions;
-        }
-        Boolean northSouth = getBlockState().getValue(HypertubeBlock.NORTH_SOUTH);
-        if (northSouth) {
-            List<Direction> directions = new ArrayList<>();
-            boolean hasBlockInNorth = level.getBlockState(worldPosition.relative(Direction.NORTH)).getBlock() instanceof HypertubeBlock;
-            if (!hasBlockInNorth) {
-                directions.add(Direction.NORTH);
-            }
-            boolean hasBlockInSouth = level.getBlockState(worldPosition.relative(Direction.SOUTH)).getBlock() instanceof HypertubeBlock;
-            if (!hasBlockInSouth) {
-                directions.add(Direction.SOUTH);
-            }
-            return directions;
+            possibleDirections.addAll(List.of(Direction.EAST, Direction.WEST));
         }
 
-        return List.of(Direction.values());
+        boolean upDown = Boolean.TRUE.equals(getBlockState().getValue(HypertubeBlock.UP_DOWN));
+        if (upDown) {
+            possibleDirections.addAll(List.of(Direction.UP, Direction.DOWN));
+        }
+
+        boolean northSouth = Boolean.TRUE.equals(getBlockState().getValue(HypertubeBlock.NORTH_SOUTH));
+        if (northSouth) {
+            possibleDirections.addAll(List.of(Direction.NORTH, Direction.SOUTH));
+        }
+
+        // Se nenhuma propriedade direcional estiver ativa, permite todas as direções
+        if (possibleDirections.isEmpty()) {
+            possibleDirections.addAll(List.of(Direction.values()));
+        }
+
+        // Agora, remover direções que não podem ser conectadas
+        possibleDirections.removeIf(direction -> {
+            // Remove se já tem um HypertubeBlock adjacente
+            if (level.getBlockState(worldPosition.relative(direction)).getBlock() instanceof HypertubeBlock) {
+                return true;
+            }
+
+            // Remove se já tem uma conexão ativa saindo nessa direção
+            if (connectionTo != null && connectionTo.getFromPos().direction().equals(direction)) {
+                return true;
+            }
+
+            // Remove se já tem uma conexão ativa chegando dessa direção
+            if (connectionFrom != null) {
+                BlockEntity blockEntity = level.getBlockEntity(connectionFrom.pos());
+                if (blockEntity instanceof HypertubeBlockEntity hypertubeBlockEntity
+                    && hypertubeBlockEntity.getConnectionTo() != null
+                    && hypertubeBlockEntity.getConnectionTo().getToPos().pos().equals(this.worldPosition)
+                    && hypertubeBlockEntity.getConnectionTo().getToPos().direction().getOpposite().equals(direction)) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
+
+        return possibleDirections;
     }
 
     @Override

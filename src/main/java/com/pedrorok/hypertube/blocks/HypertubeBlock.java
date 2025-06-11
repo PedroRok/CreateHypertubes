@@ -320,7 +320,7 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
 
         if (!TubePlacement.checkPlayerPlacingBlockValidation(player, bezierConnection, level)) {
-            level.playSound(null, pos, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS,
+            level.playSound(placer, pos, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS,
                     1, 0.5f);
             return;
         }
@@ -340,7 +340,7 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
                 otherHypertubeEntity.setConnectionFrom(connectionTo, bezierConnection.getToPos().direction());
                 inverted = true;
             } else {
-                MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.invalid_conn").withColor(0xFF0000));
+                MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.invalid_conn").withColor(0xFF0000), true);
                 return;
             }
         }
@@ -350,7 +350,7 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
         else
             hypertubeEntity.setConnectionFrom(connectionFrom, bezierConnection.getToPos().direction());
 
-
+        MessageUtils.sendActionMessage(player, Component.empty(), true);
         if (!(level.getBlockState(pos).getBlock() instanceof HypertubeBlock hypertubeBlock)) return;
         hypertubeBlock.updateBlockState(level, pos, hypertubeBlock.getState(List.of(finalDirection)));
     }

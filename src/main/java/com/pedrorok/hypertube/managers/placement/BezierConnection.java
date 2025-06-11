@@ -147,6 +147,22 @@ public class BezierConnection {
         if (bezierPoints == null) {
             bezierPoints = getBezierPoints();
         }
+        // THIS IS TO PREVENT FROM PLACING BACK
+        Vec3 first = getBezierPoints().getFirst();
+        Vec3 second = getBezierPoints().get(1);
+        Direction direction = fromPos.direction();
+        Vec3 firstDirection = new Vec3(direction.getStepX(), direction.getStepY(), direction.getStepZ());
+        Vec3 secondDirection = second.subtract(first).normalize();
+        float initialAngle = (float) Math.acos(firstDirection.dot(secondDirection) / (firstDirection.length() * secondDirection.length()));
+        if (initialAngle >= 2.) {
+            return initialAngle;
+        }
+        // END OF PREVENTION
+
+        return getMaxAngle();
+    }
+
+    private float getMaxAngle() {
         float maxAngle = 0;
         Vec3 lastPoint = bezierPoints.get(0);
         for (int i = 1; i < bezierPoints.size() - 1; i++) {

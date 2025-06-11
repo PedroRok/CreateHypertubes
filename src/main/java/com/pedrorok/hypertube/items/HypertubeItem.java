@@ -93,13 +93,14 @@ public class HypertubeItem extends BlockItem {
             if (blockEntity.isPresent()) {
                 success = handleHypertubeClicked(blockEntity.get(), player, simpleConnection, pos, direction, level, stack);
             }
-        }
-
-
-        SoundType soundtype = state.getSoundType();
-        if (success) {
-            level.playSound(null, pos, soundtype.getPlaceSound(), SoundSource.BLOCKS,
-                    (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
+            SoundType soundtype = state.getSoundType();
+            if (success) {
+                level.playSound(null, pos, soundtype.getPlaceSound(), SoundSource.BLOCKS,
+                        (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
+            } else {
+                level.playSound(player, pos, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS,
+                        1, 0.5f);
+            }
         }
 
         return isHypertubeClicked ? InteractionResult.FAIL : super.useOn(pContext);
@@ -136,6 +137,7 @@ public class HypertubeItem extends BlockItem {
                 usingConnectingTo ? new SimpleConnection(pos, direction.getOpposite()) : new SimpleConnection(simpleConnection.pos(), simpleConnection.direction().getOpposite()));
 
 
+
         ResponseDTO validation = connection.getValidation();
         if (validation.valid()) {
             validation = TubePlacement.checkSurvivalItems(player, (int) connection.distance(), true);
@@ -145,9 +147,13 @@ public class HypertubeItem extends BlockItem {
             validation = TubePlacement.checkBlockCollision(level, connection);
         }
 
+        if (validation.valid()) {
+            validation = TubePlacement.checkClickedHypertube(level, pos, direction);
+        }
+
 
         if (!validation.valid()) {
-            MessageUtils.sendActionMessage(player, validation.getMessageComponent().withColor(0xFF0000));
+            MessageUtils.sendActionMessage(player, validation.getMessageComponent().withColor(0xFF0000), true);
             return false;
         }
         TubePlacement.checkSurvivalItems(player, (int) connection.distance(), false);
@@ -165,17 +171,13 @@ public class HypertubeItem extends BlockItem {
             otherBlockEntity.setConnectionFrom(connection.getFromPos(), direction);
         }
 
-        player.displayClientMessage(Component.literal("Connected"), true);
+        MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.success_conn")
+                .withColor(0x00FF00), true);
         player.playSound(SoundEvents.ITEM_FRAME_ADD_ITEM, 1.0f, 1.0f);
 
 
         clearConnection(player.getItemInHand(InteractionHand.MAIN_HAND));
         return true;
-    }
-
-    @SuppressWarnings("DataFlowIssue")
-    public BlockState getPlacementState(UseOnContext pContext) {
-        return getPlacementState(updatePlacementContext(new BlockPlaceContext(pContext)));
     }
 
     public static ResponseDTO select(LevelAccessor world, BlockPos pos, Direction direction, ItemStack heldItem) {
