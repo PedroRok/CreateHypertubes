@@ -2,10 +2,14 @@ package com.pedrorok.hypertube.events;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.managers.TravelManager;
+import com.pedrorok.hypertube.managers.placement.ResponseDTO;
 import com.pedrorok.hypertube.managers.placement.TubePlacement;
+import com.pedrorok.hypertube.utils.MessageUtils;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityEvent;
@@ -50,9 +54,18 @@ public class ModServerEvents {
     @SubscribeEvent
     public static void playerPlaceBlock(BlockEvent.EntityPlaceEvent event) {
         if (event.getEntity() == null) return;
-        if (!TravelManager.hasHyperTubeData(event.getEntity()))
-            return;
 
+        if (TravelManager.hasHyperTubeData(event.getEntity())) {
+            event.setCanceled(true);
+            return;
+        }
+        if (event.getEntity().level().isClientSide) return;
+
+        if (!(event.getEntity() instanceof Player player)) return;
+
+        if (TubePlacement.checkPlayerPlacingBlock(player, (Level) event.getLevel(), event.getPos())) {
+            return;
+        }
         event.setCanceled(true);
     }
 

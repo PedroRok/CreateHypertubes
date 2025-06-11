@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -117,6 +118,47 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
                 return List.of(hypertubeBlockEntity.getConnectionTo().getToPos().direction());
             }
         }
+
+        Boolean eastWest = getBlockState().getValue(HypertubeBlock.EAST_WEST);
+        if (eastWest) {
+            List<Direction> directions = new ArrayList<>();
+            boolean hasBlockInEast = level.getBlockState(worldPosition.relative(Direction.EAST)).getBlock() instanceof HypertubeBlock;
+            if (!hasBlockInEast) {
+                directions.add(Direction.EAST);
+            }
+            boolean hasBlockInWest = level.getBlockState(worldPosition.relative(Direction.WEST)).getBlock() instanceof HypertubeBlock;
+            if (!hasBlockInWest) {
+                directions.add(Direction.WEST);
+            }
+            return directions;
+        }
+        Boolean upDown = getBlockState().getValue(HypertubeBlock.UP_DOWN);
+        if (upDown) {
+            List<Direction> directions = new ArrayList<>();
+            boolean hasBlockInUp = level.getBlockState(worldPosition.relative(Direction.UP)).getBlock() instanceof HypertubeBlock;
+            if (!hasBlockInUp) {
+                directions.add(Direction.UP);
+            }
+            boolean hasBlockInDown = level.getBlockState(worldPosition.relative(Direction.DOWN)).getBlock() instanceof HypertubeBlock;
+            if (!hasBlockInDown) {
+                directions.add(Direction.DOWN);
+            }
+            return directions;
+        }
+        Boolean northSouth = getBlockState().getValue(HypertubeBlock.NORTH_SOUTH);
+        if (northSouth) {
+            List<Direction> directions = new ArrayList<>();
+            boolean hasBlockInNorth = level.getBlockState(worldPosition.relative(Direction.NORTH)).getBlock() instanceof HypertubeBlock;
+            if (!hasBlockInNorth) {
+                directions.add(Direction.NORTH);
+            }
+            boolean hasBlockInSouth = level.getBlockState(worldPosition.relative(Direction.SOUTH)).getBlock() instanceof HypertubeBlock;
+            if (!hasBlockInSouth) {
+                directions.add(Direction.SOUTH);
+            }
+            return directions;
+        }
+
         return List.of(Direction.values());
     }
 

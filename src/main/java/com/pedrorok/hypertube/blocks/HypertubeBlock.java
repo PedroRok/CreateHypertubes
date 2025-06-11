@@ -1,6 +1,5 @@
 package com.pedrorok.hypertube.blocks;
 
-import com.mojang.datafixers.kinds.IdF;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.items.HypertubeItem;
 import com.pedrorok.hypertube.managers.TravelManager;
@@ -20,6 +19,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -41,8 +42,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -271,7 +270,7 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
             BlockEntity otherBlock = level.getBlockEntity(otherPos);
             if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity
                 && otherHypertubeEntity.getConnectionTo() != null) {
-                toDrop += (int) otherHypertubeEntity.getConnectionTo().distance() -1;
+                toDrop += (int) otherHypertubeEntity.getConnectionTo().distance() - 1;
                 otherHypertubeEntity.setConnectionTo(null);
             }
         }
@@ -281,14 +280,14 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
             BlockEntity otherBlock = level.getBlockEntity(otherPos);
             if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity
                 && otherHypertubeEntity.getConnectionFrom() != null) {
-                toDrop += (int) connectionTo.distance() -1;
+                toDrop += (int) connectionTo.distance() - 1;
                 otherHypertubeEntity.setConnectionFrom(null, null);
             }
         }
 
         if (!player.isCreative()) {
             if (toDrop != 0 || wrenched) {
-                ItemStack stack = new ItemStack(ModBlocks.HYPERTUBE.get(), toDrop +1);
+                ItemStack stack = new ItemStack(ModBlocks.HYPERTUBE.get(), toDrop + 1);
                 if (wrenched)
                     player.getInventory().placeItemBackInInventory(stack);
                 else
@@ -307,7 +306,11 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
 
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof HypertubeBlockEntity hypertubeEntity)) return;
-        if (!stack.hasFoil()) return;
+        if (!stack.hasFoil()) {
+            level.playSound(null, pos, getSoundType(state, level, pos, placer).getPlaceSound(), SoundSource.BLOCKS,
+                    1, level.random.nextFloat() * 0.1f + 0.9f);
+            return;
+        }
 
         SimpleConnection connectionFrom = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
         if (connectionFrom == null) return;
@@ -316,21 +319,17 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
         SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
 
-
-        ResponseDTO validation = bezierConnection.getValidation();
-        if (validation.valid()) {
-            validation = TubePlacement.checkSurvivalItems(player, (int) bezierConnection.distance(), true);
-        }
-
-        if (!validation.valid()) {
-            MessageUtils.sendActionMessage(player, validation.getMessageComponent());
+        if (!TubePlacement.checkPlayerPlacingBlockValidation(player, bezierConnection, level)) {
+            level.playSound(null, pos, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS,
+                    1, 0.5f);
             return;
         }
-        TubePlacement.checkSurvivalItems(player, (int) bezierConnection.distance() + 1, false);
+
+        level.playSound(null, pos, getSoundType(state, level, pos, placer).getPlaceSound(), SoundSource.BLOCKS,
+                1, level.random.nextFloat() * 0.1f + 0.9f);
 
         BlockEntity otherBlockEntity = level.getBlockEntity(connectionFrom.pos());
         boolean inverted = false;
-        HypertubeItem.clearConnection(placer.getItemInHand(InteractionHand.MAIN_HAND));
 
         if (otherBlockEntity instanceof HypertubeBlockEntity otherHypertubeEntity) {
             if (otherHypertubeEntity.getConnectionTo() == null) {
@@ -351,10 +350,9 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
         else
             hypertubeEntity.setConnectionFrom(connectionFrom, bezierConnection.getToPos().direction());
 
-        if (!level.isClientSide()
-            && level.getBlockState(pos).getBlock() instanceof HypertubeBlock hypertubeBlock) {
-            hypertubeBlock.updateBlockState(level, pos, hypertubeBlock.getState(List.of(finalDirection)));
-        }
+
+        if (!(level.getBlockState(pos).getBlock() instanceof HypertubeBlock hypertubeBlock)) return;
+        hypertubeBlock.updateBlockState(level, pos, hypertubeBlock.getState(List.of(finalDirection)));
     }
 
     @Override

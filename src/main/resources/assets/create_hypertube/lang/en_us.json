@@ -12,5 +12,7 @@
   "placement.create_hypertube.conn_cleared": "Connection cleared",
   "placement.create_hypertube.invalid_conn": "Invalid connection",
   "placement.create_hypertube.cant_conn_tubes": "Can't connect these tubes",
-  "placement.create_hypertube.cant_conn_to_face": "Can't connect a tube at this block face"
+  "placement.create_hypertube.cant_conn_to_face": "Can't connect a tube at this block face",
+  "placement.create_hypertube.cant_conn_to_block": "Can't connect a tube to this block",
+  "placement.create_hypertube.no_other_tube_found": "No other tube found"
 }

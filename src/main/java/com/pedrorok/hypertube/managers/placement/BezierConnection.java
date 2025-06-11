@@ -9,8 +9,10 @@ import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.outliner.Outliner;
 import net.createmod.catnip.theme.Color;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -168,7 +170,7 @@ public class BezierConnection {
 
     public ResponseDTO getValidation() {
         if (valid != null) return valid;
-        if (fromPos==null || toPos==null) {
+        if (fromPos == null || toPos == null) {
             valid = ResponseDTO.invalid("placement.create_hypertube.no_valid_points");
             return valid;
         }
@@ -180,10 +182,11 @@ public class BezierConnection {
             valid = ResponseDTO.invalid("placement.create_hypertube.distance_too_high");
             return valid;
         }
-        if (distance() == 0) {
+        if (distance() <= 1) {
             valid = ResponseDTO.invalid();
             return valid;
         }
+
         return ResponseDTO.get(true);
     }
 
@@ -193,11 +196,11 @@ public class BezierConnection {
 
 
     @OnlyIn(Dist.CLIENT)
-    public void drawPath(LerpedFloat animation) {
+    public void drawPath(LerpedFloat animation, boolean isValid) {
         Vec3 pos1 = fromPos.pos().getCenter();
         int id = 0;
         for (Vec3 bezierPoint : getBezierPoints()) {
-            line(uuid, id, pos1, bezierPoint, animation, valid != null && !valid.valid());
+            line(uuid, id, pos1, bezierPoint, animation, !isValid);
             pos1 = bezierPoint;
             id++;
         }
@@ -215,6 +218,15 @@ public class BezierConnection {
                 .lineWidth(1 / 8f)
                 .disableLineNormals()
                 .colored(color);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public static void outlineBlocks(BlockPos pos) {
+        Outliner.getInstance().showAABB(pos.asLong(), new AABB(pos.getX() +1, pos.getY() +1, pos.getZ()+1,
+                        pos.getX() , pos.getY(), pos.getZ()))
+                .colored(0xEA5C2B)
+                .lineWidth(1 / 8f)
+                .disableLineNormals();
     }
 
 

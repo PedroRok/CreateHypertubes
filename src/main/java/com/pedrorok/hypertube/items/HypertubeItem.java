@@ -1,6 +1,5 @@
 package com.pedrorok.hypertube.items;
 
-import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.managers.placement.BezierConnection;
@@ -11,6 +10,7 @@ import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModDataComponent;
 import com.pedrorok.hypertube.utils.MessageUtils;
 import com.simibubi.create.AllDataComponents;
+import com.simibubi.create.AllSoundEvents;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -86,7 +86,7 @@ public class HypertubeItem extends BlockItem {
         }
 
         boolean isHypertubeClicked = (state.getBlock() instanceof HypertubeBlock);
-        boolean success = true;
+        boolean success = false;
 
         if (isHypertubeClicked) {
             Optional<HypertubeBlockEntity> blockEntity = level.getBlockEntity(pos, ModBlockEntities.HYPERTUBE.get());
@@ -97,9 +97,10 @@ public class HypertubeItem extends BlockItem {
 
 
         SoundType soundtype = state.getSoundType();
-        if (success)
+        if (success) {
             level.playSound(null, pos, soundtype.getPlaceSound(), SoundSource.BLOCKS,
                     (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
+        }
 
         return isHypertubeClicked ? InteractionResult.FAIL : super.useOn(pContext);
     }
@@ -112,7 +113,8 @@ public class HypertubeItem extends BlockItem {
         HypertubeBlockEntity otherBlockEntity = (HypertubeBlockEntity) level.getBlockEntity(simpleConnection.pos());
 
         if (otherBlockEntity == null) {
-            player.displayClientMessage(Component.literal("No other tube found"), true);
+            MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.no_other_tube_found")
+                    .withColor(0xFF0000));
             return false;
         }
 
@@ -139,6 +141,10 @@ public class HypertubeItem extends BlockItem {
             validation = TubePlacement.checkSurvivalItems(player, (int) connection.distance(), true);
         }
 
+        if (validation.valid()) {
+            validation = TubePlacement.checkBlockCollision(level, connection);
+        }
+
 
         if (!validation.valid()) {
             MessageUtils.sendActionMessage(player, validation.getMessageComponent().withColor(0xFF0000));
@@ -148,7 +154,7 @@ public class HypertubeItem extends BlockItem {
 
         if (level.isClientSide) {
             connection.drawPath(LerpedFloat.linear()
-                    .startWithValue(0));
+                    .startWithValue(0), true);
         }
 
         if (usingConnectingTo) {

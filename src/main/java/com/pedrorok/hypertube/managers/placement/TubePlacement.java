@@ -31,6 +31,9 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Rok, Pedro Lucas nmm. Created on 23/04/2025
  * @project Create Hypertube
@@ -94,17 +97,87 @@ public class TubePlacement {
         if (response.valid()) {
             response = checkSurvivalItems(player, (int) bezierConnection.distance(), true);
         }
+        if (response.valid()) {
+            response = checkBlockCollision(level, bezierConnection);
+        }
 
         animation.setValue(!response.valid() ? 0.2 : 0.8);
 
         canPlace = response.valid();
-        bezierConnection.drawPath(animation);
+        bezierConnection.drawPath(animation, canPlace);
 
         if (!response.valid()) {
             MessageUtils.sendActionMessage(player, response.getMessageComponent());
             return;
         }
+
         MessageUtils.sendActionMessage(player, "");
+    }
+
+
+    // UTILITY - CHECK PLACEMENT
+    public static boolean checkPlayerPlacingBlock(Player player, Level level, BlockPos pos) {
+
+        ItemStack itemInHand = player.getItemInHand(InteractionHand.MAIN_HAND);
+        if (itemInHand.getItem() != ModBlocks.HYPERTUBE.asItem()) {
+            return true;
+        }
+        if (!itemInHand.hasFoil()) {
+            return true;
+        }
+
+        SimpleConnection connectionFrom = itemInHand.get(ModDataComponent.TUBE_CONNECTING_FROM);
+
+        Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, null, true);
+        SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
+        BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
+
+        return checkPlayerPlacingBlockValidation(player, bezierConnection, level);
+    }
+
+    public static boolean checkPlayerPlacingBlockValidation(Player player, BezierConnection bezierConnection, Level level) {
+        ResponseDTO validation = bezierConnection.getValidation();
+        if (validation.valid()) {
+            validation = TubePlacement.checkSurvivalItems(player, (int) bezierConnection.distance(), true);
+        }
+
+        if (validation.valid()) {
+            validation = TubePlacement.checkBlockCollision(level, bezierConnection);
+        }
+
+        if (!validation.valid()) {
+            MessageUtils.sendActionMessage(player, validation.getMessageComponent());
+            return false;
+        }
+        HypertubeItem.clearConnection(player.getItemInHand(InteractionHand.MAIN_HAND));
+
+        TubePlacement.checkSurvivalItems(player, (int) bezierConnection.distance() + 1, false);
+        return true;
+    }
+
+
+    public static ResponseDTO checkBlockCollision(Level level, BezierConnection bezierConnection) {
+        List<Vec3> positions = new ArrayList<>(bezierConnection.getBezierPoints());
+        positions.removeFirst();
+        positions.removeLast();
+        boolean isServerSide = !level.isClientSide;
+
+        ResponseDTO canPlace = null;
+        for (Vec3 pos : positions) {
+            BlockPos blockPos = BlockPos.containing(pos);
+            if (!level.getBlockState(blockPos)
+                    .getCollisionShape(level, blockPos).isEmpty()) {
+                if (level.isClientSide) {
+                    BezierConnection.outlineBlocks(blockPos);
+                }
+                canPlace = ResponseDTO.invalid("placement.create_hypertube.block_collision");
+                if (isServerSide) return canPlace;
+            }
+        }
+        if (canPlace == null) {
+            canPlace = ResponseDTO.get(true);
+        }
+        return canPlace;
     }
 
 
@@ -117,7 +190,6 @@ public class TubePlacement {
     }
 
     private static boolean checkPlayerInventory(Player player, int neededTubes, boolean simulate) {
-
         int foundTubes = 0;
 
         Inventory inv = player.getInventory();
@@ -156,6 +228,8 @@ public class TubePlacement {
         return foundTubes >= neededTubes;
     }
 
+
+    // SERVER BLOCK VALIDATION
     public static void tickPlayerServer(Player player) {
         ItemStack itemInHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         Level level = player.level();
@@ -172,6 +246,7 @@ public class TubePlacement {
     }
 
 
+    // UTILITY
     @OnlyIn(Dist.CLIENT)
     public static void drawCustomBlockSelection(PoseStack ms, MultiBufferSource buffer, Vec3 camera) {
         ItemStack mainHandItem = Minecraft.getInstance().player.getMainHandItem();
