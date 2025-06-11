@@ -2,6 +2,7 @@ package com.pedrorok.hypertube.managers.placement;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.simibubi.create.CreateClient;
 import com.simibubi.create.foundation.outliner.Outliner;
 import com.simibubi.create.foundation.utility.Color;
 import com.simibubi.create.foundation.utility.Pair;
@@ -200,7 +201,7 @@ public class BezierConnection {
             start = start.add(diff.scale(0.2));
             end = start.add(diff.scale(-0.2));
         }
-        Outliner.getInstance().showLine(Pair.of(uuid, id), start, end)
+        CreateClient.OUTLINER.showLine(Pair.of(uuid, id), start, end)
                 .lineWidth(1 / 8f)
                 .disableLineNormals()
                 .colored(color);
