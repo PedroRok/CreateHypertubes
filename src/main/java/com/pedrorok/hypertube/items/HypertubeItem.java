@@ -68,14 +68,14 @@ public class HypertubeItem extends BlockItem {
                 return InteractionResult.SUCCESS;
             }
             if (!select.errorMessage().isEmpty()) {
-                MessageUtils.sendActionMessage(player, select.errorMessage());
+                MessageUtils.sendActionMessage(player, select.getMessageComponent());
             }
             return super.useOn(pContext);
         }
 
         SimpleConnection simpleConnection = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
         if (player.isShiftKeyDown() && simpleConnection.pos().equals(pos)) {
-            MessageUtils.sendActionMessage(player, "§eConnection cleared");
+            MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.conn_cleared").withColor(0xFFFF00));
             clearConnection(stack);
             return InteractionResult.SUCCESS;
         }
@@ -123,7 +123,8 @@ public class HypertubeItem extends BlockItem {
 
         if (!usingConnectingTo) {
             if (!thisTubeCanConnTo || !otherTubeCanConnFrom) {
-                player.displayClientMessage(Component.literal("Both tubes are already connected"), true);
+                MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.cant_conn_tubes")
+                        .withColor(0xFF0000));
                 return false;
             }
         }
@@ -140,7 +141,7 @@ public class HypertubeItem extends BlockItem {
 
 
         if (!validation.valid()) {
-            player.displayClientMessage(Component.literal(validation.errorMessage()), true);
+            MessageUtils.sendActionMessage(player, validation.getMessageComponent().withColor(0xFF0000));
             return false;
         }
         TubePlacement.checkSurvivalItems(player, (int) connection.distance(), false);
@@ -181,7 +182,7 @@ public class HypertubeItem extends BlockItem {
             return ResponseDTO.get(false);
         }
         if (!blockEntity.getFacesConnectable().contains(direction)) {
-            return ResponseDTO.get(false, "§cTube can't connect to this face");
+            return ResponseDTO.get(false, "placement.create_hypertube.cant_conn_to_face");
         }
 
         heldItem.set(ModDataComponent.TUBE_CONNECTING_FROM, new SimpleConnection(pos, direction));

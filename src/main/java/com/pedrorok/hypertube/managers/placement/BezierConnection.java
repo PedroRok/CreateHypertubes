@@ -169,19 +169,19 @@ public class BezierConnection {
     public ResponseDTO getValidation() {
         if (valid != null) return valid;
         if (fromPos==null || toPos==null) {
-            valid = ResponseDTO.invalid("Both positions must be set.");
+            valid = ResponseDTO.invalid("placement.create_hypertube.no_valid_points");
             return valid;
         }
         if (getMaxAngleBezierAngle() >= MAX_ANGLE) {
-            valid = ResponseDTO.invalid("The angle between points is too high.");
+            valid = ResponseDTO.invalid("placement.create_hypertube.angle_too_high");
             return valid;
         }
         if (distance() >= MAX_DISTANCE) {
-            valid = ResponseDTO.invalid("The distance between points is too high.");
+            valid = ResponseDTO.invalid("placement.create_hypertube.distance_too_high");
             return valid;
         }
         if (distance() == 0) {
-            valid = ResponseDTO.invalid("");
+            valid = ResponseDTO.invalid();
             return valid;
         }
         return ResponseDTO.get(true);

@@ -323,7 +323,7 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
         }
 
         if (!validation.valid()) {
-            MessageUtils.sendActionMessage(player, "§c" + validation.errorMessage());
+            MessageUtils.sendActionMessage(player, validation.getMessageComponent());
             return;
         }
         TubePlacement.checkSurvivalItems(player, (int) bezierConnection.distance() + 1, false);
@@ -341,7 +341,7 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
                 otherHypertubeEntity.setConnectionFrom(connectionTo, bezierConnection.getToPos().direction());
                 inverted = true;
             } else {
-                player.displayClientMessage(Component.literal("Invalid connection"), true);
+                MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.invalid_conn").withColor(0xFF0000));
                 return;
             }
         }

@@ -3,5 +3,14 @@
   "block.create_hypertube.hypertube_entrance": "Hypertube Entrance Block",
   "block.create_hypertube.hypertube": "Hypertube Block",
   "subtitles.create_hypertube.suction": "Hypertube Suction",
-  "subtitles.create_hypertube.traveling": "Hypertube Airflow"
+  "subtitles.create_hypertube.traveling": "Hypertube Airflow",
+  "placement.create_hypertube.conn_cleared_invalid_block": "Connection cleared, the block is invalid!",
+  "placement.create_hypertube.angle_too_high": "The angle between points is too high",
+  "placement.create_hypertube.distance_too_high": "The distance between points is too high",
+  "placement.create_hypertube.no_valid_points": "Both positions must be set",
+  "placement.create_hypertube.no_enough_tubes": "You don't have enough tubes in your inventory",
+  "placement.create_hypertube.conn_cleared": "Connection cleared",
+  "placement.create_hypertube.invalid_conn": "Invalid connection",
+  "placement.create_hypertube.cant_conn_tubes": "Can't connect these tubes",
+  "placement.create_hypertube.cant_conn_to_face": "Can't connect a tube at this block face"
 }

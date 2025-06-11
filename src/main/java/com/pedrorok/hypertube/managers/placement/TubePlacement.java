@@ -17,6 +17,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -100,7 +101,7 @@ public class TubePlacement {
         bezierConnection.drawPath(animation);
 
         if (!response.valid()) {
-            MessageUtils.sendActionMessage(player, "§c" + response.errorMessage());
+            MessageUtils.sendActionMessage(player, response.getMessageComponent());
             return;
         }
         MessageUtils.sendActionMessage(player, "");
@@ -110,7 +111,7 @@ public class TubePlacement {
     public static ResponseDTO checkSurvivalItems(Player player, int neededTubes, boolean simulate) {
         if (!player.isCreative()
             && !checkPlayerInventory(player, neededTubes, simulate)) {
-            return ResponseDTO.invalid("§cYou don't have enough tubes in your inventory!");
+            return ResponseDTO.invalid("placement.create_hypertube.no_enough_tubes");
         }
         return ResponseDTO.get(true);
     }
@@ -164,7 +165,9 @@ public class TubePlacement {
         if (connection == null) return;
         if (!(level.getBlockEntity(new BlockPos(connection.pos())) instanceof HypertubeBlockEntity)) {
             HypertubeItem.clearConnection(itemInHand);
-            MessageUtils.sendActionMessage(player, "§cConnection cleared, the block is invalid!");
+            MessageUtils.sendActionMessage(player,
+                    Component.translatable("placement.create_hypertube.conn_cleared_invalid_block").withColor(0xFF0000)
+            );
         }
     }
 
