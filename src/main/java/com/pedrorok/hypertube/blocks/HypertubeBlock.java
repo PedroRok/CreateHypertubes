@@ -410,7 +410,7 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
             return InteractionResult.SUCCESS;
 
         world.destroyBlock(pos, false);
-        IWrenchable.playRemoveSound(world, pos);
+        this.playRemoveSound(world, pos);
         return InteractionResult.SUCCESS;
     }
 }

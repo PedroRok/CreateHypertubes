@@ -4,12 +4,9 @@ import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.IBezierProvider;
 import com.pedrorok.hypertube.managers.placement.BezierConnection;
 import com.pedrorok.hypertube.managers.placement.SimpleConnection;
-import com.simibubi.create.api.contraption.transformable.TransformableBlockEntity;
-import com.simibubi.create.content.contraptions.StructureTransform;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.Connection;
@@ -28,7 +25,7 @@ import java.util.List;
  * @project Create Hypertube
  */
 @Getter
-public class HypertubeBlockEntity extends BlockEntity implements TransformableBlockEntity, IBezierProvider {
+public class HypertubeBlockEntity extends BlockEntity implements IBezierProvider {
 
     private BezierConnection connectionTo;
     private SimpleConnection connectionFrom;
@@ -141,10 +138,6 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
             return;
         }
         load(tag);
-    }
-
-    @Override
-    public void transform(BlockEntity blockEntity, StructureTransform transform) {
     }
 
     @Override

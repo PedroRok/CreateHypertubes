@@ -7,8 +7,7 @@ import com.pedrorok.hypertube.camera.DetachedCameraController;
 import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.managers.placement.TubePlacement;
 import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
-import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
-import net.createmod.catnip.render.SuperRenderTypeBuffer;
+import com.simibubi.create.foundation.render.SuperRenderTypeBuffer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -56,7 +55,7 @@ public class ClientEvents {
 
         PoseStack ms = event.getPoseStack();
         ms.pushPose();
-        SuperRenderTypeBuffer buffer = DefaultSuperRenderTypeBuffer.getInstance();
+        SuperRenderTypeBuffer buffer = SuperRenderTypeBuffer.getInstance();
         Vec3 camera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
 
         TubePlacement.drawCustomBlockSelection(ms, buffer, camera);

@@ -2,11 +2,11 @@ package com.pedrorok.hypertube.managers.placement;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.simibubi.create.foundation.outliner.Outliner;
+import com.simibubi.create.foundation.utility.Color;
+import com.simibubi.create.foundation.utility.Pair;
+import com.simibubi.create.foundation.utility.animation.LerpedFloat;
 import lombok.Getter;
-import net.createmod.catnip.animation.LerpedFloat;
-import net.createmod.catnip.data.Pair;
-import net.createmod.catnip.outliner.Outliner;
-import net.createmod.catnip.theme.Color;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
