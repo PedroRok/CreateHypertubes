@@ -16,5 +16,10 @@
   "placement.create_hypertube.cant_conn_to_block": "Can't connect a tube to this block",
   "placement.create_hypertube.no_other_tube_found": "No other tube found",
   "placement.create_hypertube.block_collision": "Block collision detected",
-  "placement.create_hypertube.success_conn": "Tubes Connected!"
+  "placement.create_hypertube.success_conn": "Tubes Connected!",
+  "tooltip.create_hypertube.entrance_no_speed": "Not enough speed",
+  "tooltip.create_hypertube.entrance_blocked": "Entrance blocked",
+  "block.hypertube.hyper_entrance.manual_lock": "Manual Lock Mode",
+  "block.hypertube.hyper_entrance.sneak_to_enter": "Sneak to Enter",
+  "block.hypertube.hyper_entrance.automatic_lock": "Automatic Lock Mode"
 }

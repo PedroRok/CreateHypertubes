@@ -58,6 +58,7 @@ import java.util.Set;
  */
 public class HypertubeBlock extends HalfTransparentBlock implements TubeConnection, IBE<HypertubeBlockEntity>, IWrenchable {
 
+    public static final BooleanProperty CONNECTED = BooleanProperty.create("connected");
     public static final BooleanProperty NORTH_SOUTH = BooleanProperty.create("north_south");
     public static final BooleanProperty EAST_WEST = BooleanProperty.create("east_west");
     public static final BooleanProperty UP_DOWN = BooleanProperty.create("up_down");
@@ -72,7 +73,7 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(NORTH_SOUTH, EAST_WEST, UP_DOWN);
+        builder.add(NORTH_SOUTH, EAST_WEST, UP_DOWN, CONNECTED);
     }
 
     @Override
@@ -83,12 +84,26 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
             BlockPos relative = context.getClickedPos().relative(direction);
             BlockState otherState = context.getLevel().getBlockState(relative);
             if (otherState.getBlock() instanceof TubeConnection) {
-                return getState(Set.of(direction));
+                return getState(List.of(direction), true);
             }
         }
-        return state.setValue(NORTH_SOUTH, false)
-                .setValue(EAST_WEST, false)
-                .setValue(UP_DOWN, false);
+
+        if (context.getPlayer() == null) {
+            return state.setValue(NORTH_SOUTH, false)
+                    .setValue(EAST_WEST, false)
+                    .setValue(UP_DOWN, false)
+                    .setValue(CONNECTED, false);
+        }
+
+        Player player = context.getPlayer();
+        Direction direction = context.getPlayer().getDirection();
+        if (player.getXRot() < -45) {
+            direction = Direction.UP;
+        } else if (player.getXRot() > 45) {
+            direction = Direction.DOWN;
+        }
+
+        return getState(List.of(direction), false);
     }
 
     public VoxelShape getShape(BlockState state, @Nullable CollisionContext ctx) {
@@ -123,7 +138,7 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
         if (connTo != null) {
             Direction dirTo = connTo.getFromPos().direction();
             if (dirTo != null) {
-                return getState(Set.of(dirTo));
+                return getState(Set.of(dirTo), true);
             }
         }
 
@@ -141,14 +156,14 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
         if (otherTo != null) {
             Direction dirFrom = otherTo.getToPos().direction();
             if (dirFrom != null) {
-                return getState(Set.of(dirFrom));
+                return getState(Set.of(dirFrom), true);
             }
         }
         return getState(world, pos);
     }
 
 
-    public BlockState getState(Collection<Direction> activeDirections) {
+    public BlockState getState(Collection<Direction> activeDirections, boolean connected) {
         if (activeDirections == null) {
             return defaultBlockState()
                     .setValue(NORTH_SOUTH, false)
@@ -162,7 +177,8 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
         return defaultBlockState()
                 .setValue(NORTH_SOUTH, northSouth)
                 .setValue(EAST_WEST, eastWest && !northSouth)
-                .setValue(UP_DOWN, upDown && !northSouth && !eastWest);
+                .setValue(UP_DOWN, upDown && !northSouth && !eastWest)
+                .setValue(CONNECTED, connected && (northSouth || eastWest || upDown));
     }
 
     private BlockState getState(Level world, BlockPos pos) {
@@ -173,7 +189,8 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
         return defaultBlockState()
                 .setValue(NORTH_SOUTH, northSouth)
                 .setValue(EAST_WEST, eastWest && !northSouth)
-                .setValue(UP_DOWN, upDown && !northSouth && !eastWest);
+                .setValue(UP_DOWN, upDown && !northSouth && !eastWest)
+                .setValue(CONNECTED, northSouth || eastWest || upDown);
     }
 
     public void updateBlockStateFromEntity(Level world, BlockPos pos) {
@@ -194,6 +211,9 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
     }
 
     public List<Direction> getConnectedFaces(BlockState state) {
+        if (!state.getValue(CONNECTED)) {
+            return List.of();
+        }
         List<Direction> directions = new ArrayList<>();
         if (state.getValue(NORTH_SOUTH)) {
             directions.add(Direction.NORTH);
@@ -348,7 +368,7 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
 
         MessageUtils.sendActionMessage(player, Component.empty(), true);
         if (!(level.getBlockState(pos).getBlock() instanceof HypertubeBlock hypertubeBlock)) return;
-        hypertubeBlock.updateBlockState(level, pos, hypertubeBlock.getState(List.of(finalDirection)));
+        hypertubeBlock.updateBlockState(level, pos, hypertubeBlock.getState(List.of(finalDirection), true));
     }
 
     @Override
@@ -411,5 +431,29 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
         world.destroyBlock(pos, false);
         IWrenchable.playRemoveSound(world, pos);
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        if (context.getPlayer() == null) return InteractionResult.PASS;
+        if (state.getValue(CONNECTED)) return InteractionResult.PASS;
+        if (state.getValue(EAST_WEST)) {
+            state = state.setValue(EAST_WEST, false)
+                    .setValue(UP_DOWN, true);
+        } else if (state.getValue(UP_DOWN)) {
+            state = state.setValue(UP_DOWN, false)
+                    .setValue(NORTH_SOUTH, true);
+        } else if (state.getValue(NORTH_SOUTH)) {
+            state = state.setValue(NORTH_SOUTH, false)
+                    .setValue(EAST_WEST, true);
+        } else {
+            state = getState(List.of(context.getClickedFace()), false);
+        }
+        Level level = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+        Player player = context.getPlayer();
+        level.playSound(player, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.75f, 1);
+
+        return IWrenchable.super.onWrenched(state, context);
     }
 }
