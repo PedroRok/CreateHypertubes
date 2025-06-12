@@ -203,4 +203,11 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
         return true;
     }
 
+
+    @Override
+    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        Player player = context.getPlayer();
+
+        return super.onWrenched(state, context);
+    }
 }

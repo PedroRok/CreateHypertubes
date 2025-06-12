@@ -3,6 +3,8 @@ package com.pedrorok.hypertube.blocks.blockentities;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
+import com.pedrorok.hypertube.registry.ModSounds;
+import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
@@ -13,8 +15,13 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -87,6 +94,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         if (actualSpeed < SPEED_TO_START) {
             if (isOpen) {
                 level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, false), 3);
+                playOpenCloseSound(false);
             }
             return;
         }
@@ -95,11 +103,13 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         if (nearbyPlayer.isEmpty()) {
             if (isOpen) {
                 level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, false), 3);
+                playOpenCloseSound(false);
             }
             return;
         }
         if (!isOpen) {
             level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, true), 3);
+            playOpenCloseSound(true);
         }
 
         Optional<ServerPlayer> inRangePlayer = getInRangePlayers((ServerLevel) level,
@@ -195,5 +205,18 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         }
 
         return true;
+    }
+
+
+    private void playOpenCloseSound(boolean open) {
+        RandomSource random = level.random;
+        float pitch = 0.4F + random.nextFloat() * 0.4F;
+        int seed = random.nextInt(1000);
+
+        Vec3 pos = this.getBlockPos().getCenter();
+        for (Player oPlayer : level.players()) {
+            ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(open ? ModSounds.HYPERTUBE_ENTRANCE_OPEN : ModSounds.HYPERTUBE_ENTRANCE_CLOSE,
+                    SoundSource.BLOCKS, pos.x, pos.y, pos.z, 0.2f, pitch, seed));
+        }
     }
 }
