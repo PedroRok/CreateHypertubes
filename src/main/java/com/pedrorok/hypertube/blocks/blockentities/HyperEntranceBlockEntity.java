@@ -3,9 +3,9 @@ package com.pedrorok.hypertube.blocks.blockentities;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
+import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
-import net.createmod.catnip.theme.Color;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -13,7 +13,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -30,7 +29,7 @@ import java.util.UUID;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperEntranceBlockEntity extends KineticBlockEntity {
+public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHaveHoveringInformation {
 
     private static final float RADIUS = 1.0f;
 
@@ -71,6 +70,10 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity {
     @Override
     public void tick() {
         super.tick();
+        if (getBlockState().getValue(HyperEntranceBlock.IN_FRONT)) {
+            return;
+        }
+
         if (level.isClientSide) {
             tickClient();
             return;
@@ -178,7 +181,11 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity {
         IRotate.SpeedLevel.getFormattedSpeedText(speed, finalSpeed < SPEED_TO_START)
                 .forGoggles(tooltip);
 
-        if (finalSpeed < SPEED_TO_START) {
+        if (getBlockState().getValue(HyperEntranceBlock.IN_FRONT)) {
+            tooltip.add(Component.literal("     ")
+                    .append(Component.translatable("tooltip.create_hypertube.entrance_blocked")
+                            .withColor(0xFF0000)));
+        } else if (finalSpeed < SPEED_TO_START) {
             tooltip.add(Component.literal("     ")
                     .append(Component.literal("\u2592 "))
                     .append(Component.translatable("tooltip.create_hypertube.entrance_no_speed"))

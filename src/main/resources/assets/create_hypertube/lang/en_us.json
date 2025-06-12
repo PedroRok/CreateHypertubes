@@ -17,5 +17,6 @@
   "placement.create_hypertube.no_other_tube_found": "No other tube found",
   "placement.create_hypertube.block_collision": "Block collision detected",
   "placement.create_hypertube.success_conn": "Tubes Connected!",
-  "tooltip.create_hypertube.entrance_no_speed": "Not enough speed"
+  "tooltip.create_hypertube.entrance_no_speed": "Not enough speed",
+  "tooltip.create_hypertube.entrance_blocked": "Entrance blocked"
 }

@@ -98,6 +98,7 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
             float uStart = currentDistance / TILING_UNIT;
             float uEnd = (currentDistance + segmentLength) / TILING_UNIT;
 
+            boolean zFightFix = false;
             for (int j = 0; j < SEGMENTS_AROUND; j++) {
                 float angle1 = (float) (j * 2 * Math.PI / SEGMENTS_AROUND) + (float) (Math.PI / 4);
                 float angle2 = (float) ((j + 1) * 2 * Math.PI / SEGMENTS_AROUND) + (float) (Math.PI / 4);

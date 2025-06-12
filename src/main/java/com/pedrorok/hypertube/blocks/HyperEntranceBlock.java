@@ -10,7 +10,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
@@ -26,14 +25,11 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
@@ -43,6 +39,8 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
 
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
+
+    public static final BooleanProperty IN_FRONT = BooleanProperty.create("has_block_in_front");
 
     private static final VoxelShape SHAPE_NORTH = Block.box(0D, 0D, 0D, 16D, 16D, 23D);
     private static final VoxelShape SHAPE_SOUTH = Block.box(0D, 0D, -7D, 16D, 16D, 16D);
@@ -54,13 +52,17 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
 
     public HyperEntranceBlock(Properties properties) {
         super(properties);
-        registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false));
+        registerDefaultState(this.stateDefinition.any()
+                .setValue(FACING, Direction.NORTH)
+                .setValue(OPEN, false)
+                .setValue(IN_FRONT, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING);
         builder.add(OPEN);
+        builder.add(IN_FRONT);
         super.createBlockStateDefinition(builder);
     }
 
@@ -68,6 +70,7 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         Player player = context.getPlayer();
+        Level level = context.getLevel();
         if (player == null) {
             return this.defaultBlockState().setValue(FACING, context.getClickedFace().getOpposite())
                     .setValue(OPEN, false);
@@ -78,9 +81,38 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
         } else if (player.getXRot() > 45) {
             direction = Direction.DOWN;
         }
+
+        boolean isFrontBlocked = false;
+        BlockPos relative = context.getClickedPos().relative(direction);
+        if (!level.getBlockState(relative).getCollisionShape(level, relative).isEmpty()) {
+            isFrontBlocked = true;
+        }
         return this.defaultBlockState()
                 .setValue(FACING, direction)
-                .setValue(OPEN, false);
+                .setValue(OPEN, false)
+                .setValue(IN_FRONT, isFrontBlocked);
+    }
+
+    @Override
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block p_60512_, BlockPos p_60513_, boolean p_60514_) {
+        super.neighborChanged(state, level, pos, p_60512_, p_60513_, p_60514_);
+        updateInFrontProperty((Level) level, pos, state);
+    }
+
+    @Override
+    public void onNeighborChange(BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
+        super.onNeighborChange(state, level, pos, neighbor);
+        updateInFrontProperty((Level) level, pos, state);
+    }
+
+    public void updateInFrontProperty(Level level, BlockPos pos, BlockState state) {
+        boolean isFrontBlocked = false;
+        Direction facing = state.getValue(FACING).getOpposite();
+        BlockPos relative = pos.relative(facing);
+        if (!level.getBlockState(relative).getCollisionShape(level, relative).isEmpty()) {
+            isFrontBlocked = true;
+        }
+        level.setBlock(pos, state.setValue(IN_FRONT, isFrontBlocked), 3);
     }
 
     @Override
