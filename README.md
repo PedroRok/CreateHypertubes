@@ -3,6 +3,7 @@
 
 <a href="https://www.curseforge.com/minecraft/mc-mods/hypertubes"><img alt="CurseForge Page" src="https://img.shields.io/badge/Hypertubes-Curse_Forge?logo=CurseForge&label=Curse%20Forge&color=%23F16436"></a>
 <a href="https://modrinth.com/mod/hypertube"><img alt="Modrinth Page" src="https://img.shields.io/badge/Hypertubes-Modrinth?logo=modrinth&label=Modrinth&color=%2300AF5C"></a>
+<a href="https://ko-fi.com/pedrorok"><img alt="ko-fi page" src="https://img.shields.io/badge/Support%20Me-kofi?logo=kofi&logoColor=%23FF6433&label=Ko-fi&color=%23FF6433"></a>
 </h1>
 
 > [!IMPORTANT]
