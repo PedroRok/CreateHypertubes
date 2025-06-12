@@ -36,11 +36,9 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
 
     private static final float TILING_UNIT = 1f;
 
-    private final BlockEntityRendererProvider.Context context;
     private final ResourceLocation textureLocation;
 
     public BezierTextureRenderer(BlockEntityRendererProvider.Context context) {
-        this.context = context;
         this.textureLocation = ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "textures/block/entity_tube_base.png");
     }
 
@@ -174,14 +172,6 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
                 (Mth.cos(angle) * perpA.z + Mth.sin(angle) * perpB.z) * radius
         );
     }
-
-/*    private float calculateTotalLength(List<Vec3> points) {
-        float length = 0;
-        for (int i = 0; i < points.size() - 1; i++) {
-            length += points.get(i).distanceTo(points.get(i + 1));
-        }
-        return length;
-    }*/
 
     @Override
     public boolean shouldRenderOffScreen(HypertubeBlockEntity blockEntity) {

@@ -4,7 +4,6 @@ import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
 import com.pedrorok.hypertube.registry.ModSounds;
-import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
@@ -15,13 +14,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -110,7 +106,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
             return;
         }
         if (!isOpen
-         && canOpen) {
+            && canOpen) {
             level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, true), 3);
             playOpenCloseSound(true);
         }
