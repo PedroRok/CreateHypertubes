@@ -183,7 +183,7 @@ public class TravelManager {
             return;
         }
 
-        if (player.isSpectator()) {
+        if (player.isSpectator() || player.isDeadOrDying()) {
             finishTravel((ServerPlayer) player, travelData, true);
         }
 
