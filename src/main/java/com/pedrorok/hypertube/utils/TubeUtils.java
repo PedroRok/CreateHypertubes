@@ -45,7 +45,7 @@ public class TubeUtils {
             return true;
         }
 
-        SimpleConnection connectionFrom = itemInHand.get(ModDataComponent.TUBE_CONNECTING_FROM);
+        SimpleConnection connectionFrom = ModDataComponent.decodeSimpleConnection(itemInHand);
 
         Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, null, true);
         SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
@@ -79,8 +79,8 @@ public class TubeUtils {
 
     public static ResponseDTO checkBlockCollision(@NotNull Level level, @NotNull BezierConnection bezierConnection) {
         List<Vec3> positions = new ArrayList<>(bezierConnection.getBezierPoints());
-        positions.removeLast();
-        positions.removeFirst();
+        positions.remove(positions.size() -1);
+        positions.remove(0);
 
         for (int i = 1; i < positions.size() - 1; i++) {
             Vec3 pos = positions.get(i);

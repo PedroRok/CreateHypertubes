@@ -13,6 +13,7 @@ import com.pedrorok.hypertube.utils.TubeUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -335,7 +336,7 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
                 otherHypertubeEntity.setConnectionFrom(connectionTo, bezierConnection.getToPos().direction());
                 inverted = true;
             } else {
-                MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.invalid_conn").withColor(0xFF0000), true);
+                MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.invalid_conn").withStyle(ChatFormatting.RED), true);
                 return;
             }
         }

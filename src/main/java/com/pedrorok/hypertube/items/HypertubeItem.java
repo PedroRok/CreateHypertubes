@@ -1,19 +1,16 @@
 package com.pedrorok.hypertube.items;
 
-import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
-import com.pedrorok.hypertube.managers.placement.BezierConnection;
 import com.pedrorok.hypertube.managers.placement.ResponseDTO;
 import com.pedrorok.hypertube.managers.placement.SimpleConnection;
 import com.pedrorok.hypertube.managers.placement.TubePlacement;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModDataComponent;
 import com.pedrorok.hypertube.utils.MessageUtils;
-import net.createmod.catnip.animation.LerpedFloat;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -22,7 +19,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -74,7 +70,7 @@ public class HypertubeItem extends BlockItem {
 
         SimpleConnection simpleConnection = ModDataComponent.decodeSimpleConnection(stack);
         if (player.isShiftKeyDown() && simpleConnection.pos().equals(pos)) {
-            MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.conn_cleared").withColor(0xFFFF00));
+            MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.conn_cleared").withStyle(ChatFormatting.YELLOW));
             clearConnection(stack);
             return InteractionResult.SUCCESS;
         }
@@ -118,7 +114,7 @@ public class HypertubeItem extends BlockItem {
             return ResponseDTO.get(false, "placement.create_hypertube.cant_conn_to_face");
         }
 
-        ModDataComponent.encodeSimpleConnection(pos,direction, heldItem);
+        ModDataComponent.encodeSimpleConnection(pos, direction, heldItem);
         heldItem.getTag().putBoolean("foil", true);
         return ResponseDTO.get(true);
     }

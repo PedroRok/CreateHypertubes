@@ -12,6 +12,7 @@ import com.pedrorok.hypertube.utils.RayCastUtils;
 import com.pedrorok.hypertube.utils.TubeUtils;
 import com.simibubi.create.content.trains.track.TrackBlockOutline;
 import net.createmod.catnip.animation.LerpedFloat;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -31,6 +32,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 23/04/2025
@@ -122,7 +124,7 @@ public class TubePlacement {
 
         if (otherBlockEntity == null) {
             MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.no_other_tube_found")
-                    .withColor(0xFF0000));
+                    .withStyle(ChatFormatting.RED));
             return false;
         }
 
@@ -134,7 +136,7 @@ public class TubePlacement {
         if (!usingConnectingTo) {
             if (!thisTubeCanConnTo || !otherTubeCanConnFrom) {
                 MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.cant_conn_tubes")
-                        .withColor(0xFF0000));
+                        .withStyle(ChatFormatting.RED));
                 return false;
             }
         }
@@ -156,7 +158,7 @@ public class TubePlacement {
         }
 
         if (!validation.valid()) {
-            MessageUtils.sendActionMessage(player, validation.getMessageComponent().withColor(0xFF0000), true);
+            MessageUtils.sendActionMessage(player, validation.getMessageComponent().withStyle(ChatFormatting.RED), true);
             return false;
         }
         TubeUtils.checkSurvivalItems(player, (int) connection.distance(), false);
@@ -175,7 +177,7 @@ public class TubePlacement {
         }
 
         MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.success_conn")
-                .withColor(0x00FF00), true);
+                .withStyle(ChatFormatting.GREEN), true);
         player.playSound(SoundEvents.ITEM_FRAME_ADD_ITEM, 1.0f, 1.0f);
 
 
@@ -195,7 +197,7 @@ public class TubePlacement {
         if (!(level.getBlockEntity(new BlockPos(connection.pos())) instanceof HypertubeBlockEntity)) {
             HypertubeItem.clearConnection(itemInHand);
             MessageUtils.sendActionMessage(player,
-                    Component.translatable("placement.create_hypertube.conn_cleared_invalid_block").withColor(0xFF0000)
+                    Component.translatable("placement.create_hypertube.conn_cleared_invalid_block").withStyle(ChatFormatting.RED)
             );
         }
     }

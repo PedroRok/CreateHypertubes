@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.managers.placement;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
@@ -29,6 +30,6 @@ public record ResponseDTO(boolean valid, String errorMessage) {
         }
         MutableComponent translatable = Component.translatable(errorMessage);
         if (valid) return translatable;
-        return translatable.withColor(0xFF0000);
+        return translatable.withStyle(ChatFormatting.RED);
     }
 }
