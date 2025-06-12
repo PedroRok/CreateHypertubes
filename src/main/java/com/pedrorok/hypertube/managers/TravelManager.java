@@ -155,9 +155,9 @@ public class TravelManager {
         if (!forced) {
             player.teleportTo((ServerLevel) player.level(), lastBlockPos.x, lastBlockPos.y, lastBlockPos.z, player.getYRot(), player.getXRot());
             player.teleportRelative(lastDir.x, lastDir.y, lastDir.z);
-            player.setPose(Pose.CROUCHING);
             player.setDeltaMovement(travelData.getLastDir().scale(travelData.getSpeed() + 0.5));
         }
+        player.setPose(Pose.CROUCHING);
         player.hurtMarked = true;
 
         PlayerSyncEvents.syncPlayerStateToAll(player);
