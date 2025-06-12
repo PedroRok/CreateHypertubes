@@ -113,7 +113,7 @@ public class TubePlacement {
             return;
         }
 
-        MessageUtils.sendActionMessage(player, Component.empty(), true);
+        MessageUtils.sendActionMessage(player, "");
     }
 
     public static boolean handleHypertubeClicked(HypertubeBlockEntity tubeEntity, Player player, SimpleConnection simpleConnection, BlockPos pos, Direction direction, Level level, ItemStack stack) {
