@@ -2,9 +2,8 @@ package com.pedrorok.hypertube.events;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.managers.TravelManager;
-import com.pedrorok.hypertube.managers.placement.ResponseDTO;
 import com.pedrorok.hypertube.managers.placement.TubePlacement;
-import com.pedrorok.hypertube.utils.MessageUtils;
+import com.pedrorok.hypertube.utils.TubeUtils;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.LivingEntity;
@@ -63,7 +62,7 @@ public class ModServerEvents {
 
         if (!(event.getEntity() instanceof Player player)) return;
 
-        if (TubePlacement.checkPlayerPlacingBlock(player, (Level) event.getLevel(), event.getPos())) {
+        if (TubeUtils.checkPlayerPlacingBlock(player, (Level) event.getLevel(), event.getPos())) {
             return;
         }
         event.setCanceled(true);

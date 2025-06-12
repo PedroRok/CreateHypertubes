@@ -2,7 +2,6 @@ package com.pedrorok.hypertube.items;
 
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
-import com.pedrorok.hypertube.managers.placement.BezierConnection;
 import com.pedrorok.hypertube.managers.placement.ResponseDTO;
 import com.pedrorok.hypertube.managers.placement.SimpleConnection;
 import com.pedrorok.hypertube.managers.placement.TubePlacement;
@@ -10,8 +9,6 @@ import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModDataComponent;
 import com.pedrorok.hypertube.utils.MessageUtils;
 import com.simibubi.create.AllDataComponents;
-import com.simibubi.create.AllSoundEvents;
-import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -23,7 +20,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -91,7 +87,7 @@ public class HypertubeItem extends BlockItem {
         if (isHypertubeClicked) {
             Optional<HypertubeBlockEntity> blockEntity = level.getBlockEntity(pos, ModBlockEntities.HYPERTUBE.get());
             if (blockEntity.isPresent()) {
-                success = handleHypertubeClicked(blockEntity.get(), player, simpleConnection, pos, direction, level, stack);
+                success = TubePlacement.handleHypertubeClicked(blockEntity.get(), player, simpleConnection, pos, direction, level, stack);
             }
             SoundType soundtype = state.getSoundType();
             if (success) {
@@ -104,80 +100,6 @@ public class HypertubeItem extends BlockItem {
         }
 
         return isHypertubeClicked ? InteractionResult.FAIL : super.useOn(pContext);
-    }
-
-
-    private boolean handleHypertubeClicked(HypertubeBlockEntity tubeEntity, Player player, SimpleConnection simpleConnection, BlockPos pos, Direction direction, Level level, ItemStack stack) {
-
-        boolean thisTubeCanConnTo = tubeEntity.getConnectionTo() == null;
-        boolean thisTubeCanConnFrom = tubeEntity.getConnectionFrom() == null;
-        HypertubeBlockEntity otherBlockEntity = (HypertubeBlockEntity) level.getBlockEntity(simpleConnection.pos());
-
-        if (otherBlockEntity == null) {
-            MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.no_other_tube_found")
-                    .withColor(0xFF0000));
-            return false;
-        }
-
-        boolean otherTubeCanConnTo = otherBlockEntity.getConnectionTo() == null;
-        boolean otherTubeCanConnFrom = otherBlockEntity.getConnectionFrom() == null;
-
-        boolean usingConnectingTo = thisTubeCanConnFrom && otherTubeCanConnTo;
-
-        if (!usingConnectingTo) {
-            if (!thisTubeCanConnTo || !otherTubeCanConnFrom) {
-                MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.cant_conn_tubes")
-                        .withColor(0xFF0000));
-                return false;
-            }
-        }
-
-        BezierConnection connection = new BezierConnection(
-                usingConnectingTo ? simpleConnection : new SimpleConnection(pos, direction),
-                usingConnectingTo ? new SimpleConnection(pos, direction.getOpposite()) : new SimpleConnection(simpleConnection.pos(), simpleConnection.direction().getOpposite()));
-
-
-
-        ResponseDTO validation = connection.getValidation();
-        if (validation.valid()) {
-            validation = TubePlacement.checkSurvivalItems(player, (int) connection.distance(), true);
-        }
-
-        if (validation.valid()) {
-            validation = TubePlacement.checkBlockCollision(level, connection);
-        }
-
-        if (validation.valid()) {
-            validation = TubePlacement.checkClickedHypertube(level, pos, direction);
-        }
-
-
-        if (!validation.valid()) {
-            MessageUtils.sendActionMessage(player, validation.getMessageComponent().withColor(0xFF0000), true);
-            return false;
-        }
-        TubePlacement.checkSurvivalItems(player, (int) connection.distance(), false);
-
-        if (level.isClientSide) {
-            connection.drawPath(LerpedFloat.linear()
-                    .startWithValue(0), true);
-        }
-
-        if (usingConnectingTo) {
-            tubeEntity.setConnectionFrom(connection.getFromPos(), direction);
-            otherBlockEntity.setConnectionTo(connection);
-        } else {
-            tubeEntity.setConnectionTo(connection);
-            otherBlockEntity.setConnectionFrom(connection.getFromPos(), direction);
-        }
-
-        MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.success_conn")
-                .withColor(0x00FF00), true);
-        player.playSound(SoundEvents.ITEM_FRAME_ADD_ITEM, 1.0f, 1.0f);
-
-
-        clearConnection(player.getItemInHand(InteractionHand.MAIN_HAND));
-        return true;
     }
 
     public static ResponseDTO select(LevelAccessor world, BlockPos pos, Direction direction, ItemStack heldItem) {
