@@ -110,15 +110,16 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
                 float v2 = (j + 1) / (float) SEGMENTS_AROUND;
 
                 if (!isInterior) {
-                    addVertex(builder, pose, current, offsetStart1, uStart, v1, packedLight, packedOverlay, false);
-                    addVertex(builder, pose, next, offsetStart1, uEnd, v1, packedLight, packedOverlay, false);
-                    addVertex(builder, pose, next, offsetStart2, uEnd, v2, packedLight, packedOverlay, false);
-                    addVertex(builder, pose, current, offsetStart2, uStart, v2, packedLight, packedOverlay, false);
+                    addVertex(builder, pose, current, offsetStart1, uStart, v1, packedLight, packedOverlay, false, zFightFix);
+                    addVertex(builder, pose, next, offsetStart1, uEnd, v1, packedLight, packedOverlay, false, zFightFix);
+                    addVertex(builder, pose, next, offsetStart2, uEnd, v2, packedLight, packedOverlay, false, zFightFix);
+                    addVertex(builder, pose, current, offsetStart2, uStart, v2, packedLight, packedOverlay, false, zFightFix);
                 }
-                addVertex(builder, pose, current, offsetStart2, uStart, v2, packedLight, packedOverlay, true);
-                addVertex(builder, pose, next, offsetStart2, uEnd, v2, packedLight, packedOverlay, true);
-                addVertex(builder, pose, next, offsetStart1, uEnd, v1, packedLight, packedOverlay, true);
-                addVertex(builder, pose, current, offsetStart1, uStart, v1, packedLight, packedOverlay, true);
+                addVertex(builder, pose, current, offsetStart2, uStart, v2, packedLight, packedOverlay, true, zFightFix);
+                addVertex(builder, pose, next, offsetStart2, uEnd, v2, packedLight, packedOverlay, true, zFightFix);
+                addVertex(builder, pose, next, offsetStart1, uEnd, v1, packedLight, packedOverlay, true, zFightFix);
+                addVertex(builder, pose, current, offsetStart1, uStart, v1, packedLight, packedOverlay, true, zFightFix);
+                zFightFix = !zFightFix;
             }
 
             currentDistance += segmentLength;
@@ -126,7 +127,7 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
     }
 
     private void addVertex(VertexConsumer builder, Matrix4f pose,
-                           Vec3 pos, Vector3f offset, float u, float v, int light, int overlay, boolean invertLight) {
+                           Vec3 pos, Vector3f offset, float u, float v, int light, int overlay, boolean invertLight, boolean zFightFix) {
         float x = (float) pos.x + offset.x;
         float y = (float) pos.y + offset.y;
         float z = (float) pos.z + offset.z;
@@ -139,6 +140,9 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
         float ny = (offset.y / radius) * normalMultiplier;
         float nz = (offset.z / radius) * normalMultiplier;
 
+        if (zFightFix) {
+            pose.translate(0, 0.00001f, 0);
+        }
         builder.addVertex(pose, x, y, z)
                 .setColor(255, 255, 255, 255)
                 .setUv(u, v)
