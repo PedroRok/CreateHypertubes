@@ -70,7 +70,7 @@ public class HypertubeItem extends BlockItem {
         }
 
         SimpleConnection simpleConnection = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
-        if (player.isShiftKeyDown() && simpleConnection.pos().equals(pos)) {
+        if (player.isShiftKeyDown()) {
             MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.conn_cleared").withColor(0xFFFF00));
             clearConnection(stack);
             return InteractionResult.SUCCESS;
