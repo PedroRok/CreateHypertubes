@@ -1,17 +1,15 @@
 package com.pedrorok.hypertube.blocks;
 
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
-import com.pedrorok.hypertube.items.HypertubeItem;
 import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.managers.placement.BezierConnection;
-import com.pedrorok.hypertube.managers.placement.ResponseDTO;
 import com.pedrorok.hypertube.managers.placement.SimpleConnection;
-import com.pedrorok.hypertube.managers.placement.TubePlacement;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModDataComponent;
 import com.pedrorok.hypertube.utils.MessageUtils;
 import com.pedrorok.hypertube.utils.RayCastUtils;
+import com.pedrorok.hypertube.utils.TubeUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
@@ -19,8 +17,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Containers;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -267,7 +266,7 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
             BlockEntity otherBlock = level.getBlockEntity(otherPos);
             if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity
                 && otherHypertubeEntity.getConnectionTo() != null) {
-                toDrop += (int) otherHypertubeEntity.getConnectionTo().distance() -1;
+                toDrop += (int) otherHypertubeEntity.getConnectionTo().distance() - 1;
                 otherHypertubeEntity.setConnectionTo(null);
             }
         }
@@ -277,14 +276,14 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
             BlockEntity otherBlock = level.getBlockEntity(otherPos);
             if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity
                 && otherHypertubeEntity.getConnectionFrom() != null) {
-                toDrop += (int) connectionTo.distance() -1;
+                toDrop += (int) connectionTo.distance() - 1;
                 otherHypertubeEntity.setConnectionFrom(null, null);
             }
         }
 
         if (!player.isCreative()) {
             if (toDrop != 0 || wrenched) {
-                ItemStack stack = new ItemStack(ModBlocks.HYPERTUBE.get(), toDrop +1);
+                ItemStack stack = new ItemStack(ModBlocks.HYPERTUBE.get(), toDrop + 1);
                 if (wrenched)
                     player.getInventory().placeItemBackInInventory(stack);
                 else
@@ -302,7 +301,11 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
 
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof HypertubeBlockEntity hypertubeEntity)) return;
-        if (!stack.hasFoil()) return;
+        if (!stack.hasFoil()) {
+            level.playSound(null, pos, getSoundType(state, level, pos, placer).getPlaceSound(), SoundSource.BLOCKS,
+                    1, level.random.nextFloat() * 0.1f + 0.9f);
+            return;
+        }
 
         SimpleConnection connectionFrom = ModDataComponent.decodeSimpleConnection(stack);
         if (connectionFrom == null) return;
@@ -311,21 +314,17 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
         SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
 
-
-        ResponseDTO validation = bezierConnection.getValidation();
-        if (validation.valid()) {
-            validation = TubePlacement.checkSurvivalItems(player, (int) bezierConnection.distance(), true);
-        }
-
-        if (!validation.valid()) {
-            MessageUtils.sendActionMessage(player, "§c" + validation.errorMessage());
+        if (!TubeUtils.checkPlayerPlacingBlockValidation(player, bezierConnection, level)) {
+            level.playSound(placer, pos, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS,
+                    1, 0.5f);
             return;
         }
-        TubePlacement.checkSurvivalItems(player, (int) bezierConnection.distance() + 1, false);
+
+        level.playSound(null, pos, getSoundType(state, level, pos, placer).getPlaceSound(), SoundSource.BLOCKS,
+                1, level.random.nextFloat() * 0.1f + 0.9f);
 
         BlockEntity otherBlockEntity = level.getBlockEntity(connectionFrom.pos());
         boolean inverted = false;
-        HypertubeItem.clearConnection(placer.getItemInHand(InteractionHand.MAIN_HAND));
 
         if (otherBlockEntity instanceof HypertubeBlockEntity otherHypertubeEntity) {
             if (otherHypertubeEntity.getConnectionTo() == null) {
@@ -336,7 +335,7 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
                 otherHypertubeEntity.setConnectionFrom(connectionTo, bezierConnection.getToPos().direction());
                 inverted = true;
             } else {
-                player.displayClientMessage(Component.literal("Invalid connection"), true);
+                MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.invalid_conn").withColor(0xFF0000), true);
                 return;
             }
         }
@@ -346,10 +345,9 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
         else
             hypertubeEntity.setConnectionFrom(connectionFrom, bezierConnection.getToPos().direction());
 
-        if (!level.isClientSide()
-            && level.getBlockState(pos).getBlock() instanceof HypertubeBlock hypertubeBlock) {
-            hypertubeBlock.updateBlockState(level, pos, hypertubeBlock.getState(List.of(finalDirection)));
-        }
+        MessageUtils.sendActionMessage(player, Component.empty(), true);
+        if (!(level.getBlockState(pos).getBlock() instanceof HypertubeBlock hypertubeBlock)) return;
+        hypertubeBlock.updateBlockState(level, pos, hypertubeBlock.getState(List.of(finalDirection)));
     }
 
     @Override

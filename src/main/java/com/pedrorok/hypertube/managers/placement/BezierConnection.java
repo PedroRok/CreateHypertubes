@@ -7,7 +7,9 @@ import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.outliner.Outliner;
 import net.createmod.catnip.theme.Color;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -134,6 +136,22 @@ public class BezierConnection {
         if (bezierPoints == null) {
             bezierPoints = getBezierPoints();
         }
+        // THIS IS TO PREVENT FROM PLACING BACK
+        Vec3 first = getBezierPoints().get(0);
+        Vec3 second = getBezierPoints().get(1);
+        Direction direction = fromPos.direction();
+        Vec3 firstDirection = new Vec3(direction.getStepX(), direction.getStepY(), direction.getStepZ());
+        Vec3 secondDirection = second.subtract(first).normalize();
+        float initialAngle = (float) Math.acos(firstDirection.dot(secondDirection) / (firstDirection.length() * secondDirection.length()));
+        if (initialAngle >= 2.) {
+            return initialAngle;
+        }
+        // END OF PREVENTION
+
+        return getMaxAngle();
+    }
+
+    private float getMaxAngle() {
         float maxAngle = 0;
         Vec3 lastPoint = bezierPoints.get(0);
         for (int i = 1; i < bezierPoints.size() - 1; i++) {
@@ -158,19 +176,19 @@ public class BezierConnection {
     public ResponseDTO getValidation() {
         if (valid != null) return valid;
         if (fromPos == null || toPos == null) {
-            valid = ResponseDTO.invalid("Both positions must be set.");
+            valid = ResponseDTO.invalid("placement.create_hypertube.no_valid_points");
             return valid;
         }
         if (getMaxAngleBezierAngle() >= MAX_ANGLE) {
-            valid = ResponseDTO.invalid("The angle between points is too high.");
+            valid = ResponseDTO.invalid("placement.create_hypertube.angle_too_high");
             return valid;
         }
         if (distance() >= MAX_DISTANCE) {
-            valid = ResponseDTO.invalid("The distance between points is too high.");
+            valid = ResponseDTO.invalid("placement.create_hypertube.distance_too_high");
             return valid;
         }
-        if (distance() == 0) {
-            valid = ResponseDTO.invalid("");
+        if (distance() <= 1) {
+            valid = ResponseDTO.invalid();
             return valid;
         }
         return ResponseDTO.get(true);
@@ -182,11 +200,11 @@ public class BezierConnection {
 
 
     @OnlyIn(Dist.CLIENT)
-    public void drawPath(LerpedFloat animation) {
+    public void drawPath(LerpedFloat animation, boolean isValid) {
         Vec3 pos1 = fromPos.pos().getCenter();
         int id = 0;
         for (Vec3 bezierPoint : getBezierPoints()) {
-            line(uuid, id, pos1, bezierPoint, animation, valid != null && !valid.valid());
+            line(uuid, id, pos1, bezierPoint, animation, !isValid);
             pos1 = bezierPoint;
             id++;
         }
@@ -206,6 +224,14 @@ public class BezierConnection {
                 .colored(color);
     }
 
+    @OnlyIn(Dist.CLIENT)
+    public static void outlineBlocks(BlockPos pos) {
+        Outliner.getInstance().showAABB(pos.asLong(), new AABB(pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1,
+                        pos.getX() , pos.getY(), pos.getZ()))
+                .colored(0xEA5C2B)
+                .lineWidth(1 / 8f)
+                .disableLineNormals();
+    }
 
     public BezierConnection invert() {
         List<Vec3> newBezier = new ArrayList<>(bezierPoints);
