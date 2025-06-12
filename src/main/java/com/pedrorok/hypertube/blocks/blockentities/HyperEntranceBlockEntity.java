@@ -70,12 +70,12 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
     @Override
     public void tick() {
         super.tick();
-        if (getBlockState().getValue(HyperEntranceBlock.IN_FRONT)) {
+        Boolean isBlocked = getBlockState().getValue(HyperEntranceBlock.IN_FRONT);
+        if (level.isClientSide) {
+            tickClient(isBlocked);
             return;
         }
-
-        if (level.isClientSide) {
-            tickClient();
+        if (isBlocked) {
             return;
         }
         BlockState state = this.getBlockState();
@@ -102,7 +102,9 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
             level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, true), 3);
         }
 
-        Optional<ServerPlayer> inRangePlayer = getInRangePlayers((ServerLevel) level, pos.getCenter(), state.getValue(HyperEntranceBlock.FACING));
+        Optional<ServerPlayer> inRangePlayer = getInRangePlayers((ServerLevel) level,
+                pos.getCenter(),
+                state.getValue(HyperEntranceBlock.FACING));
         if (inRangePlayer.isEmpty()) return;
 
         ServerPlayer player = inRangePlayer.get();
@@ -112,7 +114,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
 
 
     @OnlyIn(Dist.CLIENT)
-    private void tickClient() {
+    private void tickClient(boolean isBlocked) {
 
         // this is just for sound
         BlockState state = this.getBlockState();
@@ -121,7 +123,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         float actualSpeed = Math.abs(this.getSpeed());
 
         TubeSoundManager.TubeAmbientSound sound = TubeSoundManager.getAmbientSound(tubeSoundId);
-        if (actualSpeed < SPEED_TO_START) {
+        if (actualSpeed < SPEED_TO_START || isBlocked) {
             sound.tickClientPlayerSounds();
             return;
         }
