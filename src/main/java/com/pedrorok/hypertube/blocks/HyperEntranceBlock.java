@@ -7,6 +7,7 @@ import com.pedrorok.hypertube.utils.MessageUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;
 import com.simibubi.create.content.kinetics.base.KineticBlock;
 import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -99,7 +100,7 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
     }
 
     @Override
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block p_60512_, BlockPos p_60513_, boolean p_60514_) {
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block p_60512_, BlockPos p_60513_, boolean p_60514_) {
         super.neighborChanged(state, level, pos, p_60512_, p_60513_, p_60514_);
         updateInFrontProperty((Level) level, pos, state);
     }
@@ -223,11 +224,11 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
                             .append(" (")
                             .append(Component.translatable("block.hypertube.hyper_entrance.sneak_to_enter"))
                             .append(")")
-                            .withColor(0xFF5500), true);
+                            .withStyle(ChatFormatting.GOLD), true);
         } else {
             MessageUtils.sendActionMessage(player,
                     Component.translatable("block.hypertube.hyper_entrance.automatic_lock")
-                            .withColor(0x55FF00), true);
+                            .withStyle(ChatFormatting.GREEN), true);
         }
         level.playSound(player, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.75f, 1);
 

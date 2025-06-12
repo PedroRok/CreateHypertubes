@@ -39,7 +39,6 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
     private final ResourceLocation textureLocation;
 
     public BezierTextureRenderer(BlockEntityRendererProvider.Context context) {
-        this.context = context;
         this.textureLocation = new ResourceLocation(HypertubeMod.MOD_ID, "textures/block/entity_tube_base.png");
     }
 

@@ -7,6 +7,7 @@ import com.pedrorok.hypertube.registry.ModSounds;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -23,6 +24,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import java.awt.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -193,12 +195,12 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         if (getBlockState().getValue(HyperEntranceBlock.IN_FRONT)) {
             tooltip.add(Component.literal("     ")
                     .append(Component.translatable("tooltip.create_hypertube.entrance_blocked")
-                            .withColor(0xFF0000)));
+                            .withStyle(ChatFormatting.RED)));
         } else if (finalSpeed < SPEED_TO_START) {
             tooltip.add(Component.literal("     ")
                     .append(Component.literal("\u2592 "))
                     .append(Component.translatable("tooltip.create_hypertube.entrance_no_speed"))
-                    .withColor(0xFF0000));
+                    .withStyle(ChatFormatting.RED));
         }
         return true;
     }
@@ -209,7 +211,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         if (getBlockState().getValue(HyperEntranceBlock.LOCKED)) {
             tooltip.add(Component.literal("     ")
                     .append(Component.translatable("block.hypertube.hyper_entrance.sneak_to_enter"))
-                    .withColor(0xFFFFFF));
+                    .withStyle(ChatFormatting.WHITE));
         }
         return true;
     }
