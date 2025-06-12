@@ -78,8 +78,9 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
     public void tick() {
         super.tick();
         Boolean isBlocked = getBlockState().getValue(HyperEntranceBlock.IN_FRONT);
+        Boolean isLocked = getBlockState().getValue(HyperEntranceBlock.LOCKED);
         if (level.isClientSide) {
-            tickClient(isBlocked);
+            tickClient(isBlocked, isLocked);
             return;
         }
         if (isBlocked) {
@@ -90,7 +91,6 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
 
         float actualSpeed = Math.abs(this.getSpeed());
         Boolean isOpen = state.getValue(HyperEntranceBlock.OPEN);
-
         if (actualSpeed < SPEED_TO_START) {
             if (isOpen) {
                 level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, false), 3);
@@ -100,31 +100,34 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         }
 
         Optional<ServerPlayer> nearbyPlayer = getNearbyPlayers((ServerLevel) level, pos.getCenter());
-        if (nearbyPlayer.isEmpty()) {
+        boolean canOpen = nearbyPlayer.isPresent() && (!isLocked || nearbyPlayer.get().isShiftKeyDown() || nearbyPlayer.get().getPersistentData().getBoolean(TravelManager.TRAVEL_TAG));
+
+        if (!canOpen) {
             if (isOpen) {
                 level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, false), 3);
                 playOpenCloseSound(false);
             }
             return;
         }
-        if (!isOpen) {
+        if (!isOpen
+         && canOpen) {
             level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, true), 3);
             playOpenCloseSound(true);
         }
-
+        if (!canOpen) return;
         Optional<ServerPlayer> inRangePlayer = getInRangePlayers((ServerLevel) level,
                 pos.getCenter(),
                 state.getValue(HyperEntranceBlock.FACING));
         if (inRangePlayer.isEmpty()) return;
 
         ServerPlayer player = inRangePlayer.get();
-        if (player.isShiftKeyDown()) return;
+        if (!isLocked && player.isShiftKeyDown()) return;
         TravelManager.tryStartTravel(player, pos, state, actualSpeed / 512);
     }
 
 
     @OnlyIn(Dist.CLIENT)
-    private void tickClient(boolean isBlocked) {
+    private void tickClient(boolean isBlocked, boolean isLocked) {
 
         // this is just for sound
         BlockState state = this.getBlockState();
@@ -203,20 +206,23 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
                     .append(Component.translatable("tooltip.create_hypertube.entrance_no_speed"))
                     .withColor(0xFF0000));
         }
-
         return true;
     }
 
+    @Override
+    public boolean addToTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+
+        if (getBlockState().getValue(HyperEntranceBlock.LOCKED)) {
+            tooltip.add(Component.literal("     ")
+                    .append(Component.translatable("block.hypertube.hyper_entrance.sneak_to_enter"))
+                    .withColor(0xFFFFFF));
+        }
+        return true;
+    }
 
     private void playOpenCloseSound(boolean open) {
         RandomSource random = level.random;
         float pitch = 0.4F + random.nextFloat() * 0.4F;
-        int seed = random.nextInt(1000);
-
-        Vec3 pos = this.getBlockPos().getCenter();
-        for (Player oPlayer : level.players()) {
-            ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(open ? ModSounds.HYPERTUBE_ENTRANCE_OPEN : ModSounds.HYPERTUBE_ENTRANCE_CLOSE,
-                    SoundSource.BLOCKS, pos.x, pos.y, pos.z, 0.2f, pitch, seed));
-        }
+        level.playSound(null, this.getBlockPos(), open ? ModSounds.HYPERTUBE_ENTRANCE_OPEN.get() : ModSounds.HYPERTUBE_ENTRANCE_CLOSE.get(), SoundSource.BLOCKS, 0.2f, pitch);
     }
 }
