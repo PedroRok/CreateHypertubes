@@ -137,7 +137,7 @@ public class TravelManager {
         }
     }
 
-    private static void finishTravel(ServerPlayer player, TravelData travelData) {
+    private static void finishTravel(ServerPlayer player, TravelData travelData, boolean forced) {
 
         PlayerSyncEvents.syncPlayerStateToAll(player);
 
@@ -152,10 +152,12 @@ public class TravelManager {
 
         Vec3 lastDir = travelData.getLastDir();
         Vec3 lastBlockPos = travelData.getLastBlockPos().getCenter();
-        player.teleportTo((ServerLevel) player.level(), lastBlockPos.x, lastBlockPos.y, lastBlockPos.z, player.getYRot(), player.getXRot());
-        player.teleportRelative(lastDir.x, lastDir.y, lastDir.z);
-        player.setPose(Pose.CROUCHING);
-        player.setDeltaMovement(travelData.getLastDir().scale(travelData.getSpeed() + 0.5));
+        if (!forced) {
+            player.teleportTo((ServerLevel) player.level(), lastBlockPos.x, lastBlockPos.y, lastBlockPos.z, player.getYRot(), player.getXRot());
+            player.teleportRelative(lastDir.x, lastDir.y, lastDir.z);
+            player.setPose(Pose.CROUCHING);
+            player.setDeltaMovement(travelData.getLastDir().scale(travelData.getSpeed() + 0.5));
+        }
         player.hurtMarked = true;
 
         PlayerSyncEvents.syncPlayerStateToAll(player);
@@ -177,8 +179,12 @@ public class TravelManager {
         Vec3 currentPoint = travelData.getTravelPoint();
 
         if (travelData.isFinished()) {
-            finishTravel((ServerPlayer) player, travelData);
+            finishTravel((ServerPlayer) player, travelData, false);
             return;
+        }
+
+        if (player.isSpectator()) {
+            finishTravel((ServerPlayer) player, travelData, true);
         }
 
         currentPoint = currentPoint.subtract(0, 0.25, 0);

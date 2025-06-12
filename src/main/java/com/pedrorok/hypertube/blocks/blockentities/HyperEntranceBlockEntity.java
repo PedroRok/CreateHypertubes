@@ -153,16 +153,19 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity {
     private Optional<ServerPlayer> getInRangePlayers(ServerLevel level, Vec3 centerPos, Direction facing) {
         return level.players().stream()
                 .filter(player -> player.getBoundingBox()
-                        .inflate(RADIUS - 0.25)
-                        .contains(centerPos.add(Vec3.atLowerCornerOf(facing.getOpposite().getNormal()))))
+                                          .inflate(RADIUS - 0.25)
+                                          .contains(centerPos.add(Vec3.atLowerCornerOf(facing.getOpposite().getNormal())))
+                                  && !player.isSpectator()
+                )
                 .findFirst();
     }
 
     private Optional<ServerPlayer> getNearbyPlayers(ServerLevel level, Vec3 centerPos) {
         return level.players().stream()
                 .filter(player -> player.getBoundingBox()
-                        .inflate(RADIUS * 3)
-                        .contains(centerPos))
+                                          .inflate(RADIUS * 3)
+                                          .contains(centerPos)
+                                  && !player.isSpectator())
                 .findFirst();
     }
 
