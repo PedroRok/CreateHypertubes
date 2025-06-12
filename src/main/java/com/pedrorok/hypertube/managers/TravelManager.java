@@ -83,7 +83,6 @@ public class TravelManager {
 
         HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", player.getName().getString(), relative, travelData.getSpeed());
         travelDataMap.put(player.getUUID(), travelData);
-        player.setNoGravity(true);
         PlayerSyncEvents.syncPlayerStateToAll(player);
 
         Vec3 center = pos.getCenter();
@@ -157,7 +156,6 @@ public class TravelManager {
         }
         player.setPose(Pose.CROUCHING);
         player.hurtMarked = true;
-        player.setNoGravity(false);
         PlayerSyncEvents.syncPlayerStateToAll(player);
 
         playHypertubeSuctionSound(player, player.position());
@@ -167,7 +165,6 @@ public class TravelManager {
         if (!travelDataMap.containsKey(player.getUUID())) {
             if (!player.getPersistentData().getBoolean(TRAVEL_TAG)) return;
             player.getPersistentData().putBoolean(TRAVEL_TAG, false);
-            player.setNoGravity(false);
             return;
         }
         handlePlayerTraveling(player);
