@@ -55,7 +55,7 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
             if (level.getBlockState(worldPosition).getBlock() instanceof HypertubeBlock hypertubeBlock) {
                 hypertubeBlock.updateBlockStateFromEntity(level, worldPosition);
                 if (direction != null) {
-                    BlockState state = hypertubeBlock.getState(List.of(direction));
+                    BlockState state = hypertubeBlock.getState(List.of(direction), true);
                     hypertubeBlock.updateBlockState(level, worldPosition, state);
                 }
             }

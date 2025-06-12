@@ -78,14 +78,14 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
     public void tick() {
         super.tick();
         Boolean isBlocked = getBlockState().getValue(HyperEntranceBlock.IN_FRONT);
-        Boolean isLocked = getBlockState().getValue(HyperEntranceBlock.LOCKED);
         if (level.isClientSide) {
-            tickClient(isBlocked, isLocked);
+            tickClient(isBlocked);
             return;
         }
         if (isBlocked) {
             return;
         }
+
         BlockState state = this.getBlockState();
         BlockPos pos = this.getBlockPos();
 
@@ -98,7 +98,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
             }
             return;
         }
-
+        Boolean isLocked = getBlockState().getValue(HyperEntranceBlock.LOCKED);
         Optional<ServerPlayer> nearbyPlayer = getNearbyPlayers((ServerLevel) level, pos.getCenter());
         boolean canOpen = nearbyPlayer.isPresent() && (!isLocked || nearbyPlayer.get().isShiftKeyDown() || nearbyPlayer.get().getPersistentData().getBoolean(TravelManager.TRAVEL_TAG));
 
@@ -127,7 +127,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
 
 
     @OnlyIn(Dist.CLIENT)
-    private void tickClient(boolean isBlocked, boolean isLocked) {
+    private void tickClient(boolean isBlocked) {
 
         // this is just for sound
         BlockState state = this.getBlockState();

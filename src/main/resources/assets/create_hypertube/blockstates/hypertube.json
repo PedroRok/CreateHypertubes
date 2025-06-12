@@ -1,17 +1,26 @@
 {
   "multipart": [
     {
-      "when": { "north_south": "false", "east_west": "false", "up_down": "false"},
+      "when": { "north_south": "false", "east_west": "false", "up_down": "false" },
       "apply": { "model": "create_hypertube:block/tube_core" }
     },
-    {   "when": { "north_south": "true" },
+    {   "when": { "north_south": "true", "connected": "true" },
       "apply": { "model": "create_hypertube:block/tube_part", "uvlock": false }
     },
-    {   "when": { "east_west": "true" },
+    {   "when": { "east_west": "true", "connected": "true" },
       "apply": { "model": "create_hypertube:block/tube_part", "y": 90, "uvlock": false }
     },
-    {   "when": { "up_down": "true" },
+    {   "when": { "up_down": "true", "connected": "true" },
       "apply": { "model": "create_hypertube:block/tube_part", "x": 90, "uvlock": false }
+    },
+    {   "when": { "north_south": "true", "connected": "false" },
+      "apply": { "model": "create_hypertube:block/tube_core", "uvlock": false }
+    },
+    {   "when": { "east_west": "true", "connected": "false" },
+      "apply": { "model": "create_hypertube:block/tube_core", "y": 90, "uvlock": false }
+    },
+    {   "when": { "up_down": "true", "connected": "false" },
+      "apply": { "model": "create_hypertube:block/tube_core", "x": 90, "uvlock": false }
     }
   ]
 }

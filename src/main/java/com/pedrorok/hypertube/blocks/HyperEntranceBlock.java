@@ -66,10 +66,7 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
-        builder.add(OPEN);
-        builder.add(IN_FRONT);
-        builder.add(LOCKED);
+        builder.add(FACING, OPEN, IN_FRONT, LOCKED);
         super.createBlockStateDefinition(builder);
     }
 
