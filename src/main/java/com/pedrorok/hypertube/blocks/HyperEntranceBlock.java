@@ -3,11 +3,16 @@ package com.pedrorok.hypertube.blocks;
 import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
 import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
+import com.pedrorok.hypertube.utils.MessageUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;
 import com.simibubi.create.content.kinetics.base.KineticBlock;
 import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -39,6 +44,9 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
 
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
+    public static final BooleanProperty LOCKED = BlockStateProperties.LOCKED;
+
+    public static final BooleanProperty IN_FRONT = BooleanProperty.create("has_block_in_front");
 
     private static final VoxelShape SHAPE_NORTH = Block.box(0D, 0D, 0D, 16D, 16D, 23D);
     private static final VoxelShape SHAPE_SOUTH = Block.box(0D, 0D, -7D, 16D, 16D, 16D);
@@ -50,13 +58,16 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
 
     public HyperEntranceBlock(Properties properties) {
         super(properties);
-        registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false));
+        registerDefaultState(this.stateDefinition.any()
+                .setValue(FACING, Direction.NORTH)
+                .setValue(OPEN, false)
+                .setValue(LOCKED, false)
+                .setValue(IN_FRONT, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
-        builder.add(OPEN);
+        builder.add(FACING, OPEN, IN_FRONT, LOCKED);
         super.createBlockStateDefinition(builder);
     }
 
@@ -64,6 +75,7 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         Player player = context.getPlayer();
+        Level level = context.getLevel();
         if (player == null) {
             return this.defaultBlockState().setValue(FACING, context.getClickedFace().getOpposite())
                     .setValue(OPEN, false);
@@ -74,9 +86,39 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
         } else if (player.getXRot() > 45) {
             direction = Direction.DOWN;
         }
+
+        boolean isFrontBlocked = false;
+        BlockPos relative = context.getClickedPos().relative(direction.getOpposite());
+        if (!level.getBlockState(relative).getCollisionShape(level, relative).isEmpty()) {
+            isFrontBlocked = true;
+        }
         return this.defaultBlockState()
                 .setValue(FACING, direction)
-                .setValue(OPEN, false);
+                .setValue(OPEN, false)
+                .setValue(LOCKED, false)
+                .setValue(IN_FRONT, isFrontBlocked);
+    }
+
+    @Override
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block p_60512_, BlockPos p_60513_, boolean p_60514_) {
+        super.neighborChanged(state, level, pos, p_60512_, p_60513_, p_60514_);
+        updateInFrontProperty((Level) level, pos, state);
+    }
+
+    @Override
+    public void onNeighborChange(BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
+        super.onNeighborChange(state, level, pos, neighbor);
+        updateInFrontProperty((Level) level, pos, state);
+    }
+
+    public void updateInFrontProperty(Level level, BlockPos pos, BlockState state) {
+        boolean isFrontBlocked = false;
+        Direction facing = state.getValue(FACING).getOpposite();
+        BlockPos relative = pos.relative(facing);
+        if (!level.getBlockState(relative).getCollisionShape(level, relative).isEmpty()) {
+            isFrontBlocked = true;
+        }
+        level.setBlock(pos, state.setValue(IN_FRONT, isFrontBlocked), 3);
     }
 
     @Override
@@ -167,8 +209,31 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
         return true;
     }
 
+
     @Override
-    public InteractionResult onSneakWrenched(BlockState state, UseOnContext context) {
-        return super.onSneakWrenched(state, context);
+    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        Player player = context.getPlayer();
+        BlockState blockState = state.setValue(LOCKED, !state.getValue(LOCKED));
+        Level level = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+        level.setBlock(pos, blockState, 3);
+
+        if (blockState.getValue(LOCKED)) {
+            MessageUtils.sendActionMessage(player,
+                    Component.translatable("block.hypertube.hyper_entrance.manual_lock")
+                            .append(" (")
+                            .append(Component.translatable("block.hypertube.hyper_entrance.sneak_to_enter"))
+                            .append(")")
+                            .withStyle(ChatFormatting.GOLD), true);
+        } else {
+            MessageUtils.sendActionMessage(player,
+                    Component.translatable("block.hypertube.hyper_entrance.automatic_lock")
+                            .withStyle(ChatFormatting.GREEN), true);
+        }
+        level.playSound(player, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.75f, 1);
+
+        return InteractionResult.SUCCESS;
     }
+
+
 }

@@ -26,6 +26,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
@@ -39,7 +40,7 @@ public class HypertubeItem extends BlockItem {
     }
 
     @Override
-    public InteractionResult useOn(UseOnContext pContext) {
+    public @NotNull InteractionResult useOn(UseOnContext pContext) {
         ItemStack stack = pContext.getItemInHand();
         BlockPos pos = pContext.getClickedPos();
         Level level = pContext.getLevel();
@@ -70,7 +71,7 @@ public class HypertubeItem extends BlockItem {
         }
 
         SimpleConnection simpleConnection = ModDataComponent.decodeSimpleConnection(stack);
-        if (player.isShiftKeyDown() && simpleConnection.pos().equals(pos)) {
+        if (player.isShiftKeyDown()) {
             MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.conn_cleared").withStyle(ChatFormatting.YELLOW));
             clearConnection(stack);
             return InteractionResult.SUCCESS;

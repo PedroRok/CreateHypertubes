@@ -36,11 +36,9 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
 
     private static final float TILING_UNIT = 1f;
 
-    private final BlockEntityRendererProvider.Context context;
     private final ResourceLocation textureLocation;
 
     public BezierTextureRenderer(BlockEntityRendererProvider.Context context) {
-        this.context = context;
         this.textureLocation = new ResourceLocation(HypertubeMod.MOD_ID, "textures/block/entity_tube_base.png");
     }
 
@@ -98,6 +96,7 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
             float uStart = currentDistance / TILING_UNIT;
             float uEnd = (currentDistance + segmentLength) / TILING_UNIT;
 
+            boolean zFightFix = false;
             for (int j = 0; j < SEGMENTS_AROUND; j++) {
                 float angle1 = (float) (j * 2 * Math.PI / SEGMENTS_AROUND) + (float) (Math.PI / 4);
                 float angle2 = (float) ((j + 1) * 2 * Math.PI / SEGMENTS_AROUND) + (float) (Math.PI / 4);
@@ -109,15 +108,16 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
                 float v2 = (j + 1) / (float) SEGMENTS_AROUND;
 
                 if (!isInterior) {
-                    addVertex(builder, pose, current, offsetStart1, uStart, v1, packedLight, packedOverlay, false);
-                    addVertex(builder, pose, next, offsetStart1, uEnd, v1, packedLight, packedOverlay, false);
-                    addVertex(builder, pose, next, offsetStart2, uEnd, v2, packedLight, packedOverlay, false);
-                    addVertex(builder, pose, current, offsetStart2, uStart, v2, packedLight, packedOverlay, false);
+                    addVertex(builder, pose, current, offsetStart1, uStart, v1, packedLight, packedOverlay, false, zFightFix);
+                    addVertex(builder, pose, next, offsetStart1, uEnd, v1, packedLight, packedOverlay, false, zFightFix);
+                    addVertex(builder, pose, next, offsetStart2, uEnd, v2, packedLight, packedOverlay, false, zFightFix);
+                    addVertex(builder, pose, current, offsetStart2, uStart, v2, packedLight, packedOverlay, false, zFightFix);
                 }
-                addVertex(builder, pose, current, offsetStart2, uStart, v2, packedLight, packedOverlay, true);
-                addVertex(builder, pose, next, offsetStart2, uEnd, v2, packedLight, packedOverlay, true);
-                addVertex(builder, pose, next, offsetStart1, uEnd, v1, packedLight, packedOverlay, true);
-                addVertex(builder, pose, current, offsetStart1, uStart, v1, packedLight, packedOverlay, true);
+                addVertex(builder, pose, current, offsetStart2, uStart, v2, packedLight, packedOverlay, true, zFightFix);
+                addVertex(builder, pose, next, offsetStart2, uEnd, v2, packedLight, packedOverlay, true, zFightFix);
+                addVertex(builder, pose, next, offsetStart1, uEnd, v1, packedLight, packedOverlay, true, zFightFix);
+                addVertex(builder, pose, current, offsetStart1, uStart, v1, packedLight, packedOverlay, true, zFightFix);
+                zFightFix = !zFightFix;
             }
 
             currentDistance += segmentLength;
@@ -125,7 +125,7 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
     }
 
     private void addVertex(VertexConsumer builder, Matrix4f pose,
-                           Vec3 pos, Vector3f offset, float u, float v, int light, int overlay, boolean invertLight) {
+                           Vec3 pos, Vector3f offset, float u, float v, int light, int overlay, boolean invertLight, boolean zFightFix) {
         float x = (float) pos.x + offset.x;
         float y = (float) pos.y + offset.y;
         float z = (float) pos.z + offset.z;
@@ -138,6 +138,9 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
         float ny = (offset.y / radius) * normalMultiplier;
         float nz = (offset.z / radius) * normalMultiplier;
 
+        if (zFightFix) {
+            pose.translate(0, 0.00001f, 0);
+        }
         builder.vertex(pose, x, y, z)
                 .color(255, 255, 255, 255)
                 .uv(u, v)
@@ -170,14 +173,6 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
                 (Mth.cos(angle) * perpA.z + Mth.sin(angle) * perpB.z) * radius
         );
     }
-
-/*    private float calculateTotalLength(List<Vec3> points) {
-        float length = 0;
-        for (int i = 0; i < points.size() - 1; i++) {
-            length += points.get(i).distanceTo(points.get(i + 1));
-        }
-        return length;
-    }*/
 
     @Override
     public boolean shouldRenderOffScreen(HypertubeBlockEntity blockEntity) {

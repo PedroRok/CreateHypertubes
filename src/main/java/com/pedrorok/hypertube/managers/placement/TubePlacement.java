@@ -205,7 +205,9 @@ public class TubePlacement {
     @OnlyIn(Dist.CLIENT)
     public static void drawCustomBlockSelection(PoseStack ms, MultiBufferSource buffer, Vec3 camera) {
         ItemStack mainHandItem = Minecraft.getInstance().player.getMainHandItem();
-        if (!mainHandItem.is(ModBlocks.HYPERTUBE.get().asItem())) return;
+        HypertubeBlock hypertubeBlock = ModBlocks.HYPERTUBE.getUnchecked();
+        if (hypertubeBlock == null) return;
+        if (!mainHandItem.is(hypertubeBlock.asItem())) return;
         if (!mainHandItem.hasFoil()) return;
         SimpleConnection connection = ModDataComponent.decodeSimpleConnection(mainHandItem);
         if (connection == null) return;

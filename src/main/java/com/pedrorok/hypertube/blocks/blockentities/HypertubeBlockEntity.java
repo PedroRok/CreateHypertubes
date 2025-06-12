@@ -53,7 +53,7 @@ public class HypertubeBlockEntity extends BlockEntity implements IBezierProvider
             if (level.getBlockState(worldPosition).getBlock() instanceof HypertubeBlock hypertubeBlock) {
                 hypertubeBlock.updateBlockStateFromEntity(level, worldPosition);
                 if (direction != null) {
-                    BlockState state = hypertubeBlock.getState(List.of(direction));
+                    BlockState state = hypertubeBlock.getState(List.of(direction), true);
                     hypertubeBlock.updateBlockState(level, worldPosition, state);
                 }
             }
@@ -105,10 +105,8 @@ public class HypertubeBlockEntity extends BlockEntity implements IBezierProvider
     }
 
     public List<Direction> getFacesConnectable() {
-        // Se já tem conexões em ambas as direções, não pode mais conectar
         if (connectionTo != null && connectionFrom != null) return List.of();
 
-        // Primeiro, determinar as direções possíveis baseadas no estado do bloco
         List<Direction> possibleDirections = new ArrayList<>();
 
         boolean eastWest = Boolean.TRUE.equals(getBlockState().getValue(HypertubeBlock.EAST_WEST));
@@ -126,24 +124,19 @@ public class HypertubeBlockEntity extends BlockEntity implements IBezierProvider
             possibleDirections.addAll(List.of(Direction.NORTH, Direction.SOUTH));
         }
 
-        // Se nenhuma propriedade direcional estiver ativa, permite todas as direções
         if (possibleDirections.isEmpty()) {
             possibleDirections.addAll(List.of(Direction.values()));
         }
 
-        // Agora, remover direções que não podem ser conectadas
         possibleDirections.removeIf(direction -> {
-            // Remove se já tem um HypertubeBlock adjacente
             if (level.getBlockState(worldPosition.relative(direction)).getBlock() instanceof HypertubeBlock) {
                 return true;
             }
 
-            // Remove se já tem uma conexão ativa saindo nessa direção
             if (connectionTo != null && connectionTo.getFromPos().direction().equals(direction)) {
                 return true;
             }
 
-            // Remove se já tem uma conexão ativa chegando dessa direção
             if (connectionFrom != null) {
                 BlockEntity blockEntity = level.getBlockEntity(connectionFrom.pos());
                 if (blockEntity instanceof HypertubeBlockEntity hypertubeBlockEntity
