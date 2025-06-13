@@ -20,6 +20,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -27,10 +28,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.PacketDistributor;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 22/04/2025
@@ -244,13 +242,17 @@ public class TravelManager {
 
         Vec3 correctedMovement = idealMovement.add(actualMovement.subtract(idealMovement).scale(correctionStrength));
 
-        if (correctedMovement.length() > 0.001) {
-            Vec3 movementDirection = correctedMovement.normalize();
-
+        if (correctedMovement.length() > 0.5) {
+            Vec3 movementDirection = correctedMovement;
             double smoothingFactor = Math.max(0.3, 0.5 - distanceFromLine);
             movementDirection = movementDirection.add(finalDirection.subtract(movementDirection).scale(smoothingFactor)).normalize();
-
-            player.setDeltaMovement(movementDirection.scale(speed));
+            if (distanceFromLine > 1.2) {
+                float yaw = (float) Math.toDegrees(Math.atan2(segmentDirection.x, segmentDirection.z));
+                float pitch = (float) Math.toDegrees(Math.atan2(segmentDirection.y, Math.sqrt(segmentDirection.x * segmentDirection.x + segmentDirection.z * segmentDirection.z)));
+                player.teleportTo((ServerLevel) player.level(), currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, RelativeMovement.ROTATION,  yaw, pitch);
+            } else {
+                player.setDeltaMovement(movementDirection.scale(speed));
+            }
         } else {
             player.setDeltaMovement(finalDirection.scale(speed));
         }
@@ -265,6 +267,7 @@ public class TravelManager {
                 }
             }
         }
+
         checkAndCorrectStuck(player, travelData);
 
         player.hurtMarked = true;
