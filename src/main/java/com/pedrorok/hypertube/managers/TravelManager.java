@@ -19,6 +19,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -249,13 +250,16 @@ public class TravelManager {
 
         Vec3 correctedMovement = idealMovement.add(actualMovement.subtract(idealMovement).scale(correctionStrength));
 
-        if (correctedMovement.length() > 0.001) {
+        if (correctedMovement.length() > 0.5) {
             Vec3 movementDirection = correctedMovement.normalize();
 
             double smoothingFactor = Math.max(0.3, 0.5 - distanceFromLine);
             movementDirection = movementDirection.add(finalDirection.subtract(movementDirection).scale(smoothingFactor)).normalize();
-
-            player.setDeltaMovement(movementDirection.scale(speed));
+            if (distanceFromLine > 1.5) {
+                player.teleportTo((ServerLevel) player.level(), currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, RelativeMovement.ROTATION,  player.getYRot(), player.getXRot());
+            } else {
+                player.setDeltaMovement(movementDirection.scale(speed));
+            }
         } else {
             player.setDeltaMovement(finalDirection.scale(speed));
         }
