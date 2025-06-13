@@ -177,8 +177,9 @@ public class TravelManager {
             return;
         }
 
-        if (player.isSpectator()) {
+        if (player.isSpectator() || player.isDeadOrDying()) {
             finishTravel((ServerPlayer) player, travelData, true);
+            return;
         }
 
         currentPoint = currentPoint.subtract(0, 0.25, 0);
