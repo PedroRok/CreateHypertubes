@@ -254,7 +254,7 @@ public class TravelManager {
 
             double smoothingFactor = Math.max(0.3, 0.5 - distanceFromLine);
             movementDirection = movementDirection.add(finalDirection.subtract(movementDirection).scale(smoothingFactor)).normalize();
-            if (distanceFromLine > 1.5) {
+            if (distanceFromLine > 1.2) {
                 float yaw = (float) Math.toDegrees(Math.atan2(segmentDirection.x, segmentDirection.z));
                 float pitch = (float) Math.toDegrees(Math.atan2(segmentDirection.y, Math.sqrt(segmentDirection.x * segmentDirection.x + segmentDirection.z * segmentDirection.z)));
                 player.teleportTo((ServerLevel) player.level(), currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, RelativeMovement.ROTATION,  yaw, pitch);

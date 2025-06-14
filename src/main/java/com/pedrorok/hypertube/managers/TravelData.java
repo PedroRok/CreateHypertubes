@@ -62,7 +62,7 @@ public class TravelData {
     private void checkAndRemoveNearPoints() {
         if (travelPoints.size() < 2) return;
 
-        Vec3 lastPoint = travelPoints.getFirst();
+        Vec3 lastPoint = travelPoints.get(0);
         for (int i = 1; i < travelPoints.size(); i++) {
             Vec3 currentPoint = travelPoints.get(i);
             double distance = lastPoint.distanceToSqr(currentPoint);
@@ -73,8 +73,6 @@ public class TravelData {
             }
             lastPoint = currentPoint;
         }
-
-
     }
 
     private void addTravelPoint(BlockPos pos, Level level) {
@@ -122,8 +120,8 @@ public class TravelData {
         if (inverse) {
             Collections.reverse(bezierPoints);
         }
-        bezierPoints.removeLast();
-        bezierPoints.removeFirst();
+        bezierPoints.remove(bezierPoints.size() - 1);
+        bezierPoints.remove(0);
         travelPoints.addAll(bezierPoints);
         bezierConnections.add(connection.getUuid());
         BlockPos toPos = connection.getToPos().pos();
