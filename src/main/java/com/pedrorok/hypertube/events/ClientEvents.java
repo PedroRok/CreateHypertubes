@@ -3,7 +3,7 @@ package com.pedrorok.hypertube.events;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import com.pedrorok.hypertube.camera.DetachedCameraController;
+import com.pedrorok.hypertube.managers.camera.DetachedCameraController;
 import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.managers.placement.TubePlacement;
 import com.pedrorok.hypertube.managers.sound.TubeSoundManager;

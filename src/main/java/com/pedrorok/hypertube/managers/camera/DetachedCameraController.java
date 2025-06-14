@@ -1,4 +1,4 @@
-package com.pedrorok.hypertube.camera;
+package com.pedrorok.hypertube.managers.camera;
 
 import com.pedrorok.hypertube.config.ClientConfig;
 import lombok.Getter;

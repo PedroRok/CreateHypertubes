@@ -1,6 +1,6 @@
 package com.pedrorok.hypertube.mixin;
 
-import com.pedrorok.hypertube.camera.DetachedCameraController;
+import com.pedrorok.hypertube.managers.camera.DetachedCameraController;
 import com.pedrorok.hypertube.config.ClientConfig;
 import com.pedrorok.hypertube.managers.TravelManager;
 import net.minecraft.client.Camera;
