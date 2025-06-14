@@ -251,7 +251,7 @@ public class TravelManager {
             double smoothingFactor = Math.max(0.3, 0.5 - distanceFromLine);
             movementDirection = movementDirection.add(finalDirection.subtract(movementDirection).scale(smoothingFactor)).normalize();
             if (distanceFromLine > 1.5) {
-                player.teleportTo((ServerLevel) player.level(), currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, RelativeMovement.ROTATION,  player.getYRot(), player.getXRot());
+                player.teleportTo((ServerLevel) player.level(), currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, RelativeMovement.ALL,  player.getYRot(), player.getXRot());
             } else {
                 player.setDeltaMovement(movementDirection.scale(speed));
             }
