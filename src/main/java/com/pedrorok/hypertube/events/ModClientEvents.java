@@ -2,8 +2,10 @@ package com.pedrorok.hypertube.events;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.client.renderer.EntranceBlockEntityRenderer;
+import com.pedrorok.hypertube.managers.ponder.HypertubePonderPlugin;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
+import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.neoforged.api.distmarker.Dist;
@@ -22,6 +24,7 @@ public class ModClientEvents {
     @SubscribeEvent
     public static void forgeLoad(FMLClientSetupEvent event) {
         event.enqueueWork(ModClientEvents::setupRenderTypes);
+        PonderIndex.addPlugin(new HypertubePonderPlugin());
     }
 
     private static void setupRenderTypes() {
