@@ -103,6 +103,8 @@ public class TravelData {
         if (inverse) {
             Collections.reverse(bezierPoints);
         }
+        bezierPoints.removeLast();
+        bezierPoints.removeFirst();
         travelPoints.addAll(bezierPoints);
         bezierConnections.add(connection.getUuid());
         BlockPos toPos = connection.getToPos().pos();
