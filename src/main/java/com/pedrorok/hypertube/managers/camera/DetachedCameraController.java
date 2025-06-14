@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
+import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -27,23 +28,31 @@ public class DetachedCameraController {
         return INSTANCE;
     }
 
-    @Getter private float yaw = 0;
-    @Getter private float pitch = 0;
+    @Getter
+    private float yaw = 0;
+    @Getter
+    private float pitch = 0;
 
-    @Getter private Vec3 currentPos = Vec3.ZERO;
+    @Getter
+    private Vec3 currentPos = Vec3.ZERO;
 
     private Vec3 targetPos = Vec3.ZERO;
-    @Getter private float targetYaw = 0;
-    @Getter private float targetPitch = 0;
+    @Getter
+    private float targetYaw = 0;
+    @Getter
+    private float targetPitch = 0;
 
     private static final double SMOOTHING = 0.1;
     private static final double SMOOTHING_ROTATION = 0.1;
 
     private float lastMouseMov = 0;
 
-    @Getter @Setter private boolean detached = false;
+    @Getter
+    @Setter
+    private boolean detached = false;
 
-    private DetachedCameraController() {}
+    private DetachedCameraController() {
+    }
 
     public void startCamera(Entity renderViewEntity) {
         Vec3 cameraPos = getRelativeCameraPos(renderViewEntity);
@@ -114,7 +123,8 @@ public class DetachedCameraController {
         Minecraft mc = Minecraft.getInstance();
         if ((mc.options.getCameraType().isFirstPerson() && ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get())
             || mc.isPaused()
-            || !mc.isWindowActive())
+            || !mc.isWindowActive()
+            || mc.screen instanceof ChatScreen)
             return;
 
         MouseHandler mouse = mc.mouseHandler;
