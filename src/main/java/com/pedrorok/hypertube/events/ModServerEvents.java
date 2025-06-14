@@ -12,6 +12,7 @@ import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
@@ -74,5 +75,17 @@ public class ModServerEvents {
             return;
 
         event.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public static void onEntityHurt(LivingDamageEvent.Pre event) {
+        LivingEntity entity = event.getEntity();
+
+        if (!entity.getPersistentData().getBoolean(TravelManager.IMMUNITY_TAG)) return;
+        entity.getPersistentData().putBoolean(TravelManager.IMMUNITY_TAG, false);
+
+        if (entity.getPersistentData().getLong(TravelManager.LAST_TRAVEL_TIME) < System.currentTimeMillis()) return;
+        event.getContainer().setNewDamage(0);
+        entity.hurtMarked = true;
     }
 }
