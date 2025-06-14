@@ -27,54 +27,43 @@ public class DetachedCameraController {
         return INSTANCE;
     }
 
-    @Getter
-    private float yaw = 0;
-    @Getter
-    private float pitch = 0;
+    @Getter private float yaw = 0;
+    @Getter private float pitch = 0;
 
-    @Getter
-    private Vec3 currentPos = Vec3.ZERO;
+    @Getter private Vec3 currentPos = Vec3.ZERO;
 
     private Vec3 targetPos = Vec3.ZERO;
-    @Getter
-    private float targetYaw = 0;
-    @Getter
-    private float targetPitch = 0;
+    @Getter private float targetYaw = 0;
+    @Getter private float targetPitch = 0;
 
     private static final double SMOOTHING = 0.1;
     private static final double SMOOTHING_ROTATION = 0.1;
 
     private float lastMouseMov = 0;
 
-    @Getter
-    @Setter
-    private boolean detached = false;
+    @Getter @Setter private boolean detached = false;
 
-    private DetachedCameraController() {
-    }
+    private DetachedCameraController() {}
 
     public void startCamera(Entity renderViewEntity) {
         Vec3 cameraPos = getRelativeCameraPos(renderViewEntity);
         this.currentPos = cameraPos;
         this.targetPos = cameraPos;
         this.lastMouseMov = 0;
-        this.yaw = this.targetYaw = renderViewEntity.getYRot();
+        this.yaw = this.targetYaw = Mth.wrapDegrees(renderViewEntity.getYRot());
         this.pitch = this.targetPitch = 30;
     }
 
     public void updateCameraRotation(float deltaYaw, float deltaPitch, boolean isCamera) {
-        this.targetYaw += deltaYaw;
-        this.targetPitch += deltaPitch;
-
+        this.targetYaw = Mth.wrapDegrees(this.targetYaw + deltaYaw);
+        this.targetPitch = Mth.clamp(this.targetPitch + deltaPitch, -90, 90);
 
         if (lastMouseMov != 0) {
-            lastMouseMov = Math.max(0, lastMouseMov - 0.02f);
+            lastMouseMov = Math.max(0, lastMouseMov - 0.015f);
         }
         if (isCamera && deltaYaw != 0) {
             lastMouseMov = 2;
         }
-
-        this.targetPitch = Mth.clamp(this.targetPitch, -90, 90);
     }
 
     private float getCameraYaw(Vec3 entityPos, Vec3 cameraPos) {
@@ -85,7 +74,6 @@ public class DetachedCameraController {
     }
 
     private float getCameraPitch() {
-        // targe 30 degress ignoring player pos, only stay in 30 getting the actual pitch
         return (((30 - this.pitch + 540) % 360) - 180) * (1 - Math.min(lastMouseMov, 1));
     }
 
@@ -113,10 +101,14 @@ public class DetachedCameraController {
 
     public void tickCameraPosRot() {
         this.currentPos = this.currentPos.lerp(this.targetPos, SMOOTHING);
-        this.yaw = (float) Mth.lerp(SMOOTHING_ROTATION, this.yaw, this.targetYaw);
+        this.yaw = lerpAngle(this.yaw, this.targetYaw, (float) SMOOTHING_ROTATION);
         this.pitch = (float) Mth.lerp(SMOOTHING_ROTATION, this.pitch, this.targetPitch);
     }
 
+    private float lerpAngle(float from, float to, float t) {
+        float delta = Mth.wrapDegrees(to - from);
+        return from + delta * t;
+    }
 
     public static void tickCamera() {
         Minecraft mc = Minecraft.getInstance();
