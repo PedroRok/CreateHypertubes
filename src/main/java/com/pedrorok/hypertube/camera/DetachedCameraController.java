@@ -80,6 +80,7 @@ public class DetachedCameraController {
     private float getCameraYaw(Vec3 entityPos, Vec3 cameraPos) {
         Vec3 cameraToPlayerNormal = cameraPos.subtract(entityPos).multiply(1, 0, 1).normalize();
         float yaw = (float) Math.toDegrees(Math.atan2(cameraToPlayerNormal.z, cameraToPlayerNormal.x)) + 90;
+        yaw = Mth.wrapDegrees(yaw);
         return (((yaw - this.yaw + 540) % 360) - 180) * (1 - Math.min(lastMouseMov, 1));
     }
 

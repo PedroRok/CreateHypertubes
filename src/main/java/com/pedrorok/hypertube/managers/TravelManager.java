@@ -76,9 +76,7 @@ public class TravelManager {
         }
 
         playerPersistData.putBoolean(TRAVEL_TAG, true);
-        PacketDistributor.sendToPlayer(player, new ISyncPersistentData.PersistentDataPacket(player));
 
-        HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", player.getName().getString(), relative, travelData.getSpeed());
         travelDataMap.put(player.getUUID(), travelData);
         PlayerSyncEvents.syncPlayerStateToAll(player);
 
@@ -91,16 +89,8 @@ public class TravelManager {
         }
 
         playHypertubeSuctionSound(player, center);
-    }
-
-
-    public static void removePlayerFromTravel(Player player) {
-        travelDataMap.remove(player.getUUID());
-        player.getPersistentData().putBoolean(TRAVEL_TAG, false);
-        player.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
-        PacketDistributor.sendToPlayer((ServerPlayer) player, new ISyncPersistentData.PersistentDataPacket(player));
-        player.refreshDimensions();
-        PlayerSyncEvents.syncPlayerStateToAll((ServerPlayer) player);
+        PacketDistributor.sendToPlayer(player, new ISyncPersistentData.PersistentDataPacket(player));
+        HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", player.getName().getString(), relative, travelData.getSpeed());
     }
 
     public static void playerTick(Player player) {
