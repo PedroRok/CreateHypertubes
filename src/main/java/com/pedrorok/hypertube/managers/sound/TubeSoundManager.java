@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.managers.sound;
 
+import com.pedrorok.hypertube.managers.camera.DetachedCameraController;
 import com.pedrorok.hypertube.registry.ModSounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
@@ -95,14 +96,24 @@ public class TubeSoundManager {
 
             isClientPlayerInTravel = true;
 
+            float cameraYaw = Math.abs(DetachedCameraController.get().getYaw());
+            float cameraPitch = Math.abs(DetachedCameraController.get().getPitch());
+
+            float yRot = Math.abs(Minecraft.getInstance().player.getYRot());
+            float xRot = Math.abs(Minecraft.getInstance().player.getXRot());
+
+            float equalYaw = Math.abs(cameraYaw - yRot);
+            float equalPitch = Math.abs(cameraPitch - xRot);
+
             if (travelSound == null || travelSound.isStopped()) {
                 travelSound = new TubeSound(ModSounds.TRAVELING.get(), pitch);
                 Minecraft.getInstance()
                         .getSoundManager()
                         .play(travelSound);
             }
-            travelSound.setPitch(pitch);
-            travelSound.fadeIn(maxVolume);
+            boolean isCameraInside = equalYaw < 12 && equalPitch < 12;
+            travelSound.setPitch(isCameraInside ? pitch : 1.5f);
+            travelSound.fadeIn(maxVolume * (isCameraInside ? 1.5f : 0.8f));
         }
 
         private static void tickClientPlayerSounds() {

@@ -1,10 +1,11 @@
-package com.pedrorok.hypertube.camera;
+package com.pedrorok.hypertube.managers.camera;
 
 import com.pedrorok.hypertube.config.ClientConfig;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
+import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -58,33 +59,30 @@ public class DetachedCameraController {
         this.currentPos = cameraPos;
         this.targetPos = cameraPos;
         this.lastMouseMov = 0;
-        this.yaw = this.targetYaw = renderViewEntity.getYRot();
+        this.yaw = this.targetYaw = Mth.wrapDegrees(renderViewEntity.getYRot());
         this.pitch = this.targetPitch = 30;
     }
 
     public void updateCameraRotation(float deltaYaw, float deltaPitch, boolean isCamera) {
-        this.targetYaw += deltaYaw;
-        this.targetPitch += deltaPitch;
-
+        this.targetYaw = Mth.wrapDegrees(this.targetYaw + deltaYaw);
+        this.targetPitch = Mth.clamp(this.targetPitch + deltaPitch, -90, 90);
 
         if (lastMouseMov != 0) {
-            lastMouseMov = Math.max(0, lastMouseMov - 0.02f);
+            lastMouseMov = Math.max(0, lastMouseMov - 0.015f);
         }
         if (isCamera && deltaYaw != 0) {
             lastMouseMov = 2;
         }
-
-        this.targetPitch = Mth.clamp(this.targetPitch, -90, 90);
     }
 
     private float getCameraYaw(Vec3 entityPos, Vec3 cameraPos) {
         Vec3 cameraToPlayerNormal = cameraPos.subtract(entityPos).multiply(1, 0, 1).normalize();
         float yaw = (float) Math.toDegrees(Math.atan2(cameraToPlayerNormal.z, cameraToPlayerNormal.x)) + 90;
+        yaw = Mth.wrapDegrees(yaw);
         return (((yaw - this.yaw + 540) % 360) - 180) * (1 - Math.min(lastMouseMov, 1));
     }
 
     private float getCameraPitch() {
-        // targe 30 degress ignoring player pos, only stay in 30 getting the actual pitch
         return (((30 - this.pitch + 540) % 360) - 180) * (1 - Math.min(lastMouseMov, 1));
     }
 
@@ -112,10 +110,14 @@ public class DetachedCameraController {
 
     public void tickCameraPosRot() {
         this.currentPos = this.currentPos.lerp(this.targetPos, SMOOTHING);
-        this.yaw = (float) Mth.lerp(SMOOTHING_ROTATION, this.yaw, this.targetYaw);
+        this.yaw = lerpAngle(this.yaw, this.targetYaw, (float) SMOOTHING_ROTATION);
         this.pitch = (float) Mth.lerp(SMOOTHING_ROTATION, this.pitch, this.targetPitch);
     }
 
+    private float lerpAngle(float from, float to, float t) {
+        float delta = Mth.wrapDegrees(to - from);
+        return from + delta * t;
+    }
 
     private static double lastMouseX = 0;
     private static double lastMouseY = 0;
@@ -124,7 +126,8 @@ public class DetachedCameraController {
         Minecraft mc = Minecraft.getInstance();
         if ((mc.options.getCameraType().isFirstPerson() && ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get())
             || mc.isPaused()
-            || !mc.isWindowActive())
+            || !mc.isWindowActive()
+            || mc.screen instanceof ChatScreen)
             return;
 
         MouseHandler mouse = mc.mouseHandler;

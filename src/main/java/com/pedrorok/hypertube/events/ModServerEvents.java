@@ -10,6 +10,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -75,5 +77,19 @@ public class ModServerEvents {
             return;
 
         event.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public static void onEntityHurt(LivingDamageEvent event) {
+        if (event.getPhase() != EventPriority.HIGH) return;
+        LivingEntity entity = event.getEntity();
+
+        if (!entity.getPersistentData().getBoolean(TravelManager.IMMUNITY_TAG)) return;
+        entity.getPersistentData().putBoolean(TravelManager.IMMUNITY_TAG, false);
+
+        if (entity.getPersistentData().getLong(TravelManager.LAST_TRAVEL_TIME) < System.currentTimeMillis()) return;
+        event.setAmount(0);
+        event.setCanceled(true);
+        entity.hurtMarked = true;
     }
 }
