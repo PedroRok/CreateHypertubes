@@ -76,4 +76,16 @@ public class ModServerEvents {
 
         event.setCanceled(true);
     }
+
+    @SubscribeEvent
+    public static void onEntityHurt(LivingDamageEvent.Pre event) {
+        LivingEntity entity = event.getEntity();
+
+        if (!entity.getPersistentData().getBoolean(TravelManager.IMMUNITY_TAG)) return;
+        entity.getPersistentData().putBoolean(TravelManager.IMMUNITY_TAG, false);
+
+        if (entity.getPersistentData().getLong(TravelManager.LAST_TRAVEL_TIME) < System.currentTimeMillis()) return;
+        event.getContainer().setNewDamage(0);
+        entity.hurtMarked = true;
+    }
 }

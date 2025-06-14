@@ -13,6 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.PacketUtils;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -42,6 +43,8 @@ public class TravelManager {
     public static final String LAST_TRAVEL_BLOCKPOS = "last_travel_blockpos";
     public static final String LAST_TRAVEL_SPEED = "last_travel_speed";
     public static final String LAST_POSITION = "last_travel_position";
+
+    public static final String IMMUNITY_TAG = "hypertube_immunity";
 
     public static final int DEFAULT_TRAVEL_TIME = 2000;
     public static final int DEFAULT_AFTER_TUBE_CAMERA = 1500; // 0.5 seconds (subtracting default travel time)
@@ -74,12 +77,7 @@ public class TravelManager {
         }
 
         playerPersistData.putBoolean(TRAVEL_TAG, true);
-        AllPackets.getChannel().send(
-                PacketDistributor.PLAYER.with(() -> player),
-                new ISyncPersistentData.PersistentDataPacket(player)
-        );
 
-        HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", player.getName().getString(), relative, travelData.getSpeed());
         travelDataMap.put(player.getUUID(), travelData);
         PlayerSyncEvents.syncPlayerStateToAll(player);
 
@@ -92,6 +90,12 @@ public class TravelManager {
         }
 
         playHypertubeSuctionSound(player, center);
+
+        AllPackets.getChannel().send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new ISyncPersistentData.PersistentDataPacket(player)
+        );
+        HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", player.getName().getString(), relative, travelData.getSpeed());
     }
 
     public static void playerTick(Player player) {
@@ -139,6 +143,7 @@ public class TravelManager {
         player.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
         player.getPersistentData().putLong(LAST_TRAVEL_BLOCKPOS, travelData.getLastBlockPos().asLong());
         player.getPersistentData().putFloat(LAST_TRAVEL_SPEED, travelData.getSpeed());
+        player.getPersistentData().putBoolean(IMMUNITY_TAG, true);
         // ---
         AllPackets.getChannel().send(
                 PacketDistributor.ALL.noArg(),
@@ -182,6 +187,7 @@ public class TravelManager {
             return;
         }
 
+        player.resetFallDistance();
         currentPoint = currentPoint.subtract(0, 0.25, 0);
         Vec3 playerPos = player.position();
         double speed = 0.5D + travelData.getSpeed();
@@ -244,10 +250,11 @@ public class TravelManager {
         Vec3 correctedMovement = idealMovement.add(actualMovement.subtract(idealMovement).scale(correctionStrength));
 
         if (correctedMovement.length() > 0.5) {
-            Vec3 movementDirection = correctedMovement;
+            Vec3 movementDirection = correctedMovement.normalize();
+
             double smoothingFactor = Math.max(0.3, 0.5 - distanceFromLine);
             movementDirection = movementDirection.add(finalDirection.subtract(movementDirection).scale(smoothingFactor)).normalize();
-            if (distanceFromLine > 1.2) {
+            if (distanceFromLine > 1.5) {
                 float yaw = (float) Math.toDegrees(Math.atan2(segmentDirection.x, segmentDirection.z));
                 float pitch = (float) Math.toDegrees(Math.atan2(segmentDirection.y, Math.sqrt(segmentDirection.x * segmentDirection.x + segmentDirection.z * segmentDirection.z)));
                 player.teleportTo((ServerLevel) player.level(), currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, RelativeMovement.ROTATION,  yaw, pitch);
