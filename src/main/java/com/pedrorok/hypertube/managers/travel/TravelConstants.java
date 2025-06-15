@@ -19,5 +19,5 @@ public class TravelConstants {
     public static final int DEFAULT_AFTER_TUBE_CAMERA = 1500; // 0.5 seconds (subtracting default travel time)
 
     public static final double DEFAULT_MIN_SPEED = 0.5;
-    public static final float DISTANCE_FROM_LINE_TP = 1.5f;
+    public static final float DISTANCE_FROM_LINE_TP = 1.2f;
 }

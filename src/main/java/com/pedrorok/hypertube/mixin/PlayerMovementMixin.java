@@ -1,7 +1,7 @@
 package com.pedrorok.hypertube.mixin;
 
 import com.pedrorok.hypertube.managers.travel.TravelConstants;
-import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;

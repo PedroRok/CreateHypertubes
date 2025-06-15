@@ -24,7 +24,6 @@ public class EntityTravelingMixin {
     private void cancelEyeHeight(CallbackInfoReturnable<Float> cir) {
         if (!(((Entity) (Object) this) instanceof Player player)
             || !player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
-        System.out.println("1");
         cir.setReturnValue(0.25F);
     }
 }

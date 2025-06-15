@@ -75,7 +75,7 @@ public class TravelManager {
             player.teleportRelative(0, 1, 0);
         }
 
-        playHypertubeSuctionSound(player, center);
+        TubeSoundManager.playTubeSuctionSound(player, center);
 
         AllPackets.getChannel().send(
                 PacketDistributor.PLAYER.with(() -> player),
