@@ -26,4 +26,12 @@ public class EntityTravelingMixin {
             || !player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
         cir.setReturnValue(Pose.STANDING);
     }
+
+    @Inject(method = "getEyeHeight()F", at = @At("HEAD"), cancellable = true)
+    private void cancelEyeHeight(CallbackInfoReturnable<Float> cir) {
+        if (!(((Entity) (Object) this) instanceof Player player)
+            || !player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
+        System.out.println("1");
+        cir.setReturnValue(0.25F);
+    }
 }
