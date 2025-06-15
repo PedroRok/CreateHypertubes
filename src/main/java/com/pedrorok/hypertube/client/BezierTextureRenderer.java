@@ -139,7 +139,7 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
         float nz = (offset.z / radius) * normalMultiplier;
 
         if (zFightFix) {
-            pose.translate(0, 0.00001f, 0);
+            pose.translate(0.00001f, 0.00001f, 0.00001f);
         }
         builder.vertex(pose, x, y, z)
                 .color(255, 255, 255, 255)

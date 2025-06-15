@@ -1,7 +1,7 @@
 package com.pedrorok.hypertube.events;
 
 import com.pedrorok.hypertube.HypertubeMod;
-import com.pedrorok.hypertube.managers.TravelManager;
+import com.pedrorok.hypertube.managers.travel.TravelManager;
 import com.simibubi.create.AllPackets;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,16 +17,16 @@ import net.minecraftforge.network.PacketDistributor;
  */
 @Mod.EventBusSubscriber(modid = HypertubeMod.MOD_ID, bus = EventBusSubscriber.Bus.FORGE)
 public class PlayerSyncEvents {
-    
+
     @SubscribeEvent
     public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             syncAllStatesToPlayer(serverPlayer);
-            
+
             syncPlayerStateToAll(serverPlayer);
         }
     }
-    
+
     @SubscribeEvent
     public static void onPlayerChangeDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
@@ -43,7 +43,7 @@ public class PlayerSyncEvents {
             }
         }
     }
-    
+
     public static void syncPlayerStateToAll(ServerPlayer sourcePlayer) {
         if (TravelManager.hasHyperTubeData(sourcePlayer)) {
             for (ServerPlayer otherPlayer : sourcePlayer.getServer().getPlayerList().getPlayers()) {

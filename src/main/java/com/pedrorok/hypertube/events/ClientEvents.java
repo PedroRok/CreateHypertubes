@@ -4,9 +4,9 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.pedrorok.hypertube.managers.camera.DetachedCameraController;
-import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.managers.placement.TubePlacement;
 import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
+import com.pedrorok.hypertube.managers.travel.TravelConstants;
 import com.simibubi.create.foundation.render.SuperRenderTypeBuffer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
@@ -72,7 +72,7 @@ public class ClientEvents {
     @SubscribeEvent
     public static void onRenderPlayer(RenderPlayerEvent.Pre event) {
         Player player = event.getEntity();
-        if (!player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
+        if (!player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
 
         PoseStack poseStack = event.getPoseStack();
 
@@ -88,7 +88,7 @@ public class ClientEvents {
     @SubscribeEvent
     public static void onRenderPlayerPost(RenderPlayerEvent.Post event) {
         Player player = event.getEntity();
-        if (!player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
+        if (!player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
 
         event.getPoseStack().popPose();
 

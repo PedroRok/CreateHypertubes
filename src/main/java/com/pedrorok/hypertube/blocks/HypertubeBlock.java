@@ -1,9 +1,9 @@
 package com.pedrorok.hypertube.blocks;
 
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
-import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.managers.placement.BezierConnection;
 import com.pedrorok.hypertube.managers.placement.SimpleConnection;
+import com.pedrorok.hypertube.managers.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModDataComponent;
@@ -109,7 +109,7 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
     public VoxelShape getShape(BlockState state, @Nullable CollisionContext ctx) {
         if (ctx instanceof EntityCollisionContext ecc
             && ecc.getEntity() != null
-            && ecc.getEntity().getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) {
+            && ecc.getEntity().getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) {
             return VoxelUtils.empty();
         }
         if (state.getValue(EAST_WEST)) {

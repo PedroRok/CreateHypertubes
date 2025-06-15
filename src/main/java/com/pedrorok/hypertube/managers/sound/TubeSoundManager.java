@@ -3,7 +3,12 @@ package com.pedrorok.hypertube.managers.sound;
 import com.pedrorok.hypertube.managers.camera.DetachedCameraController;
 import com.pedrorok.hypertube.registry.ModSounds;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -123,6 +128,17 @@ public class TubeSoundManager {
                 else
                     travelSound.fadeOut();
             isClientPlayerInTravel = false;
+        }
+    }
+
+
+    public static void playTubeSuctionSound(ServerPlayer player, Vec3 pos) {
+        RandomSource random = player.level().random;
+        float pitch = 0.8F + random.nextFloat() * 0.4F;
+        int seed = random.nextInt(1000);
+        for (Player oPlayer : player.level().players()) {
+            ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(ModSounds.HYPERTUBE_SUCTION.getHolder().get(),
+                    SoundSource.BLOCKS, pos.x, pos.y, pos.z, 1, pitch, seed));
         }
     }
 }

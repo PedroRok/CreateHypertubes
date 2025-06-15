@@ -1,6 +1,6 @@
 package com.pedrorok.hypertube.mixin;
 
-import com.pedrorok.hypertube.managers.TravelManager;
+import com.pedrorok.hypertube.managers.travel.TravelConstants;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
@@ -13,17 +13,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Entity.class)
 public class EntityTravelingMixin {
 
-    @Inject(method = "isNoGravity", at = @At("HEAD"), cancellable = true)
-    private void cancelLerpMotion(CallbackInfoReturnable<Boolean> cir) {
-        if (!(((Entity) (Object) this) instanceof Player player)
-            || !player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
-        //cir.setReturnValue(true);
-    }
-
     @Inject(method = "getPose", at = @At("HEAD"), cancellable = true)
     private void cancelPose(CallbackInfoReturnable<Pose> cir) {
         if (!(((Entity) (Object) this) instanceof Player player)
-            || !player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
+            || !player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
         cir.setReturnValue(Pose.STANDING);
+    }
+
+    @Inject(method = "getEyeHeight()F", at = @At("HEAD"), cancellable = true)
+    private void cancelEyeHeight(CallbackInfoReturnable<Float> cir) {
+        if (!(((Entity) (Object) this) instanceof Player player)
+            || !player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
+        cir.setReturnValue(0.25F);
     }
 }
