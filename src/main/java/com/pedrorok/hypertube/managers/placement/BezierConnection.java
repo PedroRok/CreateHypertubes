@@ -27,7 +27,7 @@ import java.util.UUID;
  * @author Rok, Pedro Lucas nmm. Created on 24/04/2025
  * @project Create Hypertube
  */
-public class BezierConnection implements Connection {
+public class BezierConnection {
 
     public static final Codec<BezierConnection> CODEC = RecordCodecBuilder.create(i -> i.group(
             SimpleConnection.CODEC.fieldOf("fromPos").forGetter(BezierConnection::getFromPos),
