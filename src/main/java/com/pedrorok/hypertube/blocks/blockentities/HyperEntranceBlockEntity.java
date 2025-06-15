@@ -1,8 +1,9 @@
 package com.pedrorok.hypertube.blocks.blockentities;
 
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
-import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
+import com.pedrorok.hypertube.managers.travel.TravelConstants;
+import com.pedrorok.hypertube.managers.travel.TravelManager;
 import com.pedrorok.hypertube.registry.ModSounds;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
 import com.simibubi.create.content.kinetics.base.IRotate;
@@ -96,7 +97,10 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         }
         Boolean isLocked = getBlockState().getValue(HyperEntranceBlock.LOCKED);
         Optional<ServerPlayer> nearbyPlayer = getNearbyPlayers((ServerLevel) level, pos.getCenter());
-        boolean canOpen = nearbyPlayer.isPresent() && (!isLocked || nearbyPlayer.get().isShiftKeyDown() || nearbyPlayer.get().getPersistentData().getBoolean(TravelManager.TRAVEL_TAG));
+        boolean canOpen = nearbyPlayer.isPresent()
+                          && (!isLocked
+                              || nearbyPlayer.get().isShiftKeyDown()
+                              || nearbyPlayer.get().getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG));
 
         if (!canOpen) {
             if (isOpen) {
@@ -105,12 +109,10 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
             }
             return;
         }
-        if (!isOpen
-            && canOpen) {
+        if (!isOpen) {
             level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, true), 3);
             playOpenCloseSound(true);
         }
-        if (!canOpen) return;
         Optional<ServerPlayer> inRangePlayer = getInRangePlayers((ServerLevel) level,
                 pos.getCenter(),
                 state.getValue(HyperEntranceBlock.FACING));

@@ -1,6 +1,6 @@
 package com.pedrorok.hypertube.mixin;
 
-import com.pedrorok.hypertube.managers.TravelManager;
+import com.pedrorok.hypertube.managers.travel.TravelConstants;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -21,7 +21,7 @@ public abstract class PlayerMovementMixin {
     private void onTick(CallbackInfo ci) {
         Player player = (Player) (Object) this;
 
-        if (!player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
+        if (!player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
 
         Vec3 velocity = new Vec3(player.getDeltaMovement().x, player.getDeltaMovement().y, player.getDeltaMovement().z);
 
@@ -38,7 +38,7 @@ public abstract class PlayerMovementMixin {
     @Inject(method = "canPlayerFitWithinBlocksAndEntitiesWhen", at = @At("HEAD"), cancellable = true)
     private void onCanPlayerFitWithinBlocksAndEntitiesWhen(Pose p_294172_, CallbackInfoReturnable<Boolean> cir) {
         Player player = (Player) (Object) this;
-        if (!player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
+        if (!player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
         cir.setReturnValue(true);
     }
 

@@ -1,7 +1,5 @@
-package com.pedrorok.hypertube.managers;
+package com.pedrorok.hypertube.managers.travel;
 
-
-import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.TubeConnection;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
@@ -45,11 +43,14 @@ public class TravelData {
     @Setter
     private boolean isFinished = false;
 
-    public TravelData(BlockPos firstPipe, Level level, BlockPos entrancePos, float speed) {
+    public TravelData(float speed) {
         this.travelPoints = new ArrayList<>();
         this.bezierConnections = new ArrayList<>();
         this.blockConnections = new ArrayList<>();
         this.speed = speed;
+    }
+
+    public void init(BlockPos firstPipe, Level level, BlockPos entrancePos) {
         travelPoints.add(entrancePos.getCenter());
         blockConnections.add(entrancePos);
         travelPoints.add(firstPipe.getCenter());
@@ -73,8 +74,6 @@ public class TravelData {
             }
             lastPoint = currentPoint;
         }
-
-
     }
 
     private void addTravelPoint(BlockPos pos, Level level) {
@@ -89,7 +88,8 @@ public class TravelData {
             if (blockConnections.contains(nextPipe)) continue;
             if (!(level.getBlockState(nextPipe).getBlock() instanceof TubeConnection connection)) continue;
             if (!connection.canTravelConnect(level, nextPipe, direction)
-                && (level.getBlockEntity(nextPipe) instanceof HypertubeBlockEntity tubeEntity && !tubeEntity.isConnected())) continue;
+                && (level.getBlockEntity(nextPipe) instanceof HypertubeBlockEntity tubeEntity && !tubeEntity.isConnected()))
+                continue;
             travelPoints.add(nextPipe.getCenter());
             blockConnections.add(nextPipe);
             addTravelPoint(nextPipe, level);

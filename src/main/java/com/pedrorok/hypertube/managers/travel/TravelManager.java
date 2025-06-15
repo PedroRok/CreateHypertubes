@@ -1,23 +1,17 @@
-package com.pedrorok.hypertube.managers;
+package com.pedrorok.hypertube.managers.travel;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.config.ClientConfig;
 import com.pedrorok.hypertube.events.PlayerSyncEvents;
 import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
-import com.pedrorok.hypertube.registry.ModSounds;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.PacketUtils;
-import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.RelativeMovement;
@@ -33,23 +27,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static com.pedrorok.hypertube.managers.travel.TravelConstants.*;
+
 /**
  * @author Rok, Pedro Lucas nmm. Created on 22/04/2025
  * @project Create Hypertube
  */
 public class TravelManager {
-
-    public static final String TRAVEL_TAG = "hypertube_travel";
-    public static final String LAST_TRAVEL_TIME = "last_travel_time";
-
-    public static final String LAST_TRAVEL_BLOCKPOS = "last_travel_blockpos";
-    public static final String LAST_TRAVEL_SPEED = "last_travel_speed";
-    public static final String LAST_POSITION = "last_travel_position";
-
-    public static final String IMMUNITY_TAG = "hypertube_immunity";
-
-    public static final int DEFAULT_TRAVEL_TIME = 2000;
-    public static final int DEFAULT_AFTER_TUBE_CAMERA = 1500; // 0.5 seconds (subtracting default travel time)
 
     private static final Map<UUID, TravelData> travelDataMap = new HashMap<>();
 
@@ -66,12 +50,13 @@ public class TravelManager {
             }
         }
 
-        if (lastTravelTime - TravelManager.DEFAULT_AFTER_TUBE_CAMERA > System.currentTimeMillis()) {
+        if (lastTravelTime - DEFAULT_AFTER_TUBE_CAMERA > System.currentTimeMillis()) {
             speed += playerPersistData.getFloat(LAST_TRAVEL_SPEED); // Increase speed if player is trying to fast travel
         }
 
         BlockPos relative = pos.relative(state.getValue(HyperEntranceBlock.FACING));
-        TravelData travelData = new TravelData(relative, player.level(), pos, speed);
+        TravelData travelData = new TravelData(speed);
+        travelData.init(relative, player.level(), pos);
 
         if (travelData.getTravelPoints().size() < 3) {
             // TODO: Handle error
@@ -91,7 +76,7 @@ public class TravelManager {
             player.teleportRelative(0, 1, 0);
         }
 
-        playHypertubeSuctionSound(player, center);
+        TubeSoundManager.playTubeSuctionSound(player, center);
         PacketDistributor.sendToPlayer(player, new ISyncPersistentData.PersistentDataPacket(player));
         HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", player.getName().getString(), relative, travelData.getSpeed());
     }
@@ -150,14 +135,14 @@ public class TravelManager {
         if (!forced) {
             player.teleportTo((ServerLevel) player.level(), lastBlockPos.x, lastBlockPos.y, lastBlockPos.z, player.getYRot(), player.getXRot());
             player.teleportRelative(lastDir.x, lastDir.y, lastDir.z);
-            player.setDeltaMovement(travelData.getLastDir().scale(travelData.getSpeed() + 0.5));
+            player.setDeltaMovement(travelData.getLastDir().scale(travelData.getSpeed() + DEFAULT_MIN_SPEED));
         }
         player.setPose(Pose.CROUCHING);
         player.hurtMarked = true;
 
         PlayerSyncEvents.syncPlayerStateToAll(player);
 
-        playHypertubeSuctionSound(player, player.position());
+        TubeSoundManager.playTubeSuctionSound(player, player.position());
     }
 
     private static void handleServer(Player player) {
@@ -245,16 +230,14 @@ public class TravelManager {
 
         Vec3 correctedMovement = idealMovement.add(actualMovement.subtract(idealMovement).scale(correctionStrength));
 
-        if (correctedMovement.length() > 0.5) {
+        if (distanceFromLine > DISTANCE_FROM_LINE_TP) {
+            player.teleportTo((ServerLevel) player.level(), currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, RelativeMovement.ALL, player.getYRot(), player.getXRot());
+        } else if (correctedMovement.length() > 0.5) {
             Vec3 movementDirection = correctedMovement.normalize();
 
             double smoothingFactor = Math.max(0.3, 0.5 - distanceFromLine);
             movementDirection = movementDirection.add(finalDirection.subtract(movementDirection).scale(smoothingFactor)).normalize();
-            if (distanceFromLine > 1.5) {
-                player.teleportTo((ServerLevel) player.level(), currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, RelativeMovement.ALL,  player.getYRot(), player.getXRot());
-            } else {
-                player.setDeltaMovement(movementDirection.scale(speed));
-            }
+            player.setDeltaMovement(movementDirection.scale(speed));
         } else {
             player.setDeltaMovement(finalDirection.scale(speed));
         }
@@ -307,16 +290,6 @@ public class TravelManager {
         }
         travelData.setFinished(true);
         return null;
-    }
-
-    private static void playHypertubeSuctionSound(ServerPlayer player, Vec3 pos) {
-        RandomSource random = player.level().random;
-        float pitch = 0.8F + random.nextFloat() * 0.4F;
-        int seed = random.nextInt(1000);
-        for (Player oPlayer : player.level().players()) {
-            ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(ModSounds.HYPERTUBE_SUCTION,
-                    SoundSource.BLOCKS, pos.x, pos.y, pos.z, 1, pitch, seed));
-        }
     }
 
     public static boolean hasHyperTubeData(Entity player) {

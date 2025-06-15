@@ -1,7 +1,7 @@
 package com.pedrorok.hypertube.blocks;
 
 import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
-import com.pedrorok.hypertube.managers.TravelManager;
+import com.pedrorok.hypertube.managers.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.utils.MessageUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;
@@ -161,7 +161,7 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
     public VoxelShape getShape(BlockState state, @Nullable CollisionContext ctx) {
         if (ctx instanceof EntityCollisionContext ecc
             && ecc.getEntity() != null
-            && ecc.getEntity().getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) {
+            && ecc.getEntity().getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) {
             return VoxelUtils.empty();
         }
         return switch (state.getValue(FACING)) {

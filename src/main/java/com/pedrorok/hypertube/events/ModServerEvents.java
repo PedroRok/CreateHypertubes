@@ -1,8 +1,9 @@
 package com.pedrorok.hypertube.events;
 
 import com.pedrorok.hypertube.HypertubeMod;
-import com.pedrorok.hypertube.managers.TravelManager;
 import com.pedrorok.hypertube.managers.placement.TubePlacement;
+import com.pedrorok.hypertube.managers.travel.TravelConstants;
+import com.pedrorok.hypertube.managers.travel.TravelManager;
 import com.pedrorok.hypertube.utils.TubeUtils;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
@@ -81,10 +82,10 @@ public class ModServerEvents {
     public static void onEntityHurt(LivingDamageEvent.Pre event) {
         LivingEntity entity = event.getEntity();
 
-        if (!entity.getPersistentData().getBoolean(TravelManager.IMMUNITY_TAG)) return;
-        entity.getPersistentData().putBoolean(TravelManager.IMMUNITY_TAG, false);
+        if (!entity.getPersistentData().getBoolean(TravelConstants.IMMUNITY_TAG)) return;
+        entity.getPersistentData().putBoolean(TravelConstants.IMMUNITY_TAG, false);
 
-        if (entity.getPersistentData().getLong(TravelManager.LAST_TRAVEL_TIME) < System.currentTimeMillis()) return;
+        if (entity.getPersistentData().getLong(TravelConstants.LAST_TRAVEL_TIME) < System.currentTimeMillis()) return;
         event.getContainer().setNewDamage(0);
         entity.hurtMarked = true;
     }
