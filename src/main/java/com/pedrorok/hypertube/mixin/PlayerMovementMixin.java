@@ -1,7 +1,7 @@
 package com.pedrorok.hypertube.mixin;
 
-import com.pedrorok.hypertube.managers.TravelManager;
-import net.minecraft.world.entity.MoverType;
+import com.pedrorok.hypertube.managers.travel.TravelConstants;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,7 +20,7 @@ public abstract class PlayerMovementMixin {
     private void onTick(CallbackInfo ci) {
         Player player = (Player) (Object) this;
 
-        if (!player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
+        if (!player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
 
         Vec3 velocity = new Vec3(player.getDeltaMovement().x, player.getDeltaMovement().y, player.getDeltaMovement().z);
 
@@ -38,7 +38,7 @@ public abstract class PlayerMovementMixin {
     private void onTravel(Vec3 pTravelVector, CallbackInfo ci) {
         Player player = (Player) (Object) this;
 
-        if (!player.getPersistentData().getBoolean(TravelManager.TRAVEL_TAG)) return;
+        if (!player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
         ci.cancel();
         player.resetFallDistance();
         player.move(MoverType.SELF, player.getDeltaMovement());
