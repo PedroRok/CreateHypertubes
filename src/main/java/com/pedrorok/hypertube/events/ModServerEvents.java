@@ -82,7 +82,6 @@ public class ModServerEvents {
 
     @SubscribeEvent
     public static void onEntityHurt(LivingDamageEvent event) {
-        if (event.getPhase() != EventPriority.HIGH) return;
         LivingEntity entity = event.getEntity();
 
         if (!entity.getPersistentData().getBoolean(TravelConstants.IMMUNITY_TAG)) return;
