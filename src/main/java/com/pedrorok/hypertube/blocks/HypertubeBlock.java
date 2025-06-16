@@ -287,7 +287,7 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
             BlockEntity otherBlock = level.getBlockEntity(otherPos);
             if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity
                 && otherHypertubeEntity.getConnectionTo() != null) {
-                toDrop += (int) otherHypertubeEntity.getConnectionTo().distance() - 1;
+                toDrop += (int) otherHypertubeEntity.getConnectionTo().distance();
                 otherHypertubeEntity.setConnectionTo(null);
             }
         }
@@ -297,14 +297,14 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
             BlockEntity otherBlock = level.getBlockEntity(otherPos);
             if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity
                 && otherHypertubeEntity.getConnectionFrom() != null) {
-                toDrop += (int) connectionTo.distance() - 1;
+                toDrop += (int) connectionTo.distance();
                 otherHypertubeEntity.setConnectionFrom(null, null);
             }
         }
 
         if (!player.isCreative()) {
             if (toDrop != 0 || wrenched) {
-                ItemStack stack = new ItemStack(ModBlocks.HYPERTUBE.get(), toDrop + 1);
+                ItemStack stack = new ItemStack(ModBlocks.HYPERTUBE.get(), toDrop + (wrenched ? 1 : 0));
                 if (wrenched)
                     player.getInventory().placeItemBackInInventory(stack);
                 else
