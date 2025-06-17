@@ -3,7 +3,7 @@ package com.pedrorok.hypertube.items;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.managers.placement.ResponseDTO;
-import com.pedrorok.hypertube.managers.placement.SimpleConnection;
+import com.pedrorok.hypertube.managers.connection.SimpleConnection;
 import com.pedrorok.hypertube.managers.placement.TubePlacement;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModDataComponent;

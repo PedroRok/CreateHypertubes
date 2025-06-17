@@ -1,8 +1,8 @@
 package com.pedrorok.hypertube.registry;
 
 import com.pedrorok.hypertube.HypertubeMod;
-import com.pedrorok.hypertube.managers.placement.BezierConnection;
-import com.pedrorok.hypertube.managers.placement.SimpleConnection;
+import com.pedrorok.hypertube.managers.connection.BezierConnection;
+import com.pedrorok.hypertube.managers.connection.SimpleConnection;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.neoforged.bus.api.IEventBus;
