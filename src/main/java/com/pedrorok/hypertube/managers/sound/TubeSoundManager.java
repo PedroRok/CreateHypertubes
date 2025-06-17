@@ -21,19 +21,21 @@ import java.util.UUID;
  * @author Rok, Pedro Lucas nmm. Created on 04/06/2025
  * @project Create Hypertube
  */
-@OnlyIn(Dist.CLIENT)
 public class TubeSoundManager {
 
     private static final Map<UUID, TubeAmbientSound> ambientSounds = new HashMap<>();
 
+    @OnlyIn(Dist.CLIENT)
     public static void tickClientPlayerSounds() {
         TravelSound.tickClientPlayerSounds();
     }
 
+    @OnlyIn(Dist.CLIENT)
     public static TubeAmbientSound getAmbientSound(UUID uuid) {
         return ambientSounds.computeIfAbsent(uuid, k -> new TubeAmbientSound());
     }
 
+    @OnlyIn(Dist.CLIENT)
     public static void removeAmbientSound(UUID uuid) {
         TubeAmbientSound sound = ambientSounds.remove(uuid);
         if (sound != null) {
@@ -46,6 +48,7 @@ public class TubeSoundManager {
 
         private TubeSound travelSound;
 
+        @OnlyIn(Dist.CLIENT)
         public void enableClientPlayerSound(Entity e, Vec3 normal, double distance, boolean isOpen) {
             if (e != Minecraft.getInstance()
                     .getCameraEntity())
@@ -72,6 +75,7 @@ public class TubeSoundManager {
             travelSound.fadeIn(maxVolume);
         }
 
+        @OnlyIn(Dist.CLIENT)
         public void tickClientPlayerSounds() {
             if (!isClientNear && travelSound != null)
                 if (travelSound.isFaded())
@@ -81,6 +85,7 @@ public class TubeSoundManager {
             isClientNear = false;
         }
 
+        @OnlyIn(Dist.CLIENT)
         public void stopSound() {
             if (travelSound != null) {
                 travelSound.stopSound();
@@ -94,6 +99,7 @@ public class TubeSoundManager {
 
         private static TubeSound travelSound;
 
+        @OnlyIn(Dist.CLIENT)
         public static void enableClientPlayerSound(Entity e, float maxVolume, float pitch) {
             if (e != Minecraft.getInstance()
                     .getCameraEntity())
@@ -121,6 +127,7 @@ public class TubeSoundManager {
             travelSound.fadeIn(maxVolume * (isCameraInside ? 1.5f : 0.8f));
         }
 
+        @OnlyIn(Dist.CLIENT)
         private static void tickClientPlayerSounds() {
             if (!isClientPlayerInTravel && travelSound != null)
                 if (travelSound.isFaded())
