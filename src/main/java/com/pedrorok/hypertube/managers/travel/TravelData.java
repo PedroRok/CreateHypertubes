@@ -48,6 +48,7 @@ public class TravelData {
         this.bezierConnections = new ArrayList<>();
         this.blockConnections = new ArrayList<>();
         this.speed = speed;
+        this.lastDir = Vec3.ZERO;
     }
 
     public void init(BlockPos firstPipe, Level level, BlockPos entrancePos) {

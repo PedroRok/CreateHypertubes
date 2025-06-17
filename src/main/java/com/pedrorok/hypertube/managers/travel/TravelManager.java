@@ -135,7 +135,7 @@ public class TravelManager {
         if (!forced) {
             player.teleportTo((ServerLevel) player.level(), lastBlockPos.x, lastBlockPos.y, lastBlockPos.z, player.getYRot(), player.getXRot());
             player.teleportRelative(lastDir.x, lastDir.y, lastDir.z);
-            player.setDeltaMovement(travelData.getLastDir().scale(travelData.getSpeed() + DEFAULT_MIN_SPEED));
+            player.setDeltaMovement(lastDir.scale(travelData.getSpeed() + DEFAULT_MIN_SPEED));
         }
         player.setPose(Pose.CROUCHING);
         player.hurtMarked = true;
