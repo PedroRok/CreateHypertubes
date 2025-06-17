@@ -17,6 +17,8 @@ import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
+import java.util.ConcurrentModificationException;
+
 /**
  * @author Rok, Pedro Lucas nmm. Created on 22/04/2025
  * @project Create Hypertube
@@ -80,6 +82,7 @@ public class ModServerEvents {
 
     @SubscribeEvent
     public static void onEntityHurt(LivingDamageEvent.Pre event) {
+        if (event.getEntity().level().isClientSide) return;
         LivingEntity entity = event.getEntity();
 
         if (!entity.getPersistentData().getBoolean(TravelConstants.IMMUNITY_TAG)) return;
