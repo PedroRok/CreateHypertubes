@@ -1,8 +1,8 @@
 package com.pedrorok.hypertube.blocks;
 
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
-import com.pedrorok.hypertube.managers.placement.BezierConnection;
-import com.pedrorok.hypertube.managers.placement.SimpleConnection;
+import com.pedrorok.hypertube.managers.connection.BezierConnection;
+import com.pedrorok.hypertube.managers.connection.SimpleConnection;
 import com.pedrorok.hypertube.managers.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;

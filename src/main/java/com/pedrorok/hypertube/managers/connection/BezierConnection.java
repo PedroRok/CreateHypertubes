@@ -1,4 +1,4 @@
-package com.pedrorok.hypertube.managers.placement;
+package com.pedrorok.hypertube.managers.connection;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -24,7 +24,7 @@ import java.util.UUID;
  * @author Rok, Pedro Lucas nmm. Created on 24/04/2025
  * @project Create Hypertube
  */
-public class BezierConnection {
+public class BezierConnection implements IConnection {
 
     public static final Codec<BezierConnection> CODEC = RecordCodecBuilder.create(i -> i.group(
             SimpleConnection.CODEC.fieldOf("fromPos").forGetter(BezierConnection::getFromPos),
