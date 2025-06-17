@@ -2,8 +2,8 @@ package com.pedrorok.hypertube.blocks.blockentities;
 
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.IBezierProvider;
-import com.pedrorok.hypertube.managers.placement.BezierConnection;
-import com.pedrorok.hypertube.managers.placement.SimpleConnection;
+import com.pedrorok.hypertube.managers.connection.BezierConnection;
+import com.pedrorok.hypertube.managers.connection.SimpleConnection;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
