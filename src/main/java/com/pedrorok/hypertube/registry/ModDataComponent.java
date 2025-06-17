@@ -1,6 +1,6 @@
 package com.pedrorok.hypertube.registry;
 
-import com.pedrorok.hypertube.managers.placement.SimpleConnection;
+import com.pedrorok.hypertube.managers.connection.SimpleConnection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;

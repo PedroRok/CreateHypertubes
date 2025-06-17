@@ -2,6 +2,7 @@ package com.pedrorok.hypertube.managers.connection;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.pedrorok.hypertube.managers.placement.ResponseDTO;
 import lombok.Getter;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Pair;
