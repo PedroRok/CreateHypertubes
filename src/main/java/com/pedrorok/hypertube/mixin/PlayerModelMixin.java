@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(value = PlayerModel.class, priority = 1001)
 public abstract class PlayerModelMixin {
 
-    @Inject(method = "setupAnim*", at = @At("RETURN"))
+    @Inject(method = "setupAnim*", at = @At("RETURN"), cancellable = true, order = 1001)
     private void onSetupAnim(LivingEntity entity, float limbSwing, float limbSwingAmount,
                              float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
         if (!(entity instanceof Player player)
@@ -74,5 +74,6 @@ public abstract class PlayerModelMixin {
         model.jacket.xRot = 0;
         model.jacket.yRot = 0;
         model.jacket.zRot = 0;
+        ci.cancel();
     }
 }
