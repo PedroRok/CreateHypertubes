@@ -5,7 +5,7 @@ import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.config.ClientConfig;
 import com.pedrorok.hypertube.events.PlayerSyncEvents;
 import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
-import com.simibubi.create.foundation.networking.ISyncPersistentData;
+import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -50,7 +50,7 @@ public class TravelManager {
         }
 
         if (lastTravelTime - DEFAULT_AFTER_TUBE_CAMERA > System.currentTimeMillis()) {
-            speed += playerPersistData.getFloat(LAST_TRAVEL_SPEED); // Increase speed if player is trying to fast travel
+            speed += playerPersistData.getFloat(LAST_TRAVEL_SPEED);
         }
 
         BlockPos relative = pos.relative(state.getValue(HyperEntranceBlock.FACING));
@@ -68,15 +68,10 @@ public class TravelManager {
         PlayerSyncEvents.syncPlayerStateToAll(player);
 
         Vec3 center = pos.getCenter();
-
-        Vec3 eyePos = player.getEyePosition();
-        Vec3 playerPos = player.position();
-        if (playerPos.distanceTo(center) > eyePos.distanceTo(center)) {
-            player.teleportRelative(0, 1, 0);
-        }
+        player.teleportTo(center.x, center.y, center.z);
 
         TubeSoundManager.playTubeSuctionSound(player, center);
-        PacketDistributor.sendToPlayer(player, new ISyncPersistentData.PersistentDataPacket(player));
+        PacketDistributor.sendToPlayer(player, SyncPersistentDataPacket.create(player));
         HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", player.getName().getString(), relative, travelData.getSpeed());
     }
 
@@ -117,8 +112,6 @@ public class TravelManager {
 
     private static void finishTravel(ServerPlayer player, TravelData travelData, boolean forced) {
 
-        PlayerSyncEvents.syncPlayerStateToAll(player);
-
         travelDataMap.remove(player.getUUID());
         player.getPersistentData().putBoolean(TRAVEL_TAG, false);
         // --- NOTE: this is just to make easy to debug
@@ -127,7 +120,7 @@ public class TravelManager {
         player.getPersistentData().putFloat(LAST_TRAVEL_SPEED, travelData.getSpeed());
         player.getPersistentData().putBoolean(IMMUNITY_TAG, true);
         // ---
-        PacketDistributor.sendToPlayer(player, new ISyncPersistentData.PersistentDataPacket(player));
+        PacketDistributor.sendToPlayer(player, SyncPersistentDataPacket.create(player));
 
         Vec3 lastDir = travelData.getLastDir();
         Vec3 lastBlockPos = travelData.getLastBlockPos().getCenter();
