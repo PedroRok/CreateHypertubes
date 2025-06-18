@@ -60,7 +60,7 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
         registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(OPEN, false)
-                .setValue(LOCKED, false)
+                .setValue(LOCKED, true)
                 .setValue(IN_FRONT, false));
     }
 
@@ -94,14 +94,14 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
         return this.defaultBlockState()
                 .setValue(FACING, direction)
                 .setValue(OPEN, false)
-                .setValue(LOCKED, false)
+                .setValue(LOCKED, true)
                 .setValue(IN_FRONT, isFrontBlocked);
     }
 
     @Override
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block p_60512_, BlockPos p_60513_, boolean p_60514_) {
         super.neighborChanged(state, level, pos, p_60512_, p_60513_, p_60514_);
-        updateInFrontProperty((Level) level, pos, state);
+        updateInFrontProperty(level, pos, state);
     }
 
     @Override
