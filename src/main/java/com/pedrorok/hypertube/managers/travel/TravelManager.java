@@ -6,10 +6,12 @@ import com.pedrorok.hypertube.config.ClientConfig;
 import com.pedrorok.hypertube.events.PlayerSyncEvents;
 import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
 import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
+import com.pedrorok.hypertube.utils.MessageUtils;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -36,9 +38,17 @@ public class TravelManager {
 
     private static final Map<UUID, TravelData> travelDataMap = new HashMap<>();
 
+    private static final int LATENCY_THRESHOLD = 120; // mS
+
     public static void tryStartTravel(ServerPlayer player, BlockPos pos, BlockState state, float speed) {
         CompoundTag playerPersistData = player.getPersistentData();
         if (playerPersistData.getBoolean(TRAVEL_TAG)) return;
+
+        if (player.connection.latency() > LATENCY_THRESHOLD) {
+            MessageUtils.sendActionMessage(player, Component.translatable("hypertube.travel.latency").withColor(0xff0000), true);
+            return;
+        }
+
         long lastTravelTime = playerPersistData.getLong(LAST_TRAVEL_TIME);
 
         if (playerPersistData.contains(LAST_TRAVEL_BLOCKPOS)) {
@@ -58,7 +68,7 @@ public class TravelManager {
         travelData.init(relative, player.level(), pos);
 
         if (travelData.getTravelPoints().size() < 3) {
-            // TODO: Handle error
+            MessageUtils.sendActionMessage(player, Component.translatable("hypertube.travel.too_short").withColor(0xff0000), true);
             return;
         }
 

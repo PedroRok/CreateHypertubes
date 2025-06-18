@@ -22,5 +22,6 @@
   "block.hypertube.hyper_entrance.manual_lock": "Manual Lock Mode",
   "block.hypertube.hyper_entrance.sneak_to_enter": "Sneak to Enter",
   "block.hypertube.hyper_entrance.automatic_lock": "Automatic Lock Mode",
-  "hypertube.travel.latency": "Your latency is too high!"
+  "hypertube.travel.latency": "Your latency is too high",
+  "hypertube.travel.too_short": "Your tube is too short to travel"
 }
