@@ -14,7 +14,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -231,7 +230,8 @@ public class TravelManager {
         Vec3 correctedMovement = idealMovement.add(actualMovement.subtract(idealMovement).scale(correctionStrength));
 
         if (distanceFromLine > DISTANCE_FROM_LINE_TP) {
-            player.teleportTo((ServerLevel) player.level(), currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, RelativeMovement.ALL, player.getYRot(), player.getXRot());
+            //player.teleportTo((ServerLevel) player.level(), currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, RelativeMovement.ALL, player.getYRot(), player.getXRot());
+            player.moveTo(currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, player.getYRot(), player.getXRot());
         } else if (correctedMovement.length() > 0.5) {
             Vec3 movementDirection = correctedMovement.normalize();
 
