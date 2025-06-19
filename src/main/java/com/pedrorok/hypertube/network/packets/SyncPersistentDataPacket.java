@@ -1,44 +1,27 @@
 package com.pedrorok.hypertube.network.packets;
 
 import com.pedrorok.hypertube.HypertubeMod;
+import com.pedrorok.hypertube.network.Packet;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
-import org.jetbrains.annotations.NotNull;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.util.HashSet;
+import java.util.function.Supplier;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 18/06/2025
  * @project Create Hypertube
  */
-public record SyncPersistentDataPacket(int entityId, CompoundTag readData) implements CustomPacketPayload {
+public record SyncPersistentDataPacket(int entityId, CompoundTag readData) implements Packet<SyncPersistentDataPacket> {
 
-    public static final Type<SyncPersistentDataPacket> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "travel_index")
-    );
-
-    public static final StreamCodec<RegistryFriendlyByteBuf, SyncPersistentDataPacket> STREAM_CODEC =
-            StreamCodec.of(SyncPersistentDataPacket::encode, SyncPersistentDataPacket::decode);
-
-    @Override
-    public @NotNull Type<? extends CustomPacketPayload> type() {
-        return TYPE;
-    }
-
-    public static void encode(RegistryFriendlyByteBuf buf, SyncPersistentDataPacket packet) {
-        buf.writeInt(packet.entityId);
-        buf.writeNbt(packet.readData);
-    }
-
-    public static SyncPersistentDataPacket decode(RegistryFriendlyByteBuf buf) {
-        return new SyncPersistentDataPacket(
+    public SyncPersistentDataPacket(FriendlyByteBuf buf) {
+        this(
                 buf.readInt(),
                 buf.readNbt()
         );
@@ -51,12 +34,7 @@ public record SyncPersistentDataPacket(int entityId, CompoundTag readData) imple
         );
     }
 
-    public static void handle(SyncPersistentDataPacket packet, IPayloadContext context) {
-        context.enqueueWork(() -> {
-            handleClient(packet);
-        });
-    }
-
+    @OnlyIn(Dist.CLIENT)
     private static void handleClient(SyncPersistentDataPacket packet) {
         try {
             Entity entityByID = Minecraft.getInstance().level.getEntity(packet.entityId);
@@ -69,5 +47,19 @@ public record SyncPersistentDataPacket(int entityId, CompoundTag readData) imple
         } catch (Exception e) {
             HypertubeMod.LOGGER.error("Failed to handle SyncPersistentDataPacket for entity ID: {}", packet.entityId, e);
         }
+    }
+
+    @Override
+    public void toBytes(FriendlyByteBuf buf) {
+        buf.writeInt(entityId);
+        buf.writeNbt(readData);
+    }
+
+    @Override
+    public void execute(Supplier<NetworkEvent.Context> ctx) {
+        ctx.get().enqueueWork(() -> {
+            handleClient(this);
+        });
+        ctx.get().setPacketHandled(true);
     }
 }

@@ -2,6 +2,7 @@ package com.pedrorok.hypertube.events;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.managers.travel.TravelManager;
+import com.pedrorok.hypertube.network.NetworkHandler;
 import com.simibubi.create.AllPackets;
 import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -45,8 +46,10 @@ public class PlayerSyncEvents {
     private static void syncAllStatesToPlayer(ServerPlayer targetPlayer) {
         for (ServerPlayer otherPlayer : targetPlayer.getServer().getPlayerList().getPlayers()) {
             if (otherPlayer != targetPlayer && TravelManager.hasHyperTubeData(otherPlayer)) {
-                AllPackets.getChannel().send(PacketDistributor.TRACKING_ENTITY.with(() -> targetPlayer), new ISyncPersistentData.PersistentDataPacket(targetPlayer));
-
+                NetworkHandler.INSTANCE.send(
+                        PacketDistributor.PLAYER.with(() -> targetPlayer),
+                        new SyncPersistentDataPacket(targetPlayer.getId(), targetPlayer.getPersistentData())
+                );
             }
         }
     }
@@ -55,7 +58,10 @@ public class PlayerSyncEvents {
         if (TravelManager.hasHyperTubeData(sourcePlayer)) {
             for (ServerPlayer otherPlayer : sourcePlayer.getServer().getPlayerList().getPlayers()) {
                 if (otherPlayer != sourcePlayer) {
-                    AllPackets.getChannel().send(PacketDistributor.TRACKING_ENTITY.with(() -> sourcePlayer), new ISyncPersistentData.PersistentDataPacket(sourcePlayer));
+                    NetworkHandler.INSTANCE.send(
+                            PacketDistributor.PLAYER.with(() -> sourcePlayer),
+                            new SyncPersistentDataPacket(sourcePlayer.getId(), sourcePlayer.getPersistentData())
+                    );
 
                 }
             }

@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube;
 
 import com.pedrorok.hypertube.config.ClientConfig;
+import com.pedrorok.hypertube.network.NetworkHandler;
 import com.pedrorok.hypertube.registry.*;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -35,6 +36,7 @@ public class HypertubeMod {
 
         REGISTRATE.registerEventListeners(modEventBus);
 
+        NetworkHandler.init();
         ModPartialModels.init();
 
         ModBlocks.register();
