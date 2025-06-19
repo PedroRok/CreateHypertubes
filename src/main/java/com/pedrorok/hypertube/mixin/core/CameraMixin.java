@@ -1,4 +1,4 @@
-package com.pedrorok.hypertube.mixin;
+package com.pedrorok.hypertube.mixin.core;
 
 import com.pedrorok.hypertube.managers.camera.DetachedCameraController;
 import com.pedrorok.hypertube.config.ClientConfig;

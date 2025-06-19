@@ -1,6 +1,5 @@
 buildscript {
     repositories {
-        // These repositories are only for Gradle plugins, put any other repositories in the repository block further below
         maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
         mavenCentral()
     }
@@ -78,6 +77,11 @@ repositories {
     maven { url = "https://mvn.devos.one/snapshots" }
     maven { url = "https://maven.tterrag.com" }
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" }
+
+    maven {
+        name = "CurseMaven"
+        url = "https://cursemaven.com"
+    }
 }
 
 dependencies {
@@ -99,6 +103,9 @@ dependencies {
     }
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+
+    // Fix better third person
+    compileOnly("curse.maven:betterthirdperson-435044:4596768")
 }
 
 tasks.named('processResources', ProcessResources).configure {

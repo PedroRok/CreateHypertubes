@@ -1,9 +1,9 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "com.pedrorok.hypertube.mixin",
-  "compatibilityLevel": "JAVA_8",
+  "package": "com.pedrorok.hypertube.mixin.core",
   "refmap": "create_hypertube.refmap.json",
+  "compatibilityLevel": "JAVA_8",
   "mixins": [
     "EntityTravelingMixin",
     "PlayerModelMixin",
