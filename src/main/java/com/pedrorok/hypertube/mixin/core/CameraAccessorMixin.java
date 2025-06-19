@@ -1,4 +1,4 @@
-package com.pedrorok.hypertube.mixin;
+package com.pedrorok.hypertube.mixin.core;
 
 import net.minecraft.client.Camera;
 import org.spongepowered.asm.mixin.Mixin;

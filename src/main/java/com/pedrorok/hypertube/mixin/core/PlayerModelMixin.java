@@ -1,4 +1,4 @@
-package com.pedrorok.hypertube.mixin;
+package com.pedrorok.hypertube.mixin.core;
 
 import com.pedrorok.hypertube.managers.travel.TravelConstants;
 import net.minecraft.client.model.PlayerModel;
