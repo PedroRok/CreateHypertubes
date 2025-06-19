@@ -78,15 +78,15 @@ public class TravelManager {
         }
 
         playerPersistData.putBoolean(TRAVEL_TAG, true);
-
         travelDataMap.put(player.getUUID(), travelData);
-        PlayerSyncEvents.syncPlayerStateToAll(player);
 
         Vec3 center = pos.getCenter();
         player.teleportTo(center.x, center.y, center.z);
 
         TubeSoundManager.playTubeSuctionSound(player, center);
-        PacketDistributor.sendToPlayer(player, SyncPersistentDataPacket.create(player));
+
+        syncPersistentData(player);
+
         HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", player.getName().getString(), relative, travelData.getSpeed());
     }
 
@@ -125,17 +125,18 @@ public class TravelManager {
         }
     }
 
-    private static void finishTravel(ServerPlayer player, TravelData travelData, boolean forced) {
+    public static void finishTravel(ServerPlayer player) {
+        if (!travelDataMap.containsKey(player.getUUID())) return;
+        finishTravel(player, travelDataMap.get(player.getUUID()), true);
+    }
 
+    private static void finishTravel(ServerPlayer player, TravelData travelData, boolean forced) {
         travelDataMap.remove(player.getUUID());
         player.getPersistentData().putBoolean(TRAVEL_TAG, false);
-        // --- NOTE: this is just to make easy to debug
         player.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
         player.getPersistentData().putLong(LAST_TRAVEL_BLOCKPOS, travelData.getLastBlockPos().asLong());
         player.getPersistentData().putFloat(LAST_TRAVEL_SPEED, travelData.getSpeed());
         player.getPersistentData().putBoolean(IMMUNITY_TAG, true);
-        // ---
-        PacketDistributor.sendToPlayer(player, SyncPersistentDataPacket.create(player));
 
         Vec3 lastDir = travelData.getLastDir();
         Vec3 lastBlockPos = travelData.getLastBlockPos().getCenter();
@@ -147,8 +148,7 @@ public class TravelManager {
         player.setPose(Pose.CROUCHING);
         player.hurtMarked = true;
 
-        PlayerSyncEvents.syncPlayerStateToAll(player);
-
+        syncPersistentData(player);
         TubeSoundManager.playTubeSuctionSound(player, player.position());
     }
 
@@ -302,5 +302,11 @@ public class TravelManager {
 
     public static boolean hasHyperTubeData(Entity player) {
         return player.getPersistentData().getBoolean(TRAVEL_TAG);
+    }
+
+
+    private static void syncPersistentData(ServerPlayer player) {
+        PlayerSyncEvents.syncPlayerStateToAll(player, true);
+        PacketDistributor.sendToPlayer(player, SyncPersistentDataPacket.create(player));
     }
 }
