@@ -38,15 +38,20 @@ public class TravelManager {
 
     private static final Map<UUID, TravelData> travelDataMap = new HashMap<>();
 
-    private static final int LATENCY_THRESHOLD = 120; // mS
-
     public static void tryStartTravel(ServerPlayer player, BlockPos pos, BlockState state, float speed) {
         CompoundTag playerPersistData = player.getPersistentData();
         if (playerPersistData.getBoolean(TRAVEL_TAG)) return;
 
         if (player.connection.latency() > LATENCY_THRESHOLD) {
-            MessageUtils.sendActionMessage(player, Component.translatable("hypertube.travel.latency").withColor(0xff0000), true);
-            return;
+            if (!player.isShiftKeyDown()) {
+                MessageUtils.sendActionMessage(player, Component.translatable("hypertube.travel.latency")
+                        .append(" (")
+                        .append(Component.translatable("block.hypertube.hyper_entrance.sneak_to_enter"))
+                        .append(")")
+                        .withColor(0xff0000), true);
+                return;
+            }
+            MessageUtils.sendActionMessage(player, Component.empty(), true);
         }
 
         long lastTravelTime = playerPersistData.getLong(LAST_TRAVEL_TIME);
