@@ -311,9 +311,7 @@ public class TravelManager {
 
 
     private static void syncPersistentData(ServerPlayer player) {
-        PlayerSyncEvents.syncPlayerStateToAll(player, true);
-        NetworkHandler.INSTANCE.send(
-                PacketDistributor.PLAYER.with(() -> player),
+        NetworkHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
                 new SyncPersistentDataPacket(player.getId(), player.getPersistentData())
         );
     }
