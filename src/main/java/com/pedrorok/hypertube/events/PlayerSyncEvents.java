@@ -20,15 +20,14 @@ public class PlayerSyncEvents {
     public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             syncAllStatesToPlayer(serverPlayer);
-            syncPlayerStateToAll(serverPlayer);
+            syncPlayerStateToAll(serverPlayer, false);
         }
     }
 
     @SubscribeEvent
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
-            // Optionally handle player logout logic here, if needed
-            // For example, you might want to clear their data or notify other players
+            TravelManager.finishTravel(serverPlayer);
         }
     }
 
@@ -36,24 +35,22 @@ public class PlayerSyncEvents {
     public static void onPlayerChangeDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             syncAllStatesToPlayer(serverPlayer);
-            syncPlayerStateToAll(serverPlayer);
+            syncPlayerStateToAll(serverPlayer, false);
         }
     }
 
     private static void syncAllStatesToPlayer(ServerPlayer targetPlayer) {
         for (ServerPlayer otherPlayer : targetPlayer.getServer().getPlayerList().getPlayers()) {
-            SyncPersistentDataPacket payload = SyncPersistentDataPacket.create(otherPlayer);
             if (otherPlayer == targetPlayer || !TravelManager.hasHyperTubeData(otherPlayer)) continue;
-            PacketDistributor.sendToPlayer(targetPlayer, payload);
+            PacketDistributor.sendToPlayer(targetPlayer, SyncPersistentDataPacket.create(otherPlayer));
         }
     }
 
-    public static void syncPlayerStateToAll(ServerPlayer sourcePlayer) {
-        if (!TravelManager.hasHyperTubeData(sourcePlayer)) return;
-        SyncPersistentDataPacket payload = SyncPersistentDataPacket.create(sourcePlayer);
+    public static void syncPlayerStateToAll(ServerPlayer sourcePlayer, boolean force) {
+        if (!TravelManager.hasHyperTubeData(sourcePlayer) && !force) return;
         for (ServerPlayer otherPlayer : sourcePlayer.getServer().getPlayerList().getPlayers()) {
             if (otherPlayer == sourcePlayer) continue;
-            PacketDistributor.sendToPlayer(otherPlayer, payload);
+            PacketDistributor.sendToPlayer(otherPlayer, SyncPersistentDataPacket.create(sourcePlayer));
         }
 
     }
