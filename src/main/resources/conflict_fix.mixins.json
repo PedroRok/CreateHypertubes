@@ -5,7 +5,8 @@
   "refmap": "conflict_fix.refmap.json",
   "compatibilityLevel": "JAVA_8",
   "client": [
-    "MixinBetterThirdPerson"
+    "MixinBetterThirdPerson",
+    "MixinCustomCameraManager"
   ],
   "injectors": {
     "defaultRequire": 1

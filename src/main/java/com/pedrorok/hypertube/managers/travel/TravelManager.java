@@ -248,7 +248,7 @@ public class TravelManager {
         } else if (correctedMovement.length() > 0.5) {
             Vec3 movementDirection = correctedMovement.normalize();
 
-            double smoothingFactor = Math.max(0.3, 0.5 - distanceFromLine);
+            double smoothingFactor = Math.max(0.15, 0.5 - distanceFromLine);
             movementDirection = movementDirection.add(finalDirection.subtract(movementDirection).scale(smoothingFactor)).normalize();
             player.setDeltaMovement(movementDirection.scale(speed));
         } else {

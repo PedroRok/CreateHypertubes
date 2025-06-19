@@ -68,6 +68,10 @@ mixin {
     add sourceSets.main, "${mod_id}.refmap.json"
 
     config "${mod_id}.mixins.json"
+
+    add sourceSets.main, "conflict_fix.refmap.json"
+
+    config "conflict_fix.mixins.json"
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
@@ -106,7 +110,7 @@ dependencies {
 
     // Fix better third person
     compileOnly fg.deobf("curse.maven:betterthirdperson-435044:4596768")
-    runtimeOnly fg.deobf("curse.maven:betterthirdperson-435044:4596768")
+    //runtimeOnly fg.deobf("curse.maven:betterthirdperson-435044:4596768")
 }
 
 tasks.named('processResources', ProcessResources).configure {
