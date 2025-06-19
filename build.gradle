@@ -66,11 +66,7 @@ minecraft {
 
 mixin {
     add sourceSets.main, "${mod_id}.refmap.json"
-
     config "${mod_id}.mixins.json"
-
-    add sourceSets.main, "conflict_fix.refmap.json"
-
     config "conflict_fix.mixins.json"
 }
 
