@@ -84,7 +84,7 @@ public class TravelManager {
 
         TubeSoundManager.playTubeSuctionSound(player, center);
         NetworkHandler.INSTANCE.send(
-                PacketDistributor.PLAYER.with(() -> player),
+                PacketDistributor.ALL.noArg(),
                 new SyncPersistentDataPacket(player.getId(), player.getPersistentData())
         );
         HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", player.getName().getString(), relative, travelData.getSpeed());
@@ -138,7 +138,7 @@ public class TravelManager {
         player.getPersistentData().putBoolean(IMMUNITY_TAG, true);
         // ---
         NetworkHandler.INSTANCE.send(
-                PacketDistributor.PLAYER.with(() -> player),
+                PacketDistributor.ALL.noArg(),
                 new SyncPersistentDataPacket(player.getId(), player.getPersistentData())
         );
 
