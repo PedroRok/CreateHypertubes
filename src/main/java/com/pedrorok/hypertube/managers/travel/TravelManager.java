@@ -6,8 +6,6 @@ import com.pedrorok.hypertube.config.ClientConfig;
 import com.pedrorok.hypertube.events.PlayerSyncEvents;
 import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
 import com.pedrorok.hypertube.network.NetworkHandler;
-import com.pedrorok.hypertube.registry.ModSounds;
-import com.simibubi.create.AllPackets;
 import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
 import com.pedrorok.hypertube.utils.MessageUtils;
 import net.minecraft.ChatFormatting;
@@ -28,7 +26,10 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.PacketDistributor;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import static com.pedrorok.hypertube.managers.travel.TravelConstants.*;
 
@@ -40,15 +41,20 @@ public class TravelManager {
 
     private static final Map<UUID, TravelData> travelDataMap = new HashMap<>();
 
-    private static final int LATENCY_THRESHOLD = 120; // mS
-
     public static void tryStartTravel(ServerPlayer player, BlockPos pos, BlockState state, float speed) {
         CompoundTag playerPersistData = player.getPersistentData();
         if (playerPersistData.getBoolean(TRAVEL_TAG)) return;
 
         if (player.latency > LATENCY_THRESHOLD) {
-            MessageUtils.sendActionMessage(player, Component.translatable("hypertube.travel.latency").withStyle(ChatFormatting.RED), true);
-            return;
+            if (!player.isShiftKeyDown()) {
+                MessageUtils.sendActionMessage(player, Component.translatable("hypertube.travel.latency")
+                        .append(" (")
+                        .append(Component.translatable("block.hypertube.hyper_entrance.sneak_to_enter"))
+                        .append(")")
+                        .withStyle(ChatFormatting.RED), true);
+                return;
+            }
+            MessageUtils.sendActionMessage(player, Component.empty(), true);
         }
 
         long lastTravelTime = playerPersistData.getLong(LAST_TRAVEL_TIME);
@@ -75,18 +81,15 @@ public class TravelManager {
         }
 
         playerPersistData.putBoolean(TRAVEL_TAG, true);
-
         travelDataMap.put(player.getUUID(), travelData);
-        PlayerSyncEvents.syncPlayerStateToAll(player);
 
         Vec3 center = pos.getCenter();
         player.teleportTo(center.x, center.y, center.z);
 
         TubeSoundManager.playTubeSuctionSound(player, center);
-        NetworkHandler.INSTANCE.send(
-                PacketDistributor.ALL.noArg(),
-                new SyncPersistentDataPacket(player.getId(), player.getPersistentData())
-        );
+
+        syncPersistentData(player);
+
         HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", player.getName().getString(), relative, travelData.getSpeed());
     }
 
@@ -125,22 +128,18 @@ public class TravelManager {
         }
     }
 
+    public static void finishTravel(ServerPlayer player) {
+        if (!travelDataMap.containsKey(player.getUUID())) return;
+        finishTravel(player, travelDataMap.get(player.getUUID()), true);
+    }
+
     private static void finishTravel(ServerPlayer player, TravelData travelData, boolean forced) {
-
-        PlayerSyncEvents.syncPlayerStateToAll(player);
-
         travelDataMap.remove(player.getUUID());
         player.getPersistentData().putBoolean(TRAVEL_TAG, false);
-        // --- NOTE: this is just to make easy to debug
         player.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
         player.getPersistentData().putLong(LAST_TRAVEL_BLOCKPOS, travelData.getLastBlockPos().asLong());
         player.getPersistentData().putFloat(LAST_TRAVEL_SPEED, travelData.getSpeed());
         player.getPersistentData().putBoolean(IMMUNITY_TAG, true);
-        // ---
-        NetworkHandler.INSTANCE.send(
-                PacketDistributor.ALL.noArg(),
-                new SyncPersistentDataPacket(player.getId(), player.getPersistentData())
-        );
 
         Vec3 lastDir = travelData.getLastDir();
         Vec3 lastBlockPos = travelData.getLastBlockPos().getCenter();
@@ -151,7 +150,8 @@ public class TravelManager {
         }
         player.setPose(Pose.CROUCHING);
         player.hurtMarked = true;
-        PlayerSyncEvents.syncPlayerStateToAll(player);
+
+        syncPersistentData(player);
 
         TubeSoundManager.playTubeSuctionSound(player, player.position());
     }
@@ -244,7 +244,7 @@ public class TravelManager {
         if (distanceFromLine > DISTANCE_FROM_LINE_TP) {
             float yaw = (float) Math.toDegrees(Math.atan2(segmentDirection.x, segmentDirection.z));
             float pitch = (float) Math.toDegrees(Math.atan2(segmentDirection.y, Math.sqrt(segmentDirection.x * segmentDirection.x + segmentDirection.z * segmentDirection.z)));
-            player.teleportTo((ServerLevel) player.level(), currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, RelativeMovement.ROTATION,  -yaw, -pitch);
+            player.teleportTo((ServerLevel) player.level(), currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, RelativeMovement.ROTATION, -yaw, -pitch);
         } else if (correctedMovement.length() > 0.5) {
             Vec3 movementDirection = correctedMovement.normalize();
 
@@ -265,7 +265,6 @@ public class TravelManager {
                 }
             }
         }
-
         checkAndCorrectStuck(player, travelData);
 
         player.hurtMarked = true;
@@ -308,5 +307,14 @@ public class TravelManager {
 
     public static boolean hasHyperTubeData(Entity player) {
         return player.getPersistentData().getBoolean(TRAVEL_TAG);
+    }
+
+
+    private static void syncPersistentData(ServerPlayer player) {
+        PlayerSyncEvents.syncPlayerStateToAll(player, true);
+        NetworkHandler.INSTANCE.send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new SyncPersistentDataPacket(player.getId(), player.getPersistentData())
+        );
     }
 }

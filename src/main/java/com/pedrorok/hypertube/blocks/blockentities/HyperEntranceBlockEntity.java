@@ -96,10 +96,12 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
             return;
         }
         Boolean isLocked = getBlockState().getValue(HyperEntranceBlock.LOCKED);
+
         Optional<ServerPlayer> nearbyPlayer = getNearbyPlayers((ServerLevel) level, pos.getCenter());
         boolean canOpen = nearbyPlayer.isPresent()
                           && (!isLocked
                               || nearbyPlayer.get().isShiftKeyDown()
+                              || nearbyPlayer.get().connection.latency() > TravelConstants.LATENCY_THRESHOLD
                               || nearbyPlayer.get().getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG));
 
         if (!canOpen) {
@@ -119,7 +121,8 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         if (inRangePlayer.isEmpty()) return;
 
         ServerPlayer player = inRangePlayer.get();
-        if (!isLocked && player.isShiftKeyDown()) return;
+        if (!isLocked 
+            && (player.isShiftKeyDown() && player.connection.latency() <= TravelConstants.LATENCY_THRESHOLD)) return;
         TravelManager.tryStartTravel(player, pos, state, actualSpeed / 512);
     }
 

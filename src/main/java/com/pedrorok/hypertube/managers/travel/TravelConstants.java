@@ -20,4 +20,6 @@ public class TravelConstants {
 
     public static final double DEFAULT_MIN_SPEED = 0.5;
     public static final float DISTANCE_FROM_LINE_TP = 1.2f;
+
+    public static final int LATENCY_THRESHOLD = 100; // ms
 }
