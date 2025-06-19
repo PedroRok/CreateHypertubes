@@ -5,13 +5,17 @@ import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.config.ClientConfig;
 import com.pedrorok.hypertube.events.PlayerSyncEvents;
 import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
+import com.pedrorok.hypertube.network.NetworkHandler;
 import com.pedrorok.hypertube.registry.ModSounds;
 import com.simibubi.create.AllPackets;
-import com.simibubi.create.foundation.networking.ISyncPersistentData;
+import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
+import com.pedrorok.hypertube.utils.MessageUtils;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -36,9 +40,17 @@ public class TravelManager {
 
     private static final Map<UUID, TravelData> travelDataMap = new HashMap<>();
 
+    private static final int LATENCY_THRESHOLD = 120; // mS
+
     public static void tryStartTravel(ServerPlayer player, BlockPos pos, BlockState state, float speed) {
         CompoundTag playerPersistData = player.getPersistentData();
         if (playerPersistData.getBoolean(TRAVEL_TAG)) return;
+
+        if (player.latency > LATENCY_THRESHOLD) {
+            MessageUtils.sendActionMessage(player, Component.translatable("hypertube.travel.latency").withStyle(ChatFormatting.RED), true);
+            return;
+        }
+
         long lastTravelTime = playerPersistData.getLong(LAST_TRAVEL_TIME);
 
         if (playerPersistData.contains(LAST_TRAVEL_BLOCKPOS)) {
@@ -50,7 +62,7 @@ public class TravelManager {
         }
 
         if (lastTravelTime - DEFAULT_AFTER_TUBE_CAMERA > System.currentTimeMillis()) {
-            speed += playerPersistData.getFloat(LAST_TRAVEL_SPEED); // Increase speed if player is trying to fast travel
+            speed += playerPersistData.getFloat(LAST_TRAVEL_SPEED);
         }
 
         BlockPos relative = pos.relative(state.getValue(HyperEntranceBlock.FACING));
@@ -58,7 +70,7 @@ public class TravelManager {
         travelData.init(relative, player.level(), pos);
 
         if (travelData.getTravelPoints().size() < 3) {
-            // TODO: Handle error
+            MessageUtils.sendActionMessage(player, Component.translatable("hypertube.travel.too_short").withStyle(ChatFormatting.RED), true);
             return;
         }
 
@@ -68,18 +80,12 @@ public class TravelManager {
         PlayerSyncEvents.syncPlayerStateToAll(player);
 
         Vec3 center = pos.getCenter();
-
-        Vec3 eyePos = player.getEyePosition();
-        Vec3 playerPos = player.position();
-        if (playerPos.distanceTo(center) > eyePos.distanceTo(center)) {
-            player.teleportRelative(0, 1, 0);
-        }
+        player.teleportTo(center.x, center.y, center.z);
 
         TubeSoundManager.playTubeSuctionSound(player, center);
-
-        AllPackets.getChannel().send(
-                PacketDistributor.PLAYER.with(() -> player),
-                new ISyncPersistentData.PersistentDataPacket(player)
+        NetworkHandler.INSTANCE.send(
+                PacketDistributor.ALL.noArg(),
+                new SyncPersistentDataPacket(player.getId(), player.getPersistentData())
         );
         HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", player.getName().getString(), relative, travelData.getSpeed());
     }
@@ -131,9 +137,9 @@ public class TravelManager {
         player.getPersistentData().putFloat(LAST_TRAVEL_SPEED, travelData.getSpeed());
         player.getPersistentData().putBoolean(IMMUNITY_TAG, true);
         // ---
-        AllPackets.getChannel().send(
+        NetworkHandler.INSTANCE.send(
                 PacketDistributor.ALL.noArg(),
-                new ISyncPersistentData.PersistentDataPacket(player)
+                new SyncPersistentDataPacket(player.getId(), player.getPersistentData())
         );
 
         Vec3 lastDir = travelData.getLastDir();
@@ -141,7 +147,7 @@ public class TravelManager {
         if (!forced) {
             player.teleportTo((ServerLevel) player.level(), lastBlockPos.x, lastBlockPos.y, lastBlockPos.z, player.getYRot(), player.getXRot());
             player.teleportRelative(lastDir.x, lastDir.y, lastDir.z);
-            player.setDeltaMovement(travelData.getLastDir().scale(travelData.getSpeed() + DEFAULT_MIN_SPEED));
+            player.setDeltaMovement(lastDir.scale(travelData.getSpeed() + DEFAULT_MIN_SPEED));
         }
         player.setPose(Pose.CROUCHING);
         player.hurtMarked = true;
@@ -238,11 +244,11 @@ public class TravelManager {
         if (distanceFromLine > DISTANCE_FROM_LINE_TP) {
             float yaw = (float) Math.toDegrees(Math.atan2(segmentDirection.x, segmentDirection.z));
             float pitch = (float) Math.toDegrees(Math.atan2(segmentDirection.y, Math.sqrt(segmentDirection.x * segmentDirection.x + segmentDirection.z * segmentDirection.z)));
-            player.teleportTo((ServerLevel) player.level(), currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, RelativeMovement.ROTATION,  yaw, pitch);
+            player.teleportTo((ServerLevel) player.level(), currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, RelativeMovement.ROTATION,  -yaw, -pitch);
         } else if (correctedMovement.length() > 0.5) {
             Vec3 movementDirection = correctedMovement.normalize();
 
-            double smoothingFactor = Math.max(0.3, 0.5 - distanceFromLine);
+            double smoothingFactor = Math.max(0.15, 0.5 - distanceFromLine);
             movementDirection = movementDirection.add(finalDirection.subtract(movementDirection).scale(smoothingFactor)).normalize();
             player.setDeltaMovement(movementDirection.scale(speed));
         } else {

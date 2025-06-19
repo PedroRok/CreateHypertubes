@@ -2,8 +2,9 @@ package com.pedrorok.hypertube.events;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.managers.travel.TravelManager;
+import com.pedrorok.hypertube.network.NetworkHandler;
 import com.simibubi.create.AllPackets;
-import com.simibubi.create.foundation.networking.ISyncPersistentData;
+import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -22,8 +23,15 @@ public class PlayerSyncEvents {
     public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             syncAllStatesToPlayer(serverPlayer);
-
             syncPlayerStateToAll(serverPlayer);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer serverPlayer) {
+            // Optionally handle player logout logic here, if needed
+            // For example, you might want to clear their data or notify other players
         }
     }
 
@@ -34,12 +42,14 @@ public class PlayerSyncEvents {
             syncPlayerStateToAll(serverPlayer);
         }
     }
-    
+
     private static void syncAllStatesToPlayer(ServerPlayer targetPlayer) {
         for (ServerPlayer otherPlayer : targetPlayer.getServer().getPlayerList().getPlayers()) {
             if (otherPlayer != targetPlayer && TravelManager.hasHyperTubeData(otherPlayer)) {
-                AllPackets.getChannel().send(PacketDistributor.TRACKING_ENTITY.with(() -> targetPlayer), new ISyncPersistentData.PersistentDataPacket(targetPlayer));
-
+                NetworkHandler.INSTANCE.send(
+                        PacketDistributor.PLAYER.with(() -> targetPlayer),
+                        new SyncPersistentDataPacket(targetPlayer.getId(), targetPlayer.getPersistentData())
+                );
             }
         }
     }
@@ -48,10 +58,14 @@ public class PlayerSyncEvents {
         if (TravelManager.hasHyperTubeData(sourcePlayer)) {
             for (ServerPlayer otherPlayer : sourcePlayer.getServer().getPlayerList().getPlayers()) {
                 if (otherPlayer != sourcePlayer) {
-                    AllPackets.getChannel().send(PacketDistributor.TRACKING_ENTITY.with(() -> sourcePlayer), new ISyncPersistentData.PersistentDataPacket(sourcePlayer));
+                    NetworkHandler.INSTANCE.send(
+                            PacketDistributor.PLAYER.with(() -> sourcePlayer),
+                            new SyncPersistentDataPacket(sourcePlayer.getId(), sourcePlayer.getPersistentData())
+                    );
 
                 }
             }
         }
+
     }
 }

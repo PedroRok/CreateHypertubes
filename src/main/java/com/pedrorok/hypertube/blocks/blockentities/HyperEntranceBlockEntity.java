@@ -210,7 +210,8 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
     @Override
     public boolean addToTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
 
-        if (getBlockState().getValue(HyperEntranceBlock.LOCKED)) {
+        if (getBlockState().getValue(HyperEntranceBlock.LOCKED)
+        && Math.abs(this.getSpeed()) >= SPEED_TO_START) {
             tooltip.add(Component.literal("     ")
                     .append(Component.translatable("block.hypertube.hyper_entrance.sneak_to_enter"))
                     .withStyle(ChatFormatting.WHITE));

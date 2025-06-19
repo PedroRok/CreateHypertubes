@@ -32,3 +32,10 @@ mandatory=true
 versionRange="[0.5.1.f,0.5.2)"
 ordering="NONE"
 side="BOTH"
+
+[[dependencies."${mod_id}"]]
+modId = "betterthirdperson"
+mandatory=false
+versionRange="[1.9.0,)"
+ordering="NONE"
+side="CLIENT"
