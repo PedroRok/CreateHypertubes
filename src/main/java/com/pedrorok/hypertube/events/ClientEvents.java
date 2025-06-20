@@ -72,16 +72,11 @@ public class ClientEvents {
     public static void onRenderEntity(RenderLivingEvent.Pre event) {
         LivingEntity entity = event.getEntity();
         if (!entity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
-
         PoseStack poseStack = event.getPoseStack();
-
-        poseStack.pushPose();
-        poseStack.translate(0, 0.2, 0);
-        poseStack.mulPose(Axis.YP.rotationDegrees(-entity.getYRot()));
-        poseStack.mulPose(Axis.XP.rotationDegrees(entity.getXRot() + 90));
-        poseStack.mulPose(Axis.YP.rotationDegrees(entity.getYRot()));
-        poseStack.translate(0, -0.5, 0);
-        poseStack.scale(0.8f, 0.8f, 0.8f);
+        TravelConstants.ENTITIES_CAN_TRAVEL
+                .get(entity.getType())
+                .renderEntityOnTube()
+                .accept(entity, poseStack);
     }
 
     @SubscribeEvent

@@ -2,6 +2,7 @@ package com.pedrorok.hypertube.managers.travel;
 
 import net.minecraft.world.entity.EntityType;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -28,9 +29,10 @@ public class TravelConstants {
 
     public static final int LATENCY_THRESHOLD = 100; // ms
 
-    public static final Set<EntityType<?>> ENTITIES_CAN_TRAVEL = Set.of(
-            EntityType.PLAYER,
-            EntityType.VILLAGER,
-            EntityType.WANDERING_TRADER
+    public static final Map<EntityType<?>, TravellerEntity> ENTITIES_CAN_TRAVEL = Map.of(
+            EntityType.PLAYER, TravellerEntity.ofBiped(),
+            EntityType.VILLAGER, TravellerEntity.ofBiped(),
+            EntityType.WANDERING_TRADER, TravellerEntity.ofBiped(),
+            EntityType.SALMON, TravellerEntity.ofFish(0.9f)
     );
 }

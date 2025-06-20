@@ -184,7 +184,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         return level.getNearestEntity(
                 level.getEntitiesOfClass(LivingEntity.class,
                         AABB.ofSize(checkPos, (RADIUS - 0.25) * 2, (RADIUS - 0.25) * 2, (RADIUS - 0.25) * 2),
-                        (entity) -> TravelConstants.ENTITIES_CAN_TRAVEL.contains(entity.getType())),
+                        (entity) -> TravelConstants.ENTITIES_CAN_TRAVEL.containsKey(entity.getType())),
                 TargetingConditions.forNonCombat().ignoreLineOfSight(),
                 null,
                 centerPos.x, centerPos.y, centerPos.z);
@@ -195,7 +195,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         return level.getNearestEntity(
                 level.getEntitiesOfClass(LivingEntity.class,
                         AABB.ofSize(centerPos, RADIUS * 6, RADIUS * 6, RADIUS * 6),
-                        (entity) -> TravelConstants.ENTITIES_CAN_TRAVEL.contains(entity.getType())),
+                        (entity) -> TravelConstants.ENTITIES_CAN_TRAVEL.containsKey(entity.getType())),
                 TargetingConditions.forNonCombat().ignoreLineOfSight(),
                 null,
                 centerPos.x, centerPos.y, centerPos.z);
