@@ -18,7 +18,7 @@ public class LivingEntityMixin {
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void onTick(CallbackInfo ci) {
-        Entity entity = (Entity) (Object) this;
+        LivingEntity entity = (LivingEntity) (Object) this;
 
         if (!entity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
 

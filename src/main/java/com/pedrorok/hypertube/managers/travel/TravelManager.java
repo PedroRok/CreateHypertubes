@@ -186,12 +186,12 @@ public class TravelManager {
 
         entity.resetFallDistance();
         currentPoint = currentPoint.subtract(0, 0.25, 0);
-        Vec3 playerPos = entity.position();
+        Vec3 entityPos = entity.position();
         double speed = 0.5D + travelData.getSpeed();
 
         Vec3 nextPoint = getNextPointPreview(travelData, 0);
         if (nextPoint == null) {
-            Vec3 direction = currentPoint.subtract(playerPos).normalize();
+            Vec3 direction = currentPoint.subtract(entityPos).normalize();
             entity.setDeltaMovement(direction.scale(speed));
             entity.hurtMarked = true;
             return;
@@ -202,8 +202,8 @@ public class TravelManager {
         Vec3 segmentDirection = nextPoint.subtract(currentPoint).normalize();
         double segmentLength = currentPoint.distanceTo(nextPoint);
 
-        Vec3 toPlayer = playerPos.subtract(currentPoint);
-        double currentProjection = toPlayer.dot(segmentDirection);
+        Vec3 toEntityPos = entityPos.subtract(currentPoint);
+        double currentProjection = toEntityPos.dot(segmentDirection);
         currentProjection = Math.max(0, Math.min(segmentLength, currentProjection));
 
         Vec3 currentIdealPosition = currentPoint.add(segmentDirection.scale(currentProjection));
@@ -239,14 +239,15 @@ public class TravelManager {
         }
 
         Vec3 idealMovement = targetPosition.subtract(currentIdealPosition);
-        Vec3 actualMovement = targetPosition.subtract(playerPos);
+        Vec3 actualMovement = targetPosition.subtract(entityPos);
 
-        double distanceFromLine = playerPos.distanceTo(currentIdealPosition);
+        double distanceFromLine = entityPos.distanceTo(currentIdealPosition);
         double correctionStrength = Math.min(1.0, distanceFromLine * 2.0);
 
-        Vec3 correctedMovement = idealMovement.add(actualMovement.subtract(idealMovement).scale(correctionStrength));
+        double distanceFromLineThreshold = entity instanceof Player ? DISTANCE_FROM_LINE_TP : DISTANCE_FROM_LINE_TP * 2;
 
-        if (distanceFromLine > DISTANCE_FROM_LINE_TP) {
+        Vec3 correctedMovement = idealMovement.add(actualMovement.subtract(idealMovement).scale(correctionStrength));
+        if (distanceFromLine > distanceFromLineThreshold) {
             //entity.teleportTo((ServerLevel) entity.level(), currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, RelativeMovement.ALL, entity.getYRot(), entity.getXRot());
             entity.moveTo(currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, entity.getYRot(), entity.getXRot());
         } else if (correctedMovement.length() > 0.5) {
@@ -275,26 +276,26 @@ public class TravelManager {
     }
 
 
-    private static void checkAndCorrectStuck(LivingEntity player, TravelData travelData) {
+    private static void checkAndCorrectStuck(LivingEntity entity, TravelData travelData) {
         if (!travelData.hasNextTravelPoint()) return;
-        if (player.tickCount % 5 != 0) return;
+        if (entity.tickCount % 5 != 0) return;
 
-        float x = player.getPersistentData().getFloat(LAST_POSITION + "_x");
-        float y = player.getPersistentData().getFloat(LAST_POSITION + "_y");
-        float z = player.getPersistentData().getFloat(LAST_POSITION + "_z");
+        float x = entity.getPersistentData().getFloat(LAST_POSITION + "_x");
+        float y = entity.getPersistentData().getFloat(LAST_POSITION + "_y");
+        float z = entity.getPersistentData().getFloat(LAST_POSITION + "_z");
         Vec3 lastPosition = new Vec3(x, y, z);
 
 
-        if (player.position().distanceTo(lastPosition) < 0.01) {
-            // player is stuck
+        if (entity.position().distanceTo(lastPosition) < 0.01) {
+            // entity is stuck
             travelData.getNextTravelPoint();
             Vec3 travelPoint = travelData.getTravelPoint();
-            player.teleportTo(travelPoint.x, travelPoint.y, travelPoint.z);
+            entity.teleportTo(travelPoint.x, travelPoint.y, travelPoint.z);
             return;
         }
-        player.getPersistentData().putFloat(LAST_POSITION + "_x", (float) player.position().x);
-        player.getPersistentData().putFloat(LAST_POSITION + "_y", (float) player.position().y);
-        player.getPersistentData().putFloat(LAST_POSITION + "_z", (float) player.position().z);
+        entity.getPersistentData().putFloat(LAST_POSITION + "_x", (float) entity.position().x);
+        entity.getPersistentData().putFloat(LAST_POSITION + "_y", (float) entity.position().y);
+        entity.getPersistentData().putFloat(LAST_POSITION + "_z", (float) entity.position().z);
     }
 
     private static Vec3 getNextPointPreview(TravelData travelData, int offset) {
