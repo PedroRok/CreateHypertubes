@@ -21,13 +21,23 @@ public class RayCastUtils {
     public static <T extends Block> Direction getDirectionFromHitResult(Player player, @Nullable T filter, boolean ignoreFilter) {
         HitResult hitResult = player.pick(5, 0, false);
         if (hitResult.getType() != HitResult.Type.BLOCK) {
-            return player.getDirection().getOpposite();
+            return getFromPlayer(player);
         }
         BlockHitResult blockHitResult = (BlockHitResult) hitResult;
         Level level = player.level();
         if ((filter != null && !level.getBlockState(blockHitResult.getBlockPos()).is(filter)) || ignoreFilter) {
-            return player.getDirection().getOpposite();
+            return getFromPlayer(player);
         }
         return blockHitResult.getDirection().getOpposite();
+    }
+
+    private static Direction getFromPlayer(Player player) {
+        Direction direction = player.getDirection().getOpposite();
+        if (player.getXRot() < -45) {
+            direction = Direction.DOWN;
+        } else if (player.getXRot() > 45) {
+            direction = Direction.UP;
+        }
+        return direction;
     }
 }
