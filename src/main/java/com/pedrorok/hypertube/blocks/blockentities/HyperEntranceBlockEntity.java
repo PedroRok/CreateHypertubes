@@ -19,14 +19,17 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -97,12 +100,14 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         }
         Boolean isLocked = getBlockState().getValue(HyperEntranceBlock.LOCKED);
 
-        Optional<ServerPlayer> nearbyPlayer = getNearbyPlayers((ServerLevel) level, pos.getCenter());
-        boolean canOpen = nearbyPlayer.isPresent()
+        LivingEntity nearbyEntity = getNearbyLivingEntities((ServerLevel) level, pos.getCenter());
+        boolean isPlayer = nearbyEntity instanceof ServerPlayer;
+        ServerPlayer nearbyPlayer = isPlayer ? (ServerPlayer) nearbyEntity : null;
+        boolean canOpen = nearbyEntity != null
                           && (!isLocked
-                              || nearbyPlayer.get().isShiftKeyDown()
-                              || nearbyPlayer.get().connection.latency() > TravelConstants.LATENCY_THRESHOLD
-                              || nearbyPlayer.get().getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG));
+                              || nearbyEntity.isShiftKeyDown()
+                              || (isPlayer && nearbyPlayer.connection.latency() > TravelConstants.LATENCY_THRESHOLD)
+                              || nearbyEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG));
 
         if (!canOpen) {
             if (isOpen) {
@@ -115,15 +120,17 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
             level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, true), 3);
             playOpenCloseSound(true);
         }
-        Optional<ServerPlayer> inRangePlayer = getInRangePlayers((ServerLevel) level,
+        LivingEntity inRangeEntity = getInRangeLivingEntities((ServerLevel) level,
                 pos.getCenter(),
                 state.getValue(HyperEntranceBlock.FACING));
-        if (inRangePlayer.isEmpty()) return;
+        if (inRangeEntity == null) return;
 
-        ServerPlayer player = inRangePlayer.get();
-        if (!isLocked 
-            && (player.isShiftKeyDown() && player.connection.latency() <= TravelConstants.LATENCY_THRESHOLD)) return;
-        TravelManager.tryStartTravel(player, pos, state, actualSpeed / 512);
+        boolean isPlayerInRange = inRangeEntity instanceof ServerPlayer;
+        ServerPlayer player = isPlayerInRange ? (ServerPlayer) inRangeEntity : null;
+        if (!isLocked
+            && (inRangeEntity.isShiftKeyDown() && (isPlayerInRange && player.connection.latency() <= TravelConstants.LATENCY_THRESHOLD)))
+            return;
+        TravelManager.tryStartTravel(inRangeEntity, pos, state, actualSpeed / 512);
     }
 
 
@@ -170,24 +177,28 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         );
     }
 
+    @Nullable
+    private LivingEntity getInRangeLivingEntities(ServerLevel level, Vec3 centerPos, Direction facing) {
+        Vec3 checkPos = centerPos.add(Vec3.atLowerCornerOf(facing.getOpposite().getNormal()));
 
-    private Optional<ServerPlayer> getInRangePlayers(ServerLevel level, Vec3 centerPos, Direction facing) {
-        return level.players().stream()
-                .filter(player -> player.getBoundingBox()
-                                          .inflate(RADIUS - 0.25)
-                                          .contains(centerPos.add(Vec3.atLowerCornerOf(facing.getOpposite().getNormal())))
-                                  && !player.isSpectator()
-                )
-                .findFirst();
+        return level.getNearestEntity(
+                level.getEntitiesOfClass(LivingEntity.class,
+                        AABB.ofSize(checkPos, (RADIUS - 0.25) * 2, (RADIUS - 0.25) * 2, (RADIUS - 0.25) * 2),
+                        (entity) -> TravelConstants.ENTITIES_CAN_TRAVEL.contains(entity.getType())),
+                TargetingConditions.forNonCombat().ignoreLineOfSight(),
+                null,
+                centerPos.x, centerPos.y, centerPos.z);
     }
 
-    private Optional<ServerPlayer> getNearbyPlayers(ServerLevel level, Vec3 centerPos) {
-        return level.players().stream()
-                .filter(player -> player.getBoundingBox()
-                                          .inflate(RADIUS * 3)
-                                          .contains(centerPos)
-                                  && !player.isSpectator())
-                .findFirst();
+    @Nullable
+    private LivingEntity getNearbyLivingEntities(ServerLevel level, Vec3 centerPos) {
+        return level.getNearestEntity(
+                level.getEntitiesOfClass(LivingEntity.class,
+                        AABB.ofSize(centerPos, RADIUS * 6, RADIUS * 6, RADIUS * 6),
+                        (entity) -> TravelConstants.ENTITIES_CAN_TRAVEL.contains(entity.getType())),
+                TargetingConditions.forNonCombat().ignoreLineOfSight(),
+                null,
+                centerPos.x, centerPos.y, centerPos.z);
     }
 
     @Override
@@ -214,7 +225,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
     public boolean addToTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
 
         if (getBlockState().getValue(HyperEntranceBlock.LOCKED)
-        && Math.abs(this.getSpeed()) >= SPEED_TO_START) {
+            && Math.abs(this.getSpeed()) >= SPEED_TO_START) {
             tooltip.add(Component.literal("     ")
                     .append(Component.translatable("block.hypertube.hyper_entrance.sneak_to_enter"))
                     .withColor(0xFFFFFF));

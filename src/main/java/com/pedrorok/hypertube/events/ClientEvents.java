@@ -10,14 +10,14 @@ import com.pedrorok.hypertube.managers.travel.TravelConstants;
 import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.client.event.RenderPlayerEvent;
+import net.neoforged.neoforge.client.event.RenderLivingEvent;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 23/04/2025
@@ -69,25 +69,25 @@ public class ClientEvents {
     }
 
     @SubscribeEvent
-    public static void onRenderPlayer(RenderPlayerEvent.Pre event) {
-        Player player = event.getEntity();
-        if (!player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
+    public static void onRenderEntity(RenderLivingEvent.Pre event) {
+        LivingEntity entity = event.getEntity();
+        if (!entity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
 
         PoseStack poseStack = event.getPoseStack();
 
         poseStack.pushPose();
         poseStack.translate(0, 0.2, 0);
-        poseStack.mulPose(Axis.YP.rotationDegrees(-player.getYRot()));
-        poseStack.mulPose(Axis.XP.rotationDegrees(player.getXRot() + 90));
-        poseStack.mulPose(Axis.YP.rotationDegrees(player.getYRot()));
+        poseStack.mulPose(Axis.YP.rotationDegrees(-entity.getYRot()));
+        poseStack.mulPose(Axis.XP.rotationDegrees(entity.getXRot() + 90));
+        poseStack.mulPose(Axis.YP.rotationDegrees(entity.getYRot()));
         poseStack.translate(0, -0.5, 0);
         poseStack.scale(0.8f, 0.8f, 0.8f);
     }
 
     @SubscribeEvent
-    public static void onRenderPlayerPost(RenderPlayerEvent.Post event) {
-        Player player = event.getEntity();
-        if (!player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
+    public static void onRenderEntityPost(RenderLivingEvent.Post event) {
+        LivingEntity entity = event.getEntity();
+        if (!entity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
 
         event.getPoseStack().popPose();
 

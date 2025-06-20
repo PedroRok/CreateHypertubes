@@ -15,7 +15,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -38,12 +40,15 @@ public class TravelManager {
 
     private static final Map<UUID, TravelData> travelDataMap = new HashMap<>();
 
-    public static void tryStartTravel(ServerPlayer player, BlockPos pos, BlockState state, float speed) {
-        CompoundTag playerPersistData = player.getPersistentData();
+    public static void tryStartTravel(LivingEntity entity, BlockPos pos, BlockState state, float speed) {
+        CompoundTag playerPersistData = entity.getPersistentData();
         if (playerPersistData.getBoolean(TRAVEL_TAG)) return;
 
-        if (player.connection.latency() > LATENCY_THRESHOLD) {
-            if (!player.isShiftKeyDown()) {
+        boolean isPlayer = entity instanceof ServerPlayer;
+        ServerPlayer player = isPlayer ? (ServerPlayer) entity : null;
+
+        if (isPlayer && player.connection.latency() > LATENCY_THRESHOLD) {
+            if (!entity.isShiftKeyDown()) {
                 MessageUtils.sendActionMessage(player, Component.translatable("hypertube.travel.latency")
                         .append(" (")
                         .append(Component.translatable("block.hypertube.hyper_entrance.sneak_to_enter"))
@@ -70,38 +75,39 @@ public class TravelManager {
 
         BlockPos relative = pos.relative(state.getValue(HyperEntranceBlock.FACING));
         TravelData travelData = new TravelData(speed);
-        travelData.init(relative, player.level(), pos);
+        travelData.init(relative, entity.level(), pos);
 
         if (travelData.getTravelPoints().size() < 3) {
+            if (!isPlayer) return;
             MessageUtils.sendActionMessage(player, Component.translatable("hypertube.travel.too_short").withColor(0xff0000), true);
             return;
         }
 
         playerPersistData.putBoolean(TRAVEL_TAG, true);
-        travelDataMap.put(player.getUUID(), travelData);
+        travelDataMap.put(entity.getUUID(), travelData);
 
         Vec3 center = pos.getCenter();
-        player.teleportTo(center.x, center.y, center.z);
+        entity.teleportTo(center.x, center.y, center.z);
 
-        TubeSoundManager.playTubeSuctionSound(player, center);
+        TubeSoundManager.playTubeSuctionSound(entity, center);
 
-        syncPersistentData(player);
+        syncPersistentData(entity);
 
-        HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", player.getName().getString(), relative, travelData.getSpeed());
+        HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", entity.getName().getString(), relative, travelData.getSpeed());
     }
 
-    public static void playerTick(Player player) {
-        handleCommon(player);
-        if (player.level().isClientSide) {
+    public static void entityTick(LivingEntity entity) {
+        handleCommon(entity);
+        if (entity.level().isClientSide && entity instanceof Player player) {
             clientTick(player);
             return;
         }
-        handleServer(player);
+        handleServer(entity);
     }
 
-    private static void handleCommon(Player player) {
-        if (hasHyperTubeData(player)) {
-            player.refreshDimensions();
+    private static void handleCommon(LivingEntity entity) {
+        if (hasHyperTubeData(entity)) {
+            entity.refreshDimensions();
         }
     }
 
@@ -130,61 +136,64 @@ public class TravelManager {
         finishTravel(player, travelDataMap.get(player.getUUID()), true);
     }
 
-    private static void finishTravel(ServerPlayer player, TravelData travelData, boolean forced) {
-        travelDataMap.remove(player.getUUID());
-        player.getPersistentData().putBoolean(TRAVEL_TAG, false);
-        player.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
-        player.getPersistentData().putLong(LAST_TRAVEL_BLOCKPOS, travelData.getLastBlockPos().asLong());
-        player.getPersistentData().putFloat(LAST_TRAVEL_SPEED, travelData.getSpeed());
-        player.getPersistentData().putBoolean(IMMUNITY_TAG, true);
+    private static void finishTravel(LivingEntity entity, TravelData travelData, boolean forced) {
+        if (!(entity instanceof Player) && entity.level().isClientSide) return;
+        travelDataMap.remove(entity.getUUID());
+        entity.getPersistentData().putBoolean(TRAVEL_TAG, false);
+        entity.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
+        entity.getPersistentData().putLong(LAST_TRAVEL_BLOCKPOS, travelData.getLastBlockPos().asLong());
+        entity.getPersistentData().putFloat(LAST_TRAVEL_SPEED, travelData.getSpeed());
+        entity.getPersistentData().putBoolean(IMMUNITY_TAG, true);
 
         Vec3 lastDir = travelData.getLastDir();
         Vec3 lastBlockPos = travelData.getLastBlockPos().getCenter();
         if (!forced) {
-            player.teleportTo((ServerLevel) player.level(), lastBlockPos.x, lastBlockPos.y, lastBlockPos.z, player.getYRot(), player.getXRot());
-            player.teleportRelative(lastDir.x, lastDir.y, lastDir.z);
-            player.setDeltaMovement(lastDir.scale(travelData.getSpeed() + DEFAULT_MIN_SPEED));
+            if (entity.level() instanceof ServerLevel) {
+                entity.teleportTo((ServerLevel) entity.level(), lastBlockPos.x, lastBlockPos.y, lastBlockPos.z, RelativeMovement.ALL, entity.getYRot(), entity.getXRot());
+            }
+            entity.teleportRelative(lastDir.x, lastDir.y, lastDir.z);
+            entity.setDeltaMovement(lastDir.scale(travelData.getSpeed() + DEFAULT_MIN_SPEED));
         }
-        player.setPose(Pose.CROUCHING);
-        player.hurtMarked = true;
+        entity.setPose(Pose.CROUCHING);
+        entity.hurtMarked = true;
 
-        syncPersistentData(player);
-        TubeSoundManager.playTubeSuctionSound(player, player.position());
+        syncPersistentData(entity);
+        TubeSoundManager.playTubeSuctionSound(entity, entity.position());
     }
 
-    private static void handleServer(Player player) {
-        if (!travelDataMap.containsKey(player.getUUID())) {
-            if (!player.getPersistentData().getBoolean(TRAVEL_TAG)) return;
-            player.getPersistentData().putBoolean(TRAVEL_TAG, false);
+    private static void handleServer(LivingEntity entity) {
+        if (!travelDataMap.containsKey(entity.getUUID())) {
+            if (!entity.getPersistentData().getBoolean(TRAVEL_TAG)) return;
+            entity.getPersistentData().putBoolean(TRAVEL_TAG, false);
             return;
         }
-        handlePlayerTraveling(player);
+        handlePlayerTraveling(entity);
     }
 
-    private static void handlePlayerTraveling(Player player) {
-        TravelData travelData = travelDataMap.get(player.getUUID());
+    private static void handlePlayerTraveling(LivingEntity entity) {
+        TravelData travelData = travelDataMap.get(entity.getUUID());
         Vec3 currentPoint = travelData.getTravelPoint();
 
         if (travelData.isFinished()) {
-            finishTravel((ServerPlayer) player, travelData, false);
+            finishTravel(entity, travelData, false);
             return;
         }
 
-        if (player.isSpectator() || player.isDeadOrDying()) {
-            finishTravel((ServerPlayer) player, travelData, true);
+        if (entity.isSpectator() || entity.isDeadOrDying()) {
+            finishTravel(entity, travelData, true);
             return;
         }
 
-        player.resetFallDistance();
+        entity.resetFallDistance();
         currentPoint = currentPoint.subtract(0, 0.25, 0);
-        Vec3 playerPos = player.position();
+        Vec3 playerPos = entity.position();
         double speed = 0.5D + travelData.getSpeed();
 
         Vec3 nextPoint = getNextPointPreview(travelData, 0);
         if (nextPoint == null) {
             Vec3 direction = currentPoint.subtract(playerPos).normalize();
-            player.setDeltaMovement(direction.scale(speed));
-            player.hurtMarked = true;
+            entity.setDeltaMovement(direction.scale(speed));
+            entity.hurtMarked = true;
             return;
         }
 
@@ -238,16 +247,16 @@ public class TravelManager {
         Vec3 correctedMovement = idealMovement.add(actualMovement.subtract(idealMovement).scale(correctionStrength));
 
         if (distanceFromLine > DISTANCE_FROM_LINE_TP) {
-            //player.teleportTo((ServerLevel) player.level(), currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, RelativeMovement.ALL, player.getYRot(), player.getXRot());
-            player.moveTo(currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, player.getYRot(), player.getXRot());
+            //entity.teleportTo((ServerLevel) entity.level(), currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, RelativeMovement.ALL, entity.getYRot(), entity.getXRot());
+            entity.moveTo(currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, entity.getYRot(), entity.getXRot());
         } else if (correctedMovement.length() > 0.5) {
             Vec3 movementDirection = correctedMovement.normalize();
 
             double smoothingFactor = Math.max(0.3, 0.5 - distanceFromLine);
             movementDirection = movementDirection.add(finalDirection.subtract(movementDirection).scale(smoothingFactor)).normalize();
-            player.setDeltaMovement(movementDirection.scale(speed));
+            entity.setDeltaMovement(movementDirection.scale(speed));
         } else {
-            player.setDeltaMovement(finalDirection.scale(speed));
+            entity.setDeltaMovement(finalDirection.scale(speed));
         }
 
         if (shouldAdvanceWaypoint) {
@@ -260,13 +269,13 @@ public class TravelManager {
                 }
             }
         }
-        checkAndCorrectStuck(player, travelData);
+        checkAndCorrectStuck(entity, travelData);
 
-        player.hurtMarked = true;
+        entity.hurtMarked = true;
     }
 
 
-    private static void checkAndCorrectStuck(Player player, TravelData travelData) {
+    private static void checkAndCorrectStuck(LivingEntity player, TravelData travelData) {
         if (!travelData.hasNextTravelPoint()) return;
         if (player.tickCount % 5 != 0) return;
 
@@ -305,8 +314,9 @@ public class TravelManager {
     }
 
 
-    private static void syncPersistentData(ServerPlayer player) {
-        PlayerSyncEvents.syncPlayerStateToAll(player, true);
-        PacketDistributor.sendToPlayer(player, SyncPersistentDataPacket.create(player));
+    private static void syncPersistentData(LivingEntity entity) {
+        PlayerSyncEvents.syncPlayerStateToAll(entity, true);
+        if (entity instanceof ServerPlayer player)
+            PacketDistributor.sendToPlayer(player, SyncPersistentDataPacket.create(entity));
     }
 }

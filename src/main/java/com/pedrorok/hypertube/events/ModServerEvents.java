@@ -15,9 +15,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
-
-import java.util.ConcurrentModificationException;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 22/04/2025
@@ -27,16 +25,19 @@ import java.util.ConcurrentModificationException;
 public class ModServerEvents {
 
     @SubscribeEvent
-    public static void onPlayerTick(PlayerTickEvent.Post event) {
-        TravelManager.playerTick(event.getEntity());
+    public static void onEntityTick(EntityTickEvent.Post event) {
+        if (!(event.getEntity() instanceof LivingEntity living)) return;
+        if (!TravelConstants.ENTITIES_CAN_TRAVEL.contains(living.getType())) return;
+        TravelManager.entityTick(living);
         if (event.getEntity().level().isClientSide) {
             return;
         }
-        TubePlacement.tickPlayerServer(event.getEntity());
+        if (!(living instanceof Player player)) return;
+        TubePlacement.tickPlayerServer(player);
     }
 
     @SubscribeEvent
-    public static void playerHitboxChangesWhenInHypertube(EntityEvent.Size event) {
+    public static void entityHitBoxChangesWhenInHypertube(EntityEvent.Size event) {
         Entity entity = event.getEntity();
         if (!entity.isAddedToLevel())
             return;

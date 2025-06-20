@@ -1,4 +1,9 @@
 package com.pedrorok.hypertube.managers.travel;
+
+import net.minecraft.world.entity.EntityType;
+
+import java.util.Set;
+
 /**
  *
  * @project Create Hypertube
@@ -23,4 +28,9 @@ public class TravelConstants {
 
     public static final int LATENCY_THRESHOLD = 100; // ms
 
+    public static final Set<EntityType<?>> ENTITIES_CAN_TRAVEL = Set.of(
+            EntityType.PLAYER,
+            EntityType.VILLAGER,
+            EntityType.WANDERING_TRADER
+    );
 }
