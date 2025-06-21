@@ -33,6 +33,8 @@ public class TravelConstants {
             EntityType.PLAYER, TravellerEntity.ofBiped(),
             EntityType.VILLAGER, TravellerEntity.ofBiped(),
             EntityType.WANDERING_TRADER, TravellerEntity.ofBiped(),
-            EntityType.SALMON, TravellerEntity.ofFish(0.9f)
+            EntityType.SALMON, TravellerEntity.ofFish(0.9f),
+            EntityType.COD, TravellerEntity.ofFish(1f),
+            EntityType.TROPICAL_FISH, TravellerEntity.ofFish(1f)
     );
 }

@@ -47,16 +47,20 @@ public class TravelManager {
         boolean isPlayer = entity instanceof ServerPlayer;
         ServerPlayer player = isPlayer ? (ServerPlayer) entity : null;
 
-        if (isPlayer && player.connection.latency() > LATENCY_THRESHOLD) {
-            if (!entity.isShiftKeyDown()) {
-                MessageUtils.sendActionMessage(player, Component.translatable("hypertube.travel.latency")
-                        .append(" (")
-                        .append(Component.translatable("block.hypertube.hyper_entrance.sneak_to_enter"))
-                        .append(")")
-                        .withColor(0xff0000), true);
-                return;
+        if (isPlayer) {
+            if (player.connection.latency() > LATENCY_THRESHOLD) {
+                if (!entity.isShiftKeyDown()) {
+                    MessageUtils.sendActionMessage(player, Component.translatable("hypertube.travel.latency")
+                            .append(" (")
+                            .append(Component.translatable("block.hypertube.hyper_entrance.sneak_to_enter"))
+                            .append(")")
+                            .withColor(0xff0000), true);
+                    return;
+                }
+                MessageUtils.sendActionMessage(player, Component.empty(), true);
             }
-            MessageUtils.sendActionMessage(player, Component.empty(), true);
+        } else {
+            speed = speed * 0.5f;
         }
 
         long lastTravelTime = playerPersistData.getLong(LAST_TRAVEL_TIME);
