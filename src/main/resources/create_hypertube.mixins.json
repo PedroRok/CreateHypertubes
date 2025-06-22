@@ -12,7 +12,8 @@
   ],
   "client": [
     "CameraAccessorMixin",
-    "CameraMixin"
+    "CameraMixin",
+    "LocalPlayerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
