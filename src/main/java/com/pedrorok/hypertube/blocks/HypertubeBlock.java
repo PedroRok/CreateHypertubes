@@ -449,7 +449,17 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
         if (context.getPlayer() == null) return InteractionResult.PASS;
-        if (state.getValue(CONNECTED)) return InteractionResult.PASS;
+        Level level = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+        Player player = context.getPlayer();
+        level.playSound(player, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.75f, 1);
+        if (state.getValue(CONNECTED)) {
+
+            state = state.setValue(TUBE_SEGMENTS, state.getValue(TUBE_SEGMENTS) == 1 ? 2 : 1);
+            updateAfterWrenched(state, context);
+
+            return IWrenchable.super.onWrenched(state, context);
+        }
         if (state.getValue(EAST_WEST)) {
             state = state.setValue(EAST_WEST, false)
                     .setValue(UP_DOWN, true);
@@ -462,10 +472,6 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
         } else {
             state = getState(List.of(context.getClickedFace()), false);
         }
-        Level level = context.getLevel();
-        BlockPos pos = context.getClickedPos();
-        Player player = context.getPlayer();
-        level.playSound(player, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.75f, 1);
 
         return IWrenchable.super.onWrenched(state, context);
     }
