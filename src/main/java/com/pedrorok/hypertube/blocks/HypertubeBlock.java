@@ -77,7 +77,7 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(NORTH_SOUTH, EAST_WEST, UP_DOWN, CONNECTED);
+        builder.add(NORTH_SOUTH, EAST_WEST, UP_DOWN, CONNECTED, TUBE_SEGMENTS);
     }
 
     @Override

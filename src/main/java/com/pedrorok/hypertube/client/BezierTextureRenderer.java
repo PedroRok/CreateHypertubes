@@ -3,6 +3,7 @@ package com.pedrorok.hypertube.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.pedrorok.hypertube.HypertubeMod;
+import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.IBezierProvider;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.managers.connection.BezierConnection;
@@ -63,21 +64,22 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
 
         List<TubeRing> tubeGeometry = calculateAndCacheGeometry(bezierPoints);
 
+        int segmentDistance = blockEntity.getBlockState().getValue(HypertubeBlock.TUBE_SEGMENTS);
 
         VertexConsumer builderExterior = bufferSource.getBuffer(RenderType.entityTranslucentCull(textureTube));
-        renderComponent(builderExterior, pose, packedLight, packedOverlay, tubeGeometry, SectionType.EXTERIOR);
+        renderComponent(builderExterior, pose, packedLight, packedOverlay, tubeGeometry, SectionType.EXTERIOR, segmentDistance);
 
         VertexConsumer builderInterior = bufferSource.getBuffer(RenderType.entityTranslucent(textureTube));
-        renderComponent(builderInterior, pose, packedLight, packedOverlay, tubeGeometry, SectionType.INTERIOR);
+        renderComponent(builderInterior, pose, packedLight, packedOverlay, tubeGeometry, SectionType.INTERIOR, segmentDistance);
 
         VertexConsumer builderLine = bufferSource.getBuffer(RenderType.entityTranslucentCull(textureLine));
-        renderComponent(builderLine, pose, packedLight, packedOverlay, tubeGeometry, SectionType.LINE);
+        renderComponent(builderLine, pose, packedLight, packedOverlay, tubeGeometry, SectionType.LINE, segmentDistance);
 
         poseStack.popPose();
     }
 
     private void renderComponent(VertexConsumer builder, Matrix4f pose, int packedLight, int packedOverlay,
-                                 List<TubeRing> tubeGeometry, SectionType sectionType) {
+                                 List<TubeRing> tubeGeometry, SectionType sectionType, int segmentDistance) {
 
         if (tubeGeometry.size() < 2) return;
 
@@ -88,7 +90,8 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
 
         for (int i = 0; i < tubeGeometry.size() - 1; i++) {
 
-            if (skipLine && (i % 2 == 0 || i > tubeGeometry.size() - 3)) continue;
+            if (skipLine && (i % segmentDistance != 0 || (segmentDistance > 1 && i > tubeGeometry.size() - 3)))
+                continue;
 
             TubeRing current = tubeGeometry.get(i);
             TubeRing next = tubeGeometry.get(i + 1);
