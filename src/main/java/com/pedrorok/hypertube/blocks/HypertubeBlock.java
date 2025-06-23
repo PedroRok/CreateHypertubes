@@ -33,6 +33,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.TransparentBlock;
+import net.minecraft.world.level.block.WaterloggedTransparentBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -58,7 +59,7 @@ import java.util.Set;
  * @author Rok, Pedro Lucas nmm. Created on 21/05/2025
  * @project Create Hypertube
  */
-public class HypertubeBlock extends TransparentBlock implements TubeConnection, IBE<HypertubeBlockEntity>, IWrenchable {
+public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeConnection, IBE<HypertubeBlockEntity>, IWrenchable  {
 
     public static final BooleanProperty CONNECTED = BooleanProperty.create("connected");
     public static final BooleanProperty NORTH_SOUTH = BooleanProperty.create("north_south");
@@ -77,7 +78,7 @@ public class HypertubeBlock extends TransparentBlock implements TubeConnection, 
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(NORTH_SOUTH, EAST_WEST, UP_DOWN, CONNECTED, TUBE_SEGMENTS);
+        builder.add(NORTH_SOUTH, EAST_WEST, UP_DOWN, CONNECTED, TUBE_SEGMENTS, WATERLOGGED);
     }
 
     @Override
