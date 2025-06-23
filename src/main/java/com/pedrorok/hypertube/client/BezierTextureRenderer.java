@@ -90,7 +90,7 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
 
         for (int i = 0; i < tubeGeometry.size() - 1; i++) {
 
-            if (skipLine && (i % segmentDistance != 0 || (segmentDistance > 1 && i > tubeGeometry.size() - 3)))
+            if (skipLine && (i % segmentDistance != 0 || (segmentDistance > 1 && (i > tubeGeometry.size() - 3 || i == 0))) )
                 continue;
 
             TubeRing current = tubeGeometry.get(i);
@@ -183,7 +183,7 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
             List<Vector3f> ringInterior = generateRingOffsets(perpA, perpB, INNER_TUBE_RADIUS);
             List<Vector3f> ringLine = generateRingOffsets(perpA, perpB, LINE_RADIUS);
 
-            cachedGeometry.add(new TubeRing(currentPoint, ringExterior, ringInterior, ringLine, currentDistance / TILING_UNIT));
+            cachedGeometry.add(new TubeRing(currentPoint, ringExterior, ringInterior, ringLine, 0.8f / TILING_UNIT));
 
             if (i < points.size() - 1) {
                 currentDistance += (float) currentPoint.distanceTo(points.get(i + 1));
