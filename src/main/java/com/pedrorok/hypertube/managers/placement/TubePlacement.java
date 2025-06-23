@@ -174,7 +174,7 @@ public class TubePlacement {
             otherBlockEntity.setConnectionTo(connection);
         } else {
             tubeEntity.setConnectionTo(connection);
-            otherBlockEntity.setConnectionFrom(connection.getFromPos(), direction);
+            otherBlockEntity.setConnectionFrom(connection.getFromPos(), connection.getToPos().direction());
         }
 
         MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.success_conn")
