@@ -36,16 +36,16 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
     private static final int SEGMENTS_AROUND = 4;
     private static final float TILING_UNIT = 1f;
 
-    private final ResourceLocation textureLocation;
-    private final ResourceLocation texture2;
+    private final ResourceLocation textureTube;
+    private final ResourceLocation textureLine;
 
     public BezierTextureRenderer(BlockEntityRendererProvider.Context context) {
-        this.textureLocation = ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "textures/block/tube_base_glass.png");
-        this.texture2 = ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "textures/block/tube_base_glass_2.png");
+        this.textureTube = ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "textures/block/tube_base_glass.png");
+        this.textureLine = ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "textures/block/tube_base_glass_2.png");
     }
 
     @Override
-    public void render(HypertubeBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource,
+    public void render(HypertubeBlockEntity blockEntity, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource,
                        int packedLight, int packedOverlay) {
         BezierConnection connection = blockEntity.getBezierConnection();
         if (connection == null || !connection.getValidation().valid()) {
@@ -64,26 +64,32 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
         List<TubeRing> tubeGeometry = calculateAndCacheGeometry(bezierPoints);
 
 
-        VertexConsumer builderExterior = bufferSource.getBuffer(RenderType.entityTranslucentCull(textureLocation));
-        renderComponent(builderExterior, pose, packedLight, packedOverlay, tubeGeometry, INNER_TUBE_RADIUS, false, true, true);
+        VertexConsumer builderExterior = bufferSource.getBuffer(RenderType.entityTranslucentCull(textureTube));
+        renderComponent(builderExterior, pose, packedLight, packedOverlay, tubeGeometry, SectionType.EXTERIOR);
 
-        VertexConsumer builderInterior = bufferSource.getBuffer(RenderType.entityTranslucent(textureLocation));
-        renderComponent(builderInterior, pose, packedLight, packedOverlay, tubeGeometry, INNER_TUBE_RADIUS, true, false, false);
+        VertexConsumer builderInterior = bufferSource.getBuffer(RenderType.entityTranslucent(textureTube));
+        renderComponent(builderInterior, pose, packedLight, packedOverlay, tubeGeometry, SectionType.INTERIOR);
 
-        VertexConsumer builderLine = bufferSource.getBuffer(RenderType.entityTranslucentCull(texture2));
-        renderComponent(builderLine, pose, packedLight, packedOverlay, tubeGeometry, INNER_TUBE_RADIUS, false, false, true);
+        VertexConsumer builderLine = bufferSource.getBuffer(RenderType.entityTranslucentCull(textureLine));
+        renderComponent(builderLine, pose, packedLight, packedOverlay, tubeGeometry, SectionType.LINE);
 
         poseStack.popPose();
     }
 
     private void renderComponent(VertexConsumer builder, Matrix4f pose, int packedLight, int packedOverlay,
-                                 List<TubeRing> tubeGeometry, float radius, boolean invert, boolean exteriorTube, boolean doubleSided) {
+                                 List<TubeRing> tubeGeometry, SectionType sectionType) {
 
-        if (tubeGeometry.size() < 2) {
-            return;
-        }
+        if (tubeGeometry.size() < 2) return;
+
+        boolean interiorTube = sectionType.equals(SectionType.INTERIOR);
+        boolean exteriorTube = sectionType.equals(SectionType.EXTERIOR);
+        boolean skipLine = sectionType.equals(SectionType.EXTERIOR) || interiorTube;
+        boolean doubleSided = sectionType.equals(SectionType.LINE) || exteriorTube;
 
         for (int i = 0; i < tubeGeometry.size() - 1; i++) {
+
+            if (skipLine && (i % 2 == 0 || i > tubeGeometry.size() - 3)) continue;
+
             TubeRing current = tubeGeometry.get(i);
             TubeRing next = tubeGeometry.get(i + 1);
 
@@ -92,8 +98,8 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
             if (segmentLength < 1e-6) continue;
             Vector3f tangent = new Vector3f((float) dirVec.x, (float) dirVec.y, (float) dirVec.z).normalize();
 
-            List<Vector3f> currentOffsets = invert ? current.interiorOffsets() : (exteriorTube ? current.exteriorOffsets() : current.lineOffsets());
-            List<Vector3f> nextOffsets = invert ? next.interiorOffsets() : (exteriorTube ? next.exteriorOffsets() : next.lineOffsets());
+            List<Vector3f> currentOffsets = interiorTube ? current.interiorOffsets() : (exteriorTube ? current.exteriorOffsets() : current.lineOffsets());
+            List<Vector3f> nextOffsets = interiorTube ? next.interiorOffsets() : (exteriorTube ? next.exteriorOffsets() : next.lineOffsets());
 
             for (int j = 0; j < SEGMENTS_AROUND; j++) {
                 int nextJ = (j + 1) % SEGMENTS_AROUND;
@@ -101,36 +107,36 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
                 float uStart = current.uCoordinate();
 
                 Vector3f corner_j_movement = new Vector3f(
-                        (float)(next.center().x + nextOffsets.get(j).x) - (float)(current.center().x + currentOffsets.get(j).x),
-                        (float)(next.center().y + nextOffsets.get(j).y) - (float)(current.center().y + currentOffsets.get(j).y),
-                        (float)(next.center().z + nextOffsets.get(j).z) - (float)(current.center().z + currentOffsets.get(j).z)
+                        (float) (next.center().x + nextOffsets.get(j).x) - (float) (current.center().x + currentOffsets.get(j).x),
+                        (float) (next.center().y + nextOffsets.get(j).y) - (float) (current.center().y + currentOffsets.get(j).y),
+                        (float) (next.center().z + nextOffsets.get(j).z) - (float) (current.center().z + currentOffsets.get(j).z)
                 );
                 float uEnd_j = uStart + (corner_j_movement.dot(tangent) / TILING_UNIT);
                 Vector3f corner_nextJ_movement = new Vector3f(
-                        (float)(next.center().x + nextOffsets.get(nextJ).x) - (float)(current.center().x + currentOffsets.get(nextJ).x),
-                        (float)(next.center().y + nextOffsets.get(nextJ).y) - (float)(current.center().y + currentOffsets.get(nextJ).y),
-                        (float)(next.center().z + nextOffsets.get(nextJ).z) - (float)(current.center().z + currentOffsets.get(nextJ).z)
+                        (float) (next.center().x + nextOffsets.get(nextJ).x) - (float) (current.center().x + currentOffsets.get(nextJ).x),
+                        (float) (next.center().y + nextOffsets.get(nextJ).y) - (float) (current.center().y + currentOffsets.get(nextJ).y),
+                        (float) (next.center().z + nextOffsets.get(nextJ).z) - (float) (current.center().z + currentOffsets.get(nextJ).z)
                 );
                 float uEnd_nextJ = uStart + (corner_nextJ_movement.dot(tangent) / TILING_UNIT);
 
                 float vStart = 0, vEnd = 1;
                 if (doubleSided) {
-                    addVertex(builder, pose, current.center(), currentOffsets.get(nextJ), uStart, vEnd, packedLight, packedOverlay, radius, false);
-                    addVertex(builder, pose, next.center(), nextOffsets.get(nextJ), uEnd_nextJ, vEnd, packedLight, packedOverlay, radius, false);
-                    addVertex(builder, pose, next.center(), nextOffsets.get(j), uEnd_j, vStart, packedLight, packedOverlay, radius, false);
-                    addVertex(builder, pose, current.center(), currentOffsets.get(j), uStart, vStart, packedLight, packedOverlay, radius, false);
+                    addVertex(builder, pose, current.center(), currentOffsets.get(nextJ), uStart, vEnd, packedLight, packedOverlay, false);
+                    addVertex(builder, pose, next.center(), nextOffsets.get(nextJ), uEnd_nextJ, vEnd, packedLight, packedOverlay, false);
+                    addVertex(builder, pose, next.center(), nextOffsets.get(j), uEnd_j, vStart, packedLight, packedOverlay, false);
+                    addVertex(builder, pose, current.center(), currentOffsets.get(j), uStart, vStart, packedLight, packedOverlay, false);
                 }
 
-                if (invert) {
-                    addVertex(builder, pose, current.center(), currentOffsets.get(nextJ), uStart, vEnd, packedLight, packedOverlay, radius, true);
-                    addVertex(builder, pose, next.center(), nextOffsets.get(nextJ), uEnd_nextJ, vEnd, packedLight, packedOverlay, radius, true);
-                    addVertex(builder, pose, next.center(), nextOffsets.get(j), uEnd_j, vStart, packedLight, packedOverlay, radius, true);
-                    addVertex(builder, pose, current.center(), currentOffsets.get(j), uStart, vStart, packedLight, packedOverlay, radius, true);
+                if (interiorTube) {
+                    addVertex(builder, pose, current.center(), currentOffsets.get(nextJ), uStart, vEnd, packedLight, packedOverlay, true);
+                    addVertex(builder, pose, next.center(), nextOffsets.get(nextJ), uEnd_nextJ, vEnd, packedLight, packedOverlay, true);
+                    addVertex(builder, pose, next.center(), nextOffsets.get(j), uEnd_j, vStart, packedLight, packedOverlay, true);
+                    addVertex(builder, pose, current.center(), currentOffsets.get(j), uStart, vStart, packedLight, packedOverlay, true);
                 } else {
-                    addVertex(builder, pose, current.center(), currentOffsets.get(j), uStart, vStart, packedLight, packedOverlay, radius, doubleSided);
-                    addVertex(builder, pose, next.center(), nextOffsets.get(j), uEnd_j, vStart, packedLight, packedOverlay, radius, doubleSided);
-                    addVertex(builder, pose, next.center(), nextOffsets.get(nextJ), uEnd_nextJ, vEnd, packedLight, packedOverlay, radius, doubleSided);
-                    addVertex(builder, pose, current.center(), currentOffsets.get(nextJ), uStart, vEnd, packedLight, packedOverlay, radius, doubleSided);
+                    addVertex(builder, pose, current.center(), currentOffsets.get(j), uStart, vStart, packedLight, packedOverlay, doubleSided);
+                    addVertex(builder, pose, next.center(), nextOffsets.get(j), uEnd_j, vStart, packedLight, packedOverlay, doubleSided);
+                    addVertex(builder, pose, next.center(), nextOffsets.get(nextJ), uEnd_nextJ, vEnd, packedLight, packedOverlay, doubleSided);
+                    addVertex(builder, pose, current.center(), currentOffsets.get(nextJ), uStart, vEnd, packedLight, packedOverlay, doubleSided);
                 }
             }
         }
@@ -147,9 +153,9 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
 
             Vector3f tangent;
             if (i == points.size() - 1) {
-                tangent = new Vector3f((float) (currentPoint.x - points.get(i-1).x), (float) (currentPoint.y - points.get(i-1).y), (float) (currentPoint.z - points.get(i-1).z));
+                tangent = new Vector3f((float) (currentPoint.x - points.get(i - 1).x), (float) (currentPoint.y - points.get(i - 1).y), (float) (currentPoint.z - points.get(i - 1).z));
             } else {
-                tangent = new Vector3f((float) (points.get(i+1).x - currentPoint.x), (float) (points.get(i+1).y - currentPoint.y), (float) (points.get(i+1).z - currentPoint.z));
+                tangent = new Vector3f((float) (points.get(i + 1).x - currentPoint.x), (float) (points.get(i + 1).y - currentPoint.y), (float) (points.get(i + 1).z - currentPoint.z));
             }
             tangent.normalize();
 
@@ -177,22 +183,22 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
             cachedGeometry.add(new TubeRing(currentPoint, ringExterior, ringInterior, ringLine, currentDistance / TILING_UNIT));
 
             if (i < points.size() - 1) {
-                currentDistance += (float) currentPoint.distanceTo(points.get(i+1));
+                currentDistance += (float) currentPoint.distanceTo(points.get(i + 1));
             }
         }
         return cachedGeometry;
     }
 
     private void addVertex(VertexConsumer builder, Matrix4f pose,
-                           Vec3 pos, Vector3f offset, float u, float v, int light, int overlay, float radius, boolean invertNormal) {
+                           Vec3 pos, Vector3f offset, float u, float v, int light, int overlay, boolean invertNormal) {
         float x = (float) pos.x + offset.x;
         float y = (float) pos.y + offset.y;
         float z = (float) pos.z + offset.z;
 
         float normalMultiplier = invertNormal ? -1.0f : 1.0f;
-        float nx = (offset.x / radius) * normalMultiplier;
-        float ny = (offset.y / radius) * normalMultiplier;
-        float nz = (offset.z / radius) * normalMultiplier;
+        float nx = offset.x * normalMultiplier;
+        float ny = offset.y * normalMultiplier;
+        float nz = offset.z * normalMultiplier;
 
         builder.addVertex(pose, x, y, z)
                 .setColor(255, 255, 255, 255)
@@ -218,6 +224,7 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
         }
         return ring;
     }
+
     private Vector3f rotateAroundAxis(Vector3f vec, Vector3f axis, float angle) {
         float cos = Mth.cos(angle);
         float sin = Mth.sin(angle);
@@ -252,9 +259,19 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
     }
 
     @Override
-    public boolean shouldRenderOffScreen(@NotNull HypertubeBlockEntity blockEntity) { return true; }
+    public boolean shouldRenderOffScreen(@NotNull HypertubeBlockEntity blockEntity) {
+        return true;
+    }
+
     @Override
-    public boolean shouldRender(@NotNull HypertubeBlockEntity blockEntity, @NotNull Vec3 pos) { return true; }
+    public boolean shouldRender(@NotNull HypertubeBlockEntity blockEntity, @NotNull Vec3 pos) {
+        return true;
+    }
+
     @Override
-    public @NotNull AABB getRenderBoundingBox(@NotNull HypertubeBlockEntity blockEntity) { return AABB.INFINITE; }
+    public @NotNull AABB getRenderBoundingBox(@NotNull HypertubeBlockEntity blockEntity) {
+        return AABB.INFINITE;
+    }
+
+    private enum SectionType {EXTERIOR, INTERIOR, LINE}
 }
