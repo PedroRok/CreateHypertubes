@@ -1,8 +1,9 @@
-package com.pedrorok.hypertube.managers.connection;
+package com.pedrorok.hypertube.core.connection;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.pedrorok.hypertube.managers.placement.ResponseDTO;
+import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
+import com.pedrorok.hypertube.core.placement.ResponseDTO;
 import com.pedrorok.hypertube.utils.CodecUtils;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
@@ -13,6 +14,7 @@ import net.createmod.catnip.theme.Color;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -253,6 +255,25 @@ public class BezierConnection implements IConnection {
         return new BezierConnection(new SimpleConnection(toPos.pos(), toPos.direction().getOpposite()), fromPos, newBezier);
     }
 
+    @Override
+    public BezierConnection getThisEntranceConnection(Level level) {
+        return this;
+    }
+
+    @Override
+    public Direction getThisEntranceDirection(Level level) {
+        return fromPos.direction();
+    }
+
+    @Override
+    public boolean isSameConnection(IConnection connection) {
+        return fromPos.isSameConnection(connection) || connection.equals(this);
+    }
+
+    @Override
+    public SimpleConnection getThisConnection() {
+        return getFromPos();
+    }
 
     @Override
     public String toString() {

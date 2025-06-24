@@ -1,4 +1,4 @@
-package com.pedrorok.hypertube.managers.sound;
+package com.pedrorok.hypertube.core.sound;
 
 import lombok.Setter;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;

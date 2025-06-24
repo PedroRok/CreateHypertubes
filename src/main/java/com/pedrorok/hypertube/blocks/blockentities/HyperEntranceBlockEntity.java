@@ -1,9 +1,9 @@
 package com.pedrorok.hypertube.blocks.blockentities;
 
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
-import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
-import com.pedrorok.hypertube.managers.travel.TravelConstants;
-import com.pedrorok.hypertube.managers.travel.TravelManager;
+import com.pedrorok.hypertube.core.sound.TubeSoundManager;
+import com.pedrorok.hypertube.core.travel.TravelConstants;
+import com.pedrorok.hypertube.core.travel.TravelManager;
 import com.pedrorok.hypertube.registry.ModSounds;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
 import com.simibubi.create.content.kinetics.base.IRotate;

@@ -1,10 +1,10 @@
-package com.pedrorok.hypertube.managers.travel;
+package com.pedrorok.hypertube.core.travel;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.config.ClientConfig;
 import com.pedrorok.hypertube.events.PlayerSyncEvents;
-import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
+import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
 import com.pedrorok.hypertube.utils.MessageUtils;
 import net.minecraft.client.CameraType;
@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.pedrorok.hypertube.managers.travel.TravelConstants.*;
+import static com.pedrorok.hypertube.core.travel.TravelConstants.*;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 22/04/2025

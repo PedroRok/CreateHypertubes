@@ -1,7 +1,6 @@
 package com.pedrorok.hypertube.mixin.core;
 
-import com.pedrorok.hypertube.managers.travel.TravelConstants;
-import net.minecraft.world.entity.Entity;
+import com.pedrorok.hypertube.core.travel.TravelConstants;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;

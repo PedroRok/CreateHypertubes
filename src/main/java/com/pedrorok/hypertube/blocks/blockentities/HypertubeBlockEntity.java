@@ -1,17 +1,15 @@
 package com.pedrorok.hypertube.blocks.blockentities;
 
+import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
-import com.pedrorok.hypertube.blocks.IBezierProvider;
-import com.pedrorok.hypertube.managers.connection.BezierConnection;
-import com.pedrorok.hypertube.managers.connection.SimpleConnection;
-import com.simibubi.create.api.contraption.transformable.TransformableBlockEntity;
-import com.simibubi.create.content.contraptions.StructureTransform;
+import com.pedrorok.hypertube.core.connection.*;
+import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.TubeConnectionEntity;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.Block;
@@ -19,6 +17,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,52 +27,16 @@ import java.util.List;
  * @project Create Hypertube
  */
 @Getter
-public class HypertubeBlockEntity extends BlockEntity implements TransformableBlockEntity, IBezierProvider {
+public class HypertubeBlockEntity extends BlockEntity implements TubeConnectionEntity {
 
-    private BezierConnection connectionTo;
-    private SimpleConnection connectionFrom;
+    private IConnection connectionOne;
+    private IConnection connectionTwo;
 
     public HypertubeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
-    public void setConnectionTo(BezierConnection connection) {
-        this.connectionTo = connection;
-        if (level != null && !level.isClientSide()) {
-            if (level.getBlockState(worldPosition).getBlock() instanceof HypertubeBlock hypertubeBlock) {
-                hypertubeBlock.updateBlockStateFromEntity(level, worldPosition);
-            }
-        }
-        setChanged();
-        sync();
-    }
-
-    public void setConnectionFrom(SimpleConnection connectionFrom, Direction direction) {
-        this.connectionFrom = connectionFrom;
-
-        if (level != null && !level.isClientSide()) {
-            if (level.getBlockState(worldPosition).getBlock() instanceof HypertubeBlock hypertubeBlock) {
-                hypertubeBlock.updateBlockStateFromEntity(level, worldPosition);
-                if (direction != null) {
-                    BlockState state = hypertubeBlock.getState(List.of(direction), true);
-                    hypertubeBlock.updateBlockState(level, worldPosition, state);
-                }
-            }
-        }
-        setChanged();
-        sync();
-    }
-
-    public boolean isConnected() {
-        return connectionTo != null || connectionFrom != null;
-    }
-
-    public void sync() {
-        if (level != null && !level.isClientSide) {
-            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_ALL);
-        }
-    }
-
+    // --------- Nbt Methods ---------
     @Override
     protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
         super.saveAdditional(tag, registries);
@@ -81,14 +44,7 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
     }
 
     private void writeConnection(CompoundTag tag) {
-        if (connectionTo != null) {
-            tag.put("ConnectionTo", BezierConnection.CODEC.encodeStart(NbtOps.INSTANCE, connectionTo)
-                    .getOrThrow());
-        }
-        if (connectionFrom != null) {
-            tag.put("ConnectionFrom", SimpleConnection.CODEC.encodeStart(NbtOps.INSTANCE, connectionFrom)
-                    .getOrThrow());
-        }
+        writeConnection(tag, connectionOne, connectionTwo);
     }
 
     @Override
@@ -96,17 +52,36 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
         super.loadAdditional(tag, registries);
 
         if (tag.contains("ConnectionTo")) {
-            this.connectionTo = BezierConnection.CODEC.parse(NbtOps.INSTANCE, tag.get("ConnectionTo"))
-                    .getOrThrow();
+            this.connectionOne = getConnection(tag, "ConnectionTo");
         }
         if (tag.contains("ConnectionFrom")) {
-            this.connectionFrom = SimpleConnection.CODEC.parse(NbtOps.INSTANCE, tag.get("ConnectionFrom"))
-                    .getOrThrow();
+            this.connectionTwo = getConnection(tag, "ConnectionFrom");
         }
     }
 
+    @Override
+    public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registries) {
+        CompoundTag tag = super.getUpdateTag(registries);
+        saveAdditional(tag, registries);
+        return tag;
+    }
+
+    @Override
+    public @NotNull ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void onDataPacket(@NotNull Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.@NotNull Provider registries) {
+        CompoundTag tag = pkt.getTag();
+        loadAdditional(tag, registries);
+    }
+    // --------- Nbt Methods ---------
+
     public List<Direction> getFacesConnectable() {
-        if (connectionTo != null && connectionFrom != null) return List.of();
+
+        // TODO: Refactor
+        if (connectionOne != null && connectionTwo != null) return List.of();
 
         List<Direction> possibleDirections = new ArrayList<>();
 
@@ -130,22 +105,15 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
         }
 
         possibleDirections.removeIf(direction -> {
-            if (level.getBlockState(worldPosition.relative(direction)).getBlock() instanceof HypertubeBlock) {
-                return true;
+
+            if (connectionOne != null) {
+                Direction thisConn = connectionOne.getThisEntranceDirection(level);
+                return thisConn != null && thisConn.equals(direction);
             }
 
-            if (connectionTo != null && connectionTo.getFromPos().direction().equals(direction)) {
-                return true;
-            }
-
-            if (connectionFrom != null) {
-                BlockEntity blockEntity = level.getBlockEntity(connectionFrom.pos());
-                if (blockEntity instanceof HypertubeBlockEntity hypertubeBlockEntity
-                    && hypertubeBlockEntity.getConnectionTo() != null
-                    && hypertubeBlockEntity.getConnectionTo().getToPos().pos().equals(this.worldPosition)
-                    && hypertubeBlockEntity.getConnectionTo().getToPos().direction().getOpposite().equals(direction)) {
-                    return true;
-                }
+            if (connectionTwo != null) {
+                Direction thisConn = connectionTwo.getThisEntranceDirection(level);
+                return thisConn != null && thisConn.equals(direction);
             }
 
             return false;
@@ -154,30 +122,107 @@ public class HypertubeBlockEntity extends BlockEntity implements TransformableBl
         return possibleDirections;
     }
 
+
     @Override
-    public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registries) {
-        CompoundTag tag = super.getUpdateTag(registries);
-        saveAdditional(tag, registries);
-        return tag;
+    public @Nullable IConnection getConnectionInDirection(Direction direction) {
+        if (connectionOne != null) {
+            Direction thisConn = connectionOne.getThisEntranceDirection(level);
+            if (thisConn != null && thisConn.equals(direction)) {
+                return connectionOne;
+            }
+        }
+        if (connectionTwo != null) {
+            Direction thisConn = connectionTwo.getThisEntranceDirection(level);
+            if (thisConn != null && thisConn.equals(direction)) {
+                return connectionTwo;
+            }
+        }
+        return null;
     }
 
     @Override
-    public @NotNull ClientboundBlockEntityDataPacket getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this);
+    public @Nullable IConnection getThisConnectionFrom(SimpleConnection connection) {
+        if (connectionOne instanceof BezierConnection bezierConnection) {
+            if (connection.isSameConnection(bezierConnection.getFromPos()))
+                return bezierConnection;
+        }
+        if (connectionTwo instanceof BezierConnection bezierConnection) {
+            if (connection.isSameConnection(bezierConnection.getFromPos()))
+                return bezierConnection;
+        }
+        return null;
     }
 
     @Override
-    public void onDataPacket(@NotNull Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.@NotNull Provider registries) {
-        CompoundTag tag = pkt.getTag();
-        loadAdditional(tag, registries);
+    public boolean hasConnectionAvailable() {
+        return connectionTwo == null || connectionOne == null;
+    }
+
+    public boolean isConnected() {
+        return connectionOne != null || connectionTwo != null;
     }
 
     @Override
-    public void transform(BlockEntity blockEntity, StructureTransform transform) {
+    public void setConnection(IConnection connection, Direction thisConnectionDir) {
+        if (connectionOne == null) {
+            connectionOne = connection;
+        } else if (connectionTwo == null) {
+            connectionTwo = connection;
+        } else {
+            throw new IllegalStateException("HypertubeBlockEntity already has two connections set.");
+        }
+        if (level != null && !level.isClientSide()) {
+            if (level.getBlockState(worldPosition).getBlock() instanceof HypertubeBlock hypertubeBlock) {
+                hypertubeBlock.updateBlockStateFromEntity(level, worldPosition);
+                if (thisConnectionDir != null) {
+                    BlockState state = hypertubeBlock.getState(List.of(thisConnectionDir), true);
+                    hypertubeBlock.updateBlockState(level, worldPosition, state);
+                }
+            }
+        }
+        setChanged();
+        sync();
     }
 
     @Override
-    public BezierConnection getBezierConnection() {
-        return connectionTo;
+    public void clearConnection(IConnection connection) {
+        if (connectionOne != null && connectionOne.isSameConnection(connection)) {
+            connectionOne = null;
+        } else if (connectionTwo != null && connectionTwo.isSameConnection(connection)) {
+            connectionTwo = null;
+        } else {
+            try {
+                throw new TubeConnectionException("Connection could not be cleared", connection, connectionOne, connectionTwo);
+            } catch (TubeConnectionException e) {
+                HypertubeMod.LOGGER.error(e.getMessage());
+                return;
+            }
+        }
+
+        if (level != null && !level.isClientSide()) {
+            if (level.getBlockState(worldPosition).getBlock() instanceof HypertubeBlock hypertubeBlock) {
+                hypertubeBlock.updateBlockStateFromEntity(level, worldPosition);
+            }
+        }
+        setChanged();
+        sync();
+    }
+
+    @Override
+    public int blockBroken() {
+        int toDrop = 0;
+        if (connectionOne != null) {
+            toDrop = blockBroken(level, connectionOne, worldPosition);
+        }
+        if (connectionTwo != null) {
+            toDrop += blockBroken(level, connectionTwo, worldPosition);
+        }
+        return toDrop;
+    }
+
+    public void sync() {
+        if (level != null && !level.isClientSide) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_ALL);
+        }
     }
 }

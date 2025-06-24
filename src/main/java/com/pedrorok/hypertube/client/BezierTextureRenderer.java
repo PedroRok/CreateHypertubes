@@ -4,9 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
-import com.pedrorok.hypertube.blocks.IBezierProvider;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
-import com.pedrorok.hypertube.managers.connection.BezierConnection;
+import com.pedrorok.hypertube.core.connection.BezierConnection;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -29,7 +28,7 @@ import java.util.List;
  * @project Create Hypertube
  */
 @OnlyIn(Dist.CLIENT)
-public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEntityRenderer<HypertubeBlockEntity> {
+public class BezierTextureRenderer implements BlockEntityRenderer<HypertubeBlockEntity> {
 
     private static final float TUBE_RADIUS = 0.7F;
     private static final float INNER_TUBE_RADIUS = 0.62F;
@@ -46,9 +45,16 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
     }
 
     @Override
-    public void render(HypertubeBlockEntity blockEntity, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource,
-                       int packedLight, int packedOverlay) {
-        BezierConnection connection = blockEntity.getBezierConnection();
+    public void render(HypertubeBlockEntity blockEntity, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+        if (blockEntity.getConnectionOne() instanceof BezierConnection bezierConnectionOne) {
+            renderBezierConnection(blockEntity, bezierConnectionOne, poseStack, bufferSource, packedLight, packedOverlay);
+        }
+        if (blockEntity.getConnectionTwo() instanceof BezierConnection bezierConnectionTwo) {
+            renderBezierConnection(blockEntity, bezierConnectionTwo, poseStack, bufferSource, packedLight, packedOverlay);
+        }
+    }
+
+    private void renderBezierConnection(HypertubeBlockEntity blockEntity, BezierConnection connection, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
         if (connection == null || !connection.getValidation().valid()) {
             return;
         }
@@ -90,7 +96,7 @@ public class BezierTextureRenderer<T extends IBezierProvider> implements BlockEn
 
         for (int i = 0; i < tubeGeometry.size() - 1; i++) {
 
-            if (skipLine && (i % segmentDistance != 0 || (segmentDistance > 1 && (i > tubeGeometry.size() - 3 || i == 0))) )
+            if (skipLine && (i % segmentDistance != 0 || (segmentDistance > 1 && (i > tubeGeometry.size() - 3 || i == 0))))
                 continue;
 
             TubeRing current = tubeGeometry.get(i);

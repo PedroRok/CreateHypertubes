@@ -1,8 +1,7 @@
 package com.pedrorok.hypertube.mixin.core;
 
-import com.pedrorok.hypertube.managers.travel.TravelConstants;
+import com.pedrorok.hypertube.core.travel.TravelConstants;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

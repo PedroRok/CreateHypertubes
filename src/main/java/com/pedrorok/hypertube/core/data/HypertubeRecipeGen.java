@@ -1,4 +1,4 @@
-package com.pedrorok.hypertube.data;
+package com.pedrorok.hypertube.core.data;
 
 import com.google.common.base.Supplier;
 import com.pedrorok.hypertube.registry.ModBlocks;

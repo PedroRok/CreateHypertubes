@@ -2,11 +2,10 @@ package com.pedrorok.hypertube.events;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import com.pedrorok.hypertube.managers.camera.DetachedCameraController;
-import com.pedrorok.hypertube.managers.placement.TubePlacement;
-import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
-import com.pedrorok.hypertube.managers.travel.TravelConstants;
+import com.pedrorok.hypertube.core.camera.DetachedCameraController;
+import com.pedrorok.hypertube.core.placement.TubePlacement;
+import com.pedrorok.hypertube.core.sound.TubeSoundManager;
+import com.pedrorok.hypertube.core.travel.TravelConstants;
 import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.minecraft.client.Minecraft;

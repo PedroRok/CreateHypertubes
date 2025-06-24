@@ -1,6 +1,6 @@
 package com.pedrorok.hypertube.mixin.core;
 
-import com.pedrorok.hypertube.managers.travel.TravelConstants;
+import com.pedrorok.hypertube.core.travel.TravelConstants;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.world.entity.LivingEntity;

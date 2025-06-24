@@ -1,6 +1,6 @@
-package com.pedrorok.hypertube.managers.sound;
+package com.pedrorok.hypertube.core.sound;
 
-import com.pedrorok.hypertube.managers.camera.DetachedCameraController;
+import com.pedrorok.hypertube.core.camera.DetachedCameraController;
 import com.pedrorok.hypertube.registry.ModSounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;

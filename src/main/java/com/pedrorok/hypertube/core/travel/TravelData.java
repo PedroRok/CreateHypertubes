@@ -1,22 +1,18 @@
-package com.pedrorok.hypertube.managers.travel;
+package com.pedrorok.hypertube.core.travel;
 
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
-import com.pedrorok.hypertube.blocks.TubeConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.TubeConnection;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
-import com.pedrorok.hypertube.managers.connection.BezierConnection;
-import com.pedrorok.hypertube.managers.connection.SimpleConnection;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -101,17 +97,17 @@ public class TravelData {
 
     private boolean addCurvedTravelPoint(BlockPos pos, Level level) {
         if (!(level.getBlockEntity(pos) instanceof HypertubeBlockEntity hypertubeBlockEntity)) return false;
-        BezierConnection connection = hypertubeBlockEntity.getConnectionTo();
+        /*BezierConnection connection = hypertubeBlockEntity.getConnectionOne();
         boolean inverse = false;
         if (connection == null
             || bezierConnections.contains(connection.getUuid())) {
-            SimpleConnection connectionFrom = hypertubeBlockEntity.getConnectionFrom();
+            SimpleConnection connectionFrom = hypertubeBlockEntity.getConnectionTwo();
             if (connectionFrom == null) {
                 return false;
             }
             BlockEntity blockEntity = level.getBlockEntity(connectionFrom.pos());
             if (!(blockEntity instanceof HypertubeBlockEntity fromTube)) return false;
-            BezierConnection fromTubeBezier = fromTube.getConnectionTo();
+            BezierConnection fromTubeBezier = fromTube.getConnectionOne();
             if (fromTubeBezier == null) return false;
             if (bezierConnections.contains(fromTubeBezier.getUuid())) return false;
             connection = fromTubeBezier;
@@ -137,7 +133,7 @@ public class TravelData {
             blockConnections.add(toPosFinal);
         if (!blockConnections.contains(fromPosFinal))
             blockConnections.add(fromPosFinal);
-        addTravelPoint(toPosFinal, level);
+        addTravelPoint(toPosFinal, level);*/
         return true;
     }
 

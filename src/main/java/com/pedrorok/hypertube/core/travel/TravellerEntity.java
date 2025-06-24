@@ -1,4 +1,4 @@
-package com.pedrorok.hypertube.managers.travel;
+package com.pedrorok.hypertube.core.travel;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -6,7 +6,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 20/06/2025

@@ -1,9 +1,11 @@
 package com.pedrorok.hypertube.blocks;
 
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
-import com.pedrorok.hypertube.managers.connection.BezierConnection;
-import com.pedrorok.hypertube.managers.connection.SimpleConnection;
-import com.pedrorok.hypertube.managers.travel.TravelConstants;
+import com.pedrorok.hypertube.core.connection.*;
+import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.TubeConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.TubeConnectionEntity;
+import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModDataComponent;
@@ -32,7 +34,6 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.WaterloggedTransparentBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -59,7 +60,7 @@ import java.util.Set;
  * @author Rok, Pedro Lucas nmm. Created on 21/05/2025
  * @project Create Hypertube
  */
-public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeConnection, IBE<HypertubeBlockEntity>, IWrenchable  {
+public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeConnection, IBE<HypertubeBlockEntity>, IWrenchable {
 
     public static final BooleanProperty CONNECTED = BooleanProperty.create("connected");
     public static final BooleanProperty NORTH_SOUTH = BooleanProperty.create("north_south");
@@ -139,30 +140,24 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
             return getState(world, pos);
         }
 
-        BezierConnection connTo = hypertube.getConnectionTo();
+        // TODO: Refactor
+
+        IConnection connTo = hypertube.getConnectionOne();
         if (connTo != null) {
-            Direction dirTo = connTo.getFromPos().direction();
+            Direction dirTo = connTo.getThisEntranceDirection(world);
             if (dirTo != null) {
                 return getState(Set.of(dirTo), true);
             }
         }
 
-        SimpleConnection connFrom = hypertube.getConnectionFrom();
+        IConnection connFrom = hypertube.getConnectionTwo();
         if (connFrom == null) {
             return getState(world, pos);
         }
 
-        BlockEntity otherBE = world.getBlockEntity(connFrom.pos());
+        BlockEntity otherBE = world.getBlockEntity(connFrom.getThisConnection().pos());
         if (!(otherBE instanceof HypertubeBlockEntity other)) {
             return getState(world, pos);
-        }
-
-        BezierConnection otherTo = other.getConnectionTo();
-        if (otherTo != null) {
-            Direction dirFrom = otherTo.getToPos().direction();
-            if (dirFrom != null) {
-                return getState(Set.of(dirFrom), true);
-            }
         }
         return getState(world, pos);
     }
@@ -280,32 +275,10 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
 
     private BlockState playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Player player, boolean wrenched) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof HypertubeBlockEntity hypertubeEntity))
+        if (!(blockEntity instanceof TubeConnectionEntity tube))
             return super.playerWillDestroy(level, pos, state, player);
 
-        SimpleConnection connectionFrom = hypertubeEntity.getConnectionFrom();
-        BezierConnection connectionTo = hypertubeEntity.getConnectionTo();
-
-        int toDrop = 0;
-        if (connectionFrom != null) {
-            BlockPos otherPos = connectionFrom.pos();
-            BlockEntity otherBlock = level.getBlockEntity(otherPos);
-            if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity
-                && otherHypertubeEntity.getConnectionTo() != null) {
-                toDrop += (int) otherHypertubeEntity.getConnectionTo().distance();
-                otherHypertubeEntity.setConnectionTo(null);
-            }
-        }
-
-        if (connectionTo != null) {
-            BlockPos otherPos = connectionTo.getToPos().pos();
-            BlockEntity otherBlock = level.getBlockEntity(otherPos);
-            if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity
-                && otherHypertubeEntity.getConnectionFrom() != null) {
-                toDrop += (int) connectionTo.distance();
-                otherHypertubeEntity.setConnectionFrom(null, null);
-            }
-        }
+        int toDrop = tube.blockBroken();
 
         if (!player.isCreative()) {
             if (toDrop != 0 || wrenched) {
@@ -327,7 +300,7 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
         if (level.isClientSide()) return;
 
         BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof HypertubeBlockEntity hypertubeEntity)) return;
+        if (!(blockEntity instanceof TubeConnectionEntity thisConnection)) return;
         if (!stack.hasFoil()) {
             level.playSound(null, pos, getSoundType(state, level, pos, placer).getPlaceSound(), SoundSource.BLOCKS,
                     1, level.random.nextFloat() * 0.1f + 0.9f);
@@ -346,31 +319,19 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
                     1, 0.5f);
             return;
         }
+        BlockEntity otherBlockEntity = level.getBlockEntity(connectionFrom.pos());
+        if (!(otherBlockEntity instanceof TubeConnectionEntity otherConnection)) return;
 
         level.playSound(null, pos, getSoundType(state, level, pos, placer).getPlaceSound(), SoundSource.BLOCKS,
                 1, level.random.nextFloat() * 0.1f + 0.9f);
 
-        BlockEntity otherBlockEntity = level.getBlockEntity(connectionFrom.pos());
-        boolean inverted = false;
-
-        if (otherBlockEntity instanceof HypertubeBlockEntity otherHypertubeEntity) {
-            if (otherHypertubeEntity.getConnectionTo() == null) {
-                otherHypertubeEntity.setConnectionTo(bezierConnection);
-            } else if (otherHypertubeEntity.getConnectionFrom() == null) {
-                bezierConnection = bezierConnection.invert();
-                connectionTo = bezierConnection.getFromPos();
-                otherHypertubeEntity.setConnectionFrom(connectionTo, bezierConnection.getToPos().direction());
-                inverted = true;
-            } else {
-                MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.invalid_conn").withColor(0xFF0000), true);
-                return;
-            }
+        if (!otherConnection.hasConnectionAvailable()) {
+            MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.invalid_conn").withColor(0xFF0000), true);
+            return;
         }
 
-        if (inverted)
-            hypertubeEntity.setConnectionTo(bezierConnection);
-        else
-            hypertubeEntity.setConnectionFrom(connectionFrom, bezierConnection.getToPos().direction());
+        otherConnection.setConnection(bezierConnection, bezierConnection.getFromPos().direction());
+        thisConnection.setConnection(connectionFrom, finalDirection);
 
         MessageUtils.sendActionMessage(player, Component.empty(), true);
         if (!(level.getBlockState(pos).getBlock() instanceof HypertubeBlock hypertubeBlock)) return;
@@ -386,7 +347,6 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
     public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player) {
         return ModBlocks.HYPERTUBE.asStack();
     }
-
 
 
     @Override

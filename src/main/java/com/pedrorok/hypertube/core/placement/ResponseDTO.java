@@ -1,4 +1,4 @@
-package com.pedrorok.hypertube.managers.placement;
+package com.pedrorok.hypertube.core.placement;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;

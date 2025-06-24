@@ -1,9 +1,8 @@
-package com.pedrorok.hypertube.managers.travel;
+package com.pedrorok.hypertube.core.travel;
 
 import net.minecraft.world.entity.EntityType;
 
 import java.util.Map;
-import java.util.Set;
 
 /**
  *

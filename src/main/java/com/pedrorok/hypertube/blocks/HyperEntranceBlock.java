@@ -1,7 +1,8 @@
 package com.pedrorok.hypertube.blocks;
 
 import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
-import com.pedrorok.hypertube.managers.travel.TravelConstants;
+import com.pedrorok.hypertube.core.connection.interfaces.TubeConnection;
+import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.utils.MessageUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;

@@ -1,7 +1,7 @@
 package com.pedrorok.hypertube.events;
 
 import com.pedrorok.hypertube.HypertubeMod;
-import com.pedrorok.hypertube.managers.travel.TravelManager;
+import com.pedrorok.hypertube.core.travel.TravelManager;
 import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;

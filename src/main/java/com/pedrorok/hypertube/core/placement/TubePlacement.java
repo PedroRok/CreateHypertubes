@@ -1,12 +1,13 @@
-package com.pedrorok.hypertube.managers.placement;
+package com.pedrorok.hypertube.core.placement;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
+import com.pedrorok.hypertube.core.connection.interfaces.TubeConnectionEntity;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.items.HypertubeItem;
-import com.pedrorok.hypertube.managers.connection.BezierConnection;
-import com.pedrorok.hypertube.managers.connection.SimpleConnection;
+import com.pedrorok.hypertube.core.connection.BezierConnection;
+import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModDataComponent;
 import com.pedrorok.hypertube.utils.MessageUtils;
@@ -27,6 +28,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -117,34 +119,21 @@ public class TubePlacement {
         MessageUtils.sendActionMessage(player, "");
     }
 
-    public static boolean handleHypertubeClicked(HypertubeBlockEntity tubeEntity, Player player, SimpleConnection simpleConnection, BlockPos pos, Direction direction, Level level, ItemStack stack) {
+    public static boolean handleHypertubeClicked(TubeConnectionEntity tubeEntity, Player player, SimpleConnection simpleConnection, BlockPos pos, Direction direction, Level level, ItemStack stack) {
 
-        boolean thisTubeCanConnTo = tubeEntity.getConnectionTo() == null;
-        boolean thisTubeCanConnFrom = tubeEntity.getConnectionFrom() == null;
-        HypertubeBlockEntity otherBlockEntity = (HypertubeBlockEntity) level.getBlockEntity(simpleConnection.pos());
-
-        if (otherBlockEntity == null) {
+        BlockEntity blockEntity = level.getBlockEntity(simpleConnection.pos());
+        if (!(blockEntity instanceof TubeConnectionEntity otherConnection)) {
             MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.no_other_tube_found")
                     .withColor(0xFF0000));
             return false;
         }
-
-        boolean otherTubeCanConnTo = otherBlockEntity.getConnectionTo() == null;
-        boolean otherTubeCanConnFrom = otherBlockEntity.getConnectionFrom() == null;
-
-        boolean usingConnectingTo = thisTubeCanConnFrom && otherTubeCanConnTo;
-
-        if (!usingConnectingTo) {
-            if (!thisTubeCanConnTo || !otherTubeCanConnFrom) {
-                MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.cant_conn_tubes")
-                        .withColor(0xFF0000));
-                return false;
-            }
+        if (!otherConnection.hasConnectionAvailable() || !tubeEntity.hasConnectionAvailable()) {
+            MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.cant_conn_tubes")
+                    .withColor(0xFF0000));
+            return false;
         }
 
-        BezierConnection connection = new BezierConnection(
-                usingConnectingTo ? simpleConnection : new SimpleConnection(pos, direction),
-                usingConnectingTo ? new SimpleConnection(pos, direction.getOpposite()) : new SimpleConnection(simpleConnection.pos(), simpleConnection.direction().getOpposite()));
+        BezierConnection connection = new BezierConnection(simpleConnection, new SimpleConnection(pos, direction.getOpposite()));
 
 
         ResponseDTO validation = connection.getValidation();
@@ -169,13 +158,9 @@ public class TubePlacement {
                     .startWithValue(0), true);
         }
 
-        if (usingConnectingTo) {
-            tubeEntity.setConnectionFrom(connection.getFromPos(), direction);
-            otherBlockEntity.setConnectionTo(connection);
-        } else {
-            tubeEntity.setConnectionTo(connection);
-            otherBlockEntity.setConnectionFrom(connection.getFromPos(), connection.getToPos().direction());
-        }
+        tubeEntity.setConnection(connection.getFromPos(), direction);
+        otherConnection.setConnection(connection, connection.getFromPos().direction());
+
 
         MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.success_conn")
                 .withColor(0x00FF00), true);

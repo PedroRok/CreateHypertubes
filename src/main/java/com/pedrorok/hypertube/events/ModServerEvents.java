@@ -1,9 +1,9 @@
 package com.pedrorok.hypertube.events;
 
 import com.pedrorok.hypertube.HypertubeMod;
-import com.pedrorok.hypertube.managers.placement.TubePlacement;
-import com.pedrorok.hypertube.managers.travel.TravelConstants;
-import com.pedrorok.hypertube.managers.travel.TravelManager;
+import com.pedrorok.hypertube.core.placement.TubePlacement;
+import com.pedrorok.hypertube.core.travel.TravelConstants;
+import com.pedrorok.hypertube.core.travel.TravelManager;
 import com.pedrorok.hypertube.utils.TubeUtils;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
