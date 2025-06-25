@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.blocks.blockentities;
 
+import com.mojang.datafixers.kinds.IdF;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.core.connection.*;
@@ -78,66 +79,44 @@ public class HypertubeBlockEntity extends BlockEntity implements TubeConnectionE
     }
     // --------- Nbt Methods ---------
 
+    @Override
     public List<Direction> getFacesConnectable() {
-
-        // TODO: Refactor
         if (connectionOne != null && connectionTwo != null) return List.of();
 
-        List<Direction> possibleDirections = new ArrayList<>();
-
-        boolean eastWest = Boolean.TRUE.equals(getBlockState().getValue(HypertubeBlock.EAST_WEST));
-        if (eastWest) {
-            possibleDirections.addAll(List.of(Direction.EAST, Direction.WEST));
-        }
-
-        boolean upDown = Boolean.TRUE.equals(getBlockState().getValue(HypertubeBlock.UP_DOWN));
-        if (upDown) {
-            possibleDirections.addAll(List.of(Direction.UP, Direction.DOWN));
-        }
-
-        boolean northSouth = Boolean.TRUE.equals(getBlockState().getValue(HypertubeBlock.NORTH_SOUTH));
-        if (northSouth) {
-            possibleDirections.addAll(List.of(Direction.NORTH, Direction.SOUTH));
-        }
-
+        List<Direction> possibleDirections = ((HypertubeBlock) getBlockState().getBlock()).getConnectedFaces(getBlockState());
         if (possibleDirections.isEmpty()) {
-            possibleDirections.addAll(List.of(Direction.values()));
+            return List.of(Direction.values());
         }
 
         possibleDirections.removeIf(direction -> {
-
             if (connectionOne != null) {
-                Direction thisConn = connectionOne.getThisEntranceDirection(level);
-                return thisConn != null && thisConn.equals(direction);
+                return getConnectionDirection(direction, connectionOne);
             }
-
             if (connectionTwo != null) {
-                Direction thisConn = connectionTwo.getThisEntranceDirection(level);
-                return thisConn != null && thisConn.equals(direction);
+                return getConnectionDirection(direction, connectionTwo);
             }
-
             return false;
         });
-
         return possibleDirections;
     }
 
 
     @Override
     public @Nullable IConnection getConnectionInDirection(Direction direction) {
-        if (connectionOne != null) {
-            Direction thisConn = connectionOne.getThisEntranceDirection(level);
-            if (thisConn != null && thisConn.equals(direction)) {
-                return connectionOne;
-            }
-        }
-        if (connectionTwo != null) {
-            Direction thisConn = connectionTwo.getThisEntranceDirection(level);
-            if (thisConn != null && thisConn.equals(direction)) {
-                return connectionTwo;
-            }
-        }
+        if (getConnectionDirection(direction, connectionOne)) return connectionOne;
+        if (getConnectionDirection(direction, connectionTwo)) return connectionTwo;
         return null;
+    }
+
+    private boolean getConnectionDirection(Direction direction, IConnection connection) {
+        if (connection != null) {
+            SimpleConnection sameConnectionBlockPos = IConnection.getSameConnectionBlockPos(connection, level, worldPosition);
+            if (sameConnectionBlockPos != null) {
+                Direction thisConn = sameConnectionBlockPos.direction();
+                return thisConn != null && thisConn.equals(direction);
+            }
+        }
+        return false;
     }
 
     @Override

@@ -1,7 +1,8 @@
 package com.pedrorok.hypertube.blocks;
 
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
-import com.pedrorok.hypertube.core.connection.*;
+import com.pedrorok.hypertube.core.connection.BezierConnection;
+import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.TubeConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.TubeConnectionEntity;
@@ -139,26 +140,21 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
         if (!(be instanceof HypertubeBlockEntity hypertube)) {
             return getState(blockState, world, pos);
         }
-
-        IConnection connTo = hypertube.getConnectionOne();
-        if (connTo != null) {
-            Direction dirTo = connTo.getThisEntranceDirection(world);
-            if (dirTo != null) {
-                return getState(blockState, Set.of(dirTo), true);
-            }
+        IConnection conn = hypertube.getConnectionOne();
+        SimpleConnection connection = IConnection.getSameConnectionBlockPos(conn, world, pos);
+        if (connection != null) {
+            return getState(blockState, Set.of(connection.direction()), true);
         }
 
-        IConnection connFrom = hypertube.getConnectionTwo();
-        if (connFrom == null) {
-            return getState(blockState, world, pos);
+        conn = hypertube.getConnectionTwo();
+        connection = IConnection.getSameConnectionBlockPos(conn, world, pos);
+        if (connection != null) {
+            return getState(blockState, Set.of(connection.direction()), true);
         }
 
-        BlockEntity otherBE = world.getBlockEntity(connFrom.getThisConnection().pos());
-        if (!(otherBE instanceof HypertubeBlockEntity other)) {
-            return getState(blockState, world, pos);
-        }
         return getState(blockState, world, pos);
     }
+
 
 
     public BlockState getState(BlockState blockState, Collection<Direction> activeDirections, boolean connected) {
@@ -231,14 +227,6 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
         return directions;
     }
 
-    public boolean isConnected(Level world, BlockPos pos, Direction facing) {
-        return canConnect(world, pos, facing);
-    }
-
-    public boolean canConnect(LevelAccessor world, BlockPos pos, Direction facing) {
-        return world.getBlockState(pos.relative(facing)).getBlock() instanceof TubeConnection;
-    }
-
     @Override
     public boolean canTravelConnect(LevelAccessor world, BlockPos posSelf, Direction facing) {
         BlockPos relative = posSelf.relative(facing);
@@ -249,7 +237,8 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
                    || canOtherConnectTo(world, relative, hypertubeBlock, facing));
     }
 
-    private boolean canOtherConnectTo(LevelAccessor world, BlockPos otherPos, HypertubeBlock otherTube, Direction facing) {
+    private boolean canOtherConnectTo(LevelAccessor world, BlockPos otherPos, HypertubeBlock otherTube, Direction
+            facing) {
         List<Direction> connectedFaces = otherTube.getConnectedFaces(otherTube.getState(null, (Level) world, otherPos));
         return connectedFaces.isEmpty() || connectedFaces.contains(facing);
     }
@@ -270,11 +259,13 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
     }
 
     @Override
-    public @NotNull BlockState playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Player player) {
+    public @NotNull BlockState playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState
+            state, @NotNull Player player) {
         return playerWillDestroy(level, pos, state, player, false);
     }
 
-    private BlockState playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Player player, boolean wrenched) {
+    private BlockState playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState
+            state, @NotNull Player player, boolean wrenched) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof TubeConnectionEntity tube))
             return super.playerWillDestroy(level, pos, state, player);
@@ -295,7 +286,8 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
     }
 
     @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack
+            stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (!(placer instanceof Player player)) return;
         if (level.isClientSide()) return;
@@ -340,38 +332,45 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
     }
 
     @Override
-    public @NotNull ItemStack getCloneItemStack(@NotNull LevelReader level, @NotNull BlockPos pos, @NotNull BlockState state) {
+    public @NotNull ItemStack getCloneItemStack(@NotNull LevelReader level, @NotNull BlockPos
+            pos, @NotNull BlockState state) {
         return ModBlocks.HYPERTUBE.asStack();
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player) {
+    public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player
+            player) {
         return ModBlocks.HYPERTUBE.asStack();
     }
 
 
     @Override
-    public boolean propagatesSkylightDown(@NotNull BlockState state, @NotNull BlockGetter reader, @NotNull BlockPos pos) {
+    public boolean propagatesSkylightDown(@NotNull BlockState state, @NotNull BlockGetter reader, @NotNull BlockPos
+            pos) {
         return true;
     }
 
     @Override
-    public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos, @NotNull CollisionContext context) {
+    public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos
+            pos, @NotNull CollisionContext context) {
         return getShape(state, context);
     }
 
     @Override
-    public @NotNull VoxelShape getCollisionShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos, @NotNull CollisionContext context) {
+    public @NotNull VoxelShape getCollisionShape(@NotNull BlockState state, @NotNull BlockGetter
+            worldIn, @NotNull BlockPos pos, @NotNull CollisionContext context) {
         return getShape(state, context);
     }
 
     @Override
-    public @NotNull VoxelShape getBlockSupportShape(@NotNull BlockState state, @NotNull BlockGetter reader, @NotNull BlockPos pos) {
+    public @NotNull VoxelShape getBlockSupportShape(@NotNull BlockState state, @NotNull BlockGetter
+            reader, @NotNull BlockPos pos) {
         return getShape(state);
     }
 
     @Override
-    public @NotNull VoxelShape getInteractionShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos) {
+    public @NotNull VoxelShape getInteractionShape(@NotNull BlockState state, @NotNull BlockGetter
+            worldIn, @NotNull BlockPos pos) {
         return getShape(state);
     }
 

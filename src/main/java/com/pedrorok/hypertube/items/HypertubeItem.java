@@ -2,6 +2,8 @@ package com.pedrorok.hypertube.items;
 
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
+import com.pedrorok.hypertube.core.connection.interfaces.TubeConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.TubeConnectionEntity;
 import com.pedrorok.hypertube.core.placement.ResponseDTO;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.placement.TubePlacement;
@@ -105,13 +107,11 @@ public class HypertubeItem extends BlockItem {
     public static ResponseDTO select(LevelAccessor world, BlockPos pos, Direction direction, ItemStack heldItem) {
         BlockState blockState = world.getBlockState(pos);
         Block block = blockState.getBlock();
-        if (!(block instanceof HypertubeBlock tube))
+        if (!(block instanceof TubeConnection tube))
             return ResponseDTO.get(false);
-        HypertubeBlockEntity blockEntity = (HypertubeBlockEntity) world.getBlockEntity(pos);
-        if (blockEntity == null) {
+        if (!(world.getBlockEntity(pos) instanceof TubeConnectionEntity blockEntity))
             return ResponseDTO.get(false);
-        }
-        if (!blockEntity.getFacesConnectable().contains(direction)) {
+        if (!blockEntity.getFacesConnectable().contains(direction) || tube.isConnected(world, pos, direction)) {
             return ResponseDTO.get(false, "placement.create_hypertube.cant_conn_to_face");
         }
 

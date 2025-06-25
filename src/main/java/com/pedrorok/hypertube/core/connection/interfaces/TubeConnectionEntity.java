@@ -12,6 +12,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 /**
  * @author Rok, Pedro Lucas nmm. Created on 24/06/2025
  * @project Create Hypertube
@@ -111,4 +113,6 @@ public interface TubeConnectionEntity {
         }
         return toDrop;
     }
+
+    List<Direction> getFacesConnectable();
 }
