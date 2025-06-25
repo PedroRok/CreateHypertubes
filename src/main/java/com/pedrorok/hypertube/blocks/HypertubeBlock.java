@@ -90,7 +90,7 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
             BlockPos relative = context.getClickedPos().relative(direction);
             BlockState otherState = context.getLevel().getBlockState(relative);
             if (otherState.getBlock() instanceof TubeConnection) {
-                return getState(List.of(direction), true);
+                return getState(state, List.of(direction), true);
             }
         }
 
@@ -109,7 +109,7 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
             direction = Direction.DOWN;
         }
 
-        return getState(List.of(direction), false);
+        return getState(state, List.of(direction), false);
     }
 
     public VoxelShape getShape(BlockState state, @Nullable CollisionContext ctx) {
@@ -130,42 +130,40 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
     @Override
     public void neighborChanged(@NotNull BlockState state, @NotNull Level world, @NotNull BlockPos pos, @NotNull Block block, @NotNull BlockPos pos1, boolean b) {
         super.neighborChanged(state, world, pos, block, pos1, b);
-        BlockState newState = getStateFromBlockEntity(world, pos);
+        BlockState newState = getStateFromBlockEntity(state, world, pos);
         world.setBlockAndUpdate(pos, newState);
     }
 
-    private BlockState getStateFromBlockEntity(Level world, BlockPos pos) {
+    private BlockState getStateFromBlockEntity(BlockState blockState, Level world, BlockPos pos) {
         BlockEntity be = world.getBlockEntity(pos);
         if (!(be instanceof HypertubeBlockEntity hypertube)) {
-            return getState(world, pos);
+            return getState(blockState, world, pos);
         }
-
-        // TODO: Refactor
 
         IConnection connTo = hypertube.getConnectionOne();
         if (connTo != null) {
             Direction dirTo = connTo.getThisEntranceDirection(world);
             if (dirTo != null) {
-                return getState(Set.of(dirTo), true);
+                return getState(blockState, Set.of(dirTo), true);
             }
         }
 
         IConnection connFrom = hypertube.getConnectionTwo();
         if (connFrom == null) {
-            return getState(world, pos);
+            return getState(blockState, world, pos);
         }
 
         BlockEntity otherBE = world.getBlockEntity(connFrom.getThisConnection().pos());
         if (!(otherBE instanceof HypertubeBlockEntity other)) {
-            return getState(world, pos);
+            return getState(blockState, world, pos);
         }
-        return getState(world, pos);
+        return getState(blockState, world, pos);
     }
 
 
-    public BlockState getState(Collection<Direction> activeDirections, boolean connected) {
+    public BlockState getState(BlockState blockState, Collection<Direction> activeDirections, boolean connected) {
         if (activeDirections == null) {
-            return defaultBlockState()
+            return blockState
                     .setValue(NORTH_SOUTH, false)
                     .setValue(EAST_WEST, false)
                     .setValue(UP_DOWN, false);
@@ -174,29 +172,32 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
         boolean eastWest = activeDirections.contains(Direction.EAST) || activeDirections.contains(Direction.WEST);
         boolean upDown = activeDirections.contains(Direction.UP) || activeDirections.contains(Direction.DOWN);
         // only one axis can be true at a time
-        return defaultBlockState()
+        return blockState
                 .setValue(NORTH_SOUTH, northSouth)
                 .setValue(EAST_WEST, eastWest && !northSouth)
                 .setValue(UP_DOWN, upDown && !northSouth && !eastWest)
                 .setValue(CONNECTED, connected && (northSouth || eastWest || upDown));
     }
 
-    private BlockState getState(Level world, BlockPos pos) {
+    private BlockState getState(BlockState blockState, Level world, BlockPos pos) {
+        if (blockState == null) {
+            blockState = defaultBlockState();
+        }
         boolean northSouth = isConnected(world, pos, Direction.NORTH) || isConnected(world, pos, Direction.SOUTH);
         boolean eastWest = isConnected(world, pos, Direction.EAST) || isConnected(world, pos, Direction.WEST);
         boolean upDown = isConnected(world, pos, Direction.UP) || isConnected(world, pos, Direction.DOWN);
 
-        return defaultBlockState()
+        return blockState
                 .setValue(NORTH_SOUTH, northSouth)
                 .setValue(EAST_WEST, eastWest && !northSouth)
                 .setValue(UP_DOWN, upDown && !northSouth && !eastWest)
                 .setValue(CONNECTED, northSouth || eastWest || upDown);
     }
 
-    public void updateBlockStateFromEntity(Level world, BlockPos pos) {
+    public void updateBlockStateFromEntity(BlockState state, Level world, BlockPos pos) {
         if (world.isClientSide()) return;
 
-        BlockState newState = getStateFromBlockEntity(world, pos);
+        BlockState newState = getStateFromBlockEntity(state, world, pos);
         updateBlockState(world, pos, newState);
     }
 
@@ -249,7 +250,7 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
     }
 
     private boolean canOtherConnectTo(LevelAccessor world, BlockPos otherPos, HypertubeBlock otherTube, Direction facing) {
-        List<Direction> connectedFaces = otherTube.getConnectedFaces(otherTube.getState((Level) world, otherPos));
+        List<Direction> connectedFaces = otherTube.getConnectedFaces(otherTube.getState(null, (Level) world, otherPos));
         return connectedFaces.isEmpty() || connectedFaces.contains(facing);
     }
 
@@ -335,7 +336,7 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
 
         MessageUtils.sendActionMessage(player, Component.empty(), true);
         if (!(level.getBlockState(pos).getBlock() instanceof HypertubeBlock hypertubeBlock)) return;
-        hypertubeBlock.updateBlockState(level, pos, hypertubeBlock.getState(List.of(finalDirection), true));
+        hypertubeBlock.updateBlockState(level, pos, hypertubeBlock.getState(state, List.of(finalDirection), true));
     }
 
     @Override
@@ -430,7 +431,7 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
             state = state.setValue(NORTH_SOUTH, false)
                     .setValue(EAST_WEST, true);
         } else {
-            state = getState(List.of(context.getClickedFace()), false);
+            state = getState(state, List.of(context.getClickedFace()), false);
         }
 
         return IWrenchable.super.onWrenched(state, context);

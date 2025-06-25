@@ -172,10 +172,11 @@ public class HypertubeBlockEntity extends BlockEntity implements TubeConnectionE
             throw new IllegalStateException("HypertubeBlockEntity already has two connections set.");
         }
         if (level != null && !level.isClientSide()) {
-            if (level.getBlockState(worldPosition).getBlock() instanceof HypertubeBlock hypertubeBlock) {
-                hypertubeBlock.updateBlockStateFromEntity(level, worldPosition);
+            BlockState blockState = level.getBlockState(worldPosition);
+            if (blockState.getBlock() instanceof HypertubeBlock hypertubeBlock) {
+                hypertubeBlock.updateBlockStateFromEntity(blockState, level, worldPosition);
                 if (thisConnectionDir != null) {
-                    BlockState state = hypertubeBlock.getState(List.of(thisConnectionDir), true);
+                    BlockState state = hypertubeBlock.getState(blockState, List.of(thisConnectionDir), true);
                     hypertubeBlock.updateBlockState(level, worldPosition, state);
                 }
             }
@@ -200,8 +201,9 @@ public class HypertubeBlockEntity extends BlockEntity implements TubeConnectionE
         }
 
         if (level != null && !level.isClientSide()) {
-            if (level.getBlockState(worldPosition).getBlock() instanceof HypertubeBlock hypertubeBlock) {
-                hypertubeBlock.updateBlockStateFromEntity(level, worldPosition);
+            BlockState blockState = level.getBlockState(worldPosition);
+            if (blockState.getBlock() instanceof HypertubeBlock hypertubeBlock) {
+                hypertubeBlock.updateBlockStateFromEntity(blockState, level, worldPosition);
             }
         }
         setChanged();
