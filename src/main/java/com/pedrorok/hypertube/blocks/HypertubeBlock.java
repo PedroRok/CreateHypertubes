@@ -68,8 +68,6 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements ITube
     public static final BooleanProperty EAST_WEST = BooleanProperty.create("east_west");
     public static final BooleanProperty UP_DOWN = BooleanProperty.create("up_down");
 
-    public static final IntegerProperty TUBE_SEGMENTS = IntegerProperty.create("tube_segments", 1, 4);
-
     public static final VoxelShape SHAPE_NORTH_SOUTH = Block.box(0D, 0D, 4D, 16D, 16D, 11D);
     public static final VoxelShape SHAPE_EAST_WEST = Block.box(5D, 0D, 0D, 12D, 16D, 16D);
     public static final VoxelShape SHAPE_UP_DOWN = Block.box(0D, 4D, 0D, 16D, 11D, 16D);
@@ -80,7 +78,7 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements ITube
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(NORTH_SOUTH, EAST_WEST, UP_DOWN, CONNECTED, TUBE_SEGMENTS, WATERLOGGED);
+        builder.add(NORTH_SOUTH, EAST_WEST, UP_DOWN, CONNECTED, WATERLOGGED);
     }
 
     @Override
@@ -303,7 +301,7 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements ITube
         SimpleConnection connectionFrom = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
         if (connectionFrom == null) return;
 
-        Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, null, true);
+        Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, () -> state.getBlock() instanceof ITubeConnection, true);
         SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
 
@@ -414,10 +412,10 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements ITube
         Player player = context.getPlayer();
         level.playSound(player, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.75f, 1);
         if (state.getValue(CONNECTED)) {
-
-            state = state.setValue(TUBE_SEGMENTS, state.getValue(TUBE_SEGMENTS) == 1 ? 2 : 1);
+            if (level.getBlockEntity(pos) instanceof ITubeConnectionEntity tube) {
+                tube.setTubeSegmentCount(tube.getTubeSegmentCount() == 1 ? 2 : 1);
+            }
             updateAfterWrenched(state, context);
-
             return IWrenchable.super.onWrenched(state, context);
         }
         if (state.getValue(EAST_WEST)) {

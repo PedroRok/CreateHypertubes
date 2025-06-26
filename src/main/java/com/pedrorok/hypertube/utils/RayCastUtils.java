@@ -8,24 +8,25 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Supplier;
+
 /**
  * @author Rok, Pedro Lucas nmm. Created on 25/04/2025
  * @project Create Hypertube
  */
 public class RayCastUtils {
 
-    public static <T extends Block> Direction getDirectionFromHitResult(Player player, @Nullable T filter) {
-        return getDirectionFromHitResult(player, filter, false);
+    public static Direction getDirectionFromHitResult(Player player, @Nullable Supplier<Boolean> filterSupplier) {
+        return getDirectionFromHitResult(player, filterSupplier, false);
     }
 
-    public static <T extends Block> Direction getDirectionFromHitResult(Player player, @Nullable T filter, boolean ignoreFilter) {
+    public static Direction getDirectionFromHitResult(Player player, @Nullable Supplier<Boolean> filter, boolean ignoreFilter) {
         HitResult hitResult = player.pick(5, 0, false);
         if (hitResult.getType() != HitResult.Type.BLOCK) {
             return getFromPlayer(player);
         }
         BlockHitResult blockHitResult = (BlockHitResult) hitResult;
-        Level level = player.level();
-        if ((filter != null && !level.getBlockState(blockHitResult.getBlockPos()).is(filter)) || ignoreFilter) {
+        if (filter != null && (!filter.get() || ignoreFilter)) {
             return getFromPlayer(player);
         }
         return blockHitResult.getDirection().getOpposite();

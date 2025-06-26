@@ -116,4 +116,11 @@ public interface ITubeConnectionEntity {
     List<Direction> getFacesConnectable();
 
     List<IConnection> getConnections();
+
+    int getTubeSegmentCount();
+
+    /**
+     * @param count The number of segments to set from 1 to 4.
+     */
+    void setTubeSegmentCount(int count);
 }

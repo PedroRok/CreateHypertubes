@@ -27,6 +27,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Optional;
@@ -83,13 +84,13 @@ public class HypertubeItem extends BlockItem {
             return InteractionResult.FAIL;
         }
 
-        boolean isHypertubeClicked = (state.getBlock() instanceof HypertubeBlock);
+        boolean isHypertubeClicked = (state.getBlock() instanceof ITubeConnection);
         boolean success = false;
 
         if (isHypertubeClicked) {
-            Optional<HypertubeBlockEntity> blockEntity = level.getBlockEntity(pos, ModBlockEntities.HYPERTUBE.get());
-            if (blockEntity.isPresent()) {
-                success = TubePlacement.handleHypertubeClicked(blockEntity.get(), player, simpleConnection, pos, direction, level, stack);
+            BlockEntity blockEntity = level.getBlockEntity(pos);
+            if (blockEntity instanceof ITubeConnectionEntity tube) {
+                success = TubePlacement.handleHypertubeClicked(tube, player, simpleConnection, pos, direction, level, stack);
             }
             SoundType soundtype = state.getSoundType();
             if (success) {

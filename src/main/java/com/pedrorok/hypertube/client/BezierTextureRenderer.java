@@ -7,6 +7,7 @@ import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -14,6 +15,8 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -58,6 +61,14 @@ public class BezierTextureRenderer {
             return;
         }
 
+        Level level = Minecraft.getInstance().level;
+        BlockEntity blockEntity = level.getBlockEntity(blockPosInitial);
+        if (!(blockEntity instanceof ITubeConnectionEntity tube)) {
+            return;
+        }
+        int segmentDistance =  tube.getTubeSegmentCount();
+
+
         poseStack.pushPose();
         Vec3 blockPos = Vec3.atLowerCornerOf(blockPosInitial);
         poseStack.translate(-blockPos.x, -blockPos.y, -blockPos.z);
@@ -65,7 +76,6 @@ public class BezierTextureRenderer {
 
         List<TubeRing> tubeGeometry = calculateAndCacheGeometry(bezierPoints);
 
-        int segmentDistance = blockState.getValues().containsKey(HypertubeBlock.TUBE_SEGMENTS) ? blockState.getValue(HypertubeBlock.TUBE_SEGMENTS) : 1;
 
         VertexConsumer builderExterior = bufferSource.getBuffer(RenderType.entityTranslucentCull(textureTube));
         renderComponent(builderExterior, pose, packedLight, packedOverlay, tubeGeometry, SectionType.EXTERIOR, segmentDistance);

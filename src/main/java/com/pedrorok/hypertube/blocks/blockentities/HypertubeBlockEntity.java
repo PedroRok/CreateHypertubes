@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.util.Tuple;
@@ -35,6 +36,8 @@ public class HypertubeBlockEntity extends BlockEntity implements ITubeConnection
     private IConnection connectionOne;
     private IConnection connectionTwo;
 
+    private int tubeSegmentCount = 1;
+
     public HypertubeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
@@ -44,6 +47,7 @@ public class HypertubeBlockEntity extends BlockEntity implements ITubeConnection
     protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
         super.saveAdditional(tag, registries);
         writeConnection(tag, new Tuple<>(connectionOne, "ConnectionTo"), new Tuple<>(connectionTwo, "ConnectionFrom"));
+        tag.put("TubeSegmentCount", NbtOps.INSTANCE.createInt(tubeSegmentCount));
     }
 
     @Override
@@ -55,6 +59,9 @@ public class HypertubeBlockEntity extends BlockEntity implements ITubeConnection
         }
         if (tag.contains("ConnectionFrom")) {
             this.connectionTwo = getConnection(tag, "ConnectionFrom");
+        }
+        if (tag.contains("TubeSegmentCount")) {
+            this.tubeSegmentCount = tag.getInt("TubeSegmentCount");
         }
     }
 
@@ -76,6 +83,17 @@ public class HypertubeBlockEntity extends BlockEntity implements ITubeConnection
         loadAdditional(tag, registries);
     }
     // --------- Nbt Methods ---------
+
+    // --------- Tube Segment Methods ---------
+    public void setTubeSegmentCount(int count) {
+        if (count < 1 || count > 4) {
+            throw new IllegalArgumentException("Tube segment count must be between 1 and 4.");
+        }
+        this.tubeSegmentCount = count;
+        setChanged();
+        sync();
+    }
+    // --------- Tube Segment Methods ---------
 
     @Override
     public List<Direction> getFacesConnectable() {

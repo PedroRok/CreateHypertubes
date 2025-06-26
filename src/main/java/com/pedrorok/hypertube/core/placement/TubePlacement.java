@@ -88,7 +88,7 @@ public class TubePlacement {
             return;
         }
 
-        Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, ModBlocks.HYPERTUBE.get());
+        Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, () -> hypertubeHitResult);
 
         SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);

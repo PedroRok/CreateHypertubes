@@ -22,6 +22,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -57,6 +58,8 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
     private final UUID tubeSoundId = UUID.randomUUID();
 
     @Getter
+    private int tubeSegmentCount = 1;
+    @Getter
     private IConnection connection;
 
     public HyperEntranceBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -65,23 +68,27 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
 
     // --------- Nbt Methods ---------
     @Override
-    protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
-        super.loadAdditional(tag, registries);
-        if (tag.contains("Connection")) {
-            connection = getConnection(tag, "Connection");
+    protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(compound, registries, clientPacket);
+        if (compound.contains("Connection")) {
+            connection = getConnection(compound, "Connection");
+        }
+        if (compound.contains("TubeSegmentCount")) {
+            tubeSegmentCount = compound.getInt("TubeSegmentCount");
         }
     }
 
     @Override
-    public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
-        super.writeSafe(tag, registries);
-        writeConnection(tag, new Tuple<>(connection, "Connection"));
+    protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(compound, registries, clientPacket);
+        writeConnection(compound, new Tuple<>(connection, "Connection"));
+        compound.put("TubeSegmentCount", NbtOps.INSTANCE.createInt(tubeSegmentCount));
     }
 
-    @Override
+    /*@Override
     public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registries) {
         CompoundTag tag = super.getUpdateTag(registries);
-        writeSafe(tag, registries);
+        write(tag, registries, false);
         return tag;
     }
 
@@ -94,8 +101,19 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
         CompoundTag tag = pkt.getTag();
         loadAdditional(tag, registries);
-    }
+    }*/
     // --------- Nbt Methods ---------
+
+    // --------- Tube Segment Methods ---------
+    public void setTubeSegmentCount(int count) {
+        if (count < 1 || count > 4) {
+            throw new IllegalArgumentException("Tube segment count must be between 1 and 4.");
+        }
+        this.tubeSegmentCount = count;
+        setChanged();
+        sync();
+    }
+    // --------- Tube Segment Methods ---------
 
     @Override
     public void remove() {
