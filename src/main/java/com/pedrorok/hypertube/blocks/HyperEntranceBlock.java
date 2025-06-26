@@ -1,7 +1,7 @@
 package com.pedrorok.hypertube.blocks;
 
 import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
-import com.pedrorok.hypertube.core.connection.interfaces.TubeConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.utils.MessageUtils;
@@ -42,7 +42,7 @@ import org.jetbrains.annotations.Nullable;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICogWheel, TubeConnection, SimpleWaterloggedBlock {
+public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICogWheel, ITubeConnection, SimpleWaterloggedBlock {
 
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;

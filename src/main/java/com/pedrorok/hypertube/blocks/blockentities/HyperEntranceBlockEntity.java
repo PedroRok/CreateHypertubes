@@ -63,6 +63,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         super(type, pos, state);
     }
 
+    // --------- Nbt Methods ---------
     @Override
     protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
         super.loadAdditional(tag, registries);
@@ -94,6 +95,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         CompoundTag tag = pkt.getTag();
         loadAdditional(tag, registries);
     }
+    // --------- Nbt Methods ---------
 
     @Override
     public void remove() {

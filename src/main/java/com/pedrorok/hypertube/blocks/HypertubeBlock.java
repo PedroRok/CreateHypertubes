@@ -5,7 +5,7 @@ import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
-import com.pedrorok.hypertube.core.connection.interfaces.TubeConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
@@ -61,7 +61,7 @@ import java.util.Set;
  * @author Rok, Pedro Lucas nmm. Created on 21/05/2025
  * @project Create Hypertube
  */
-public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeConnection, IBE<HypertubeBlockEntity>, IWrenchable {
+public class HypertubeBlock extends WaterloggedTransparentBlock implements ITubeConnection, IBE<HypertubeBlockEntity>, IWrenchable {
 
     public static final BooleanProperty CONNECTED = BooleanProperty.create("connected");
     public static final BooleanProperty NORTH_SOUTH = BooleanProperty.create("north_south");
@@ -90,7 +90,7 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
         for (Direction direction : Direction.values()) {
             BlockPos relative = context.getClickedPos().relative(direction);
             BlockState otherState = context.getLevel().getBlockState(relative);
-            if (otherState.getBlock() instanceof TubeConnection) {
+            if (otherState.getBlock() instanceof ITubeConnection) {
                 return getState(state, List.of(direction), true);
             }
         }
@@ -232,7 +232,7 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
         BlockPos relative = posSelf.relative(facing);
         BlockState otherState = world.getBlockState(relative);
         Block block = otherState.getBlock();
-        return block instanceof TubeConnection
+        return block instanceof ITubeConnection
                && (!(block instanceof HypertubeBlock hypertubeBlock)
                    || canOtherConnectTo(world, relative, hypertubeBlock, facing));
     }

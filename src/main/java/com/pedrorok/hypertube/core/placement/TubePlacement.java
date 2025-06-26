@@ -4,8 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
-import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
-import com.pedrorok.hypertube.core.connection.interfaces.TubeConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
 import com.pedrorok.hypertube.items.HypertubeItem;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
@@ -74,7 +73,7 @@ public class TubePlacement {
         BlockHitResult bhr = (BlockHitResult) hitResult;
         BlockPos pos = bhr.getBlockPos();
         BlockState hitState = level.getBlockState(pos);
-        boolean hypertubeHitResult = hitState.getBlock() instanceof TubeConnection;
+        boolean hypertubeHitResult = hitState.getBlock() instanceof ITubeConnection;
         if (hitState.isAir() || hypertubeHitResult) {
             hoveringPos = pos;
         } else {

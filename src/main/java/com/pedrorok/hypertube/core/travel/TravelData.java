@@ -4,7 +4,7 @@ import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
-import com.pedrorok.hypertube.core.connection.interfaces.TubeConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import lombok.Getter;
@@ -89,7 +89,7 @@ public class TravelData {
         for (Direction direction : connectedFaces) {
             BlockPos nextPipe = pos.relative(direction);
             if (blockConnections.contains(nextPipe)) continue;
-            if (!(level.getBlockState(nextPipe).getBlock() instanceof TubeConnection connection)) continue;
+            if (!(level.getBlockState(nextPipe).getBlock() instanceof ITubeConnection connection)) continue;
             if (!connection.canTravelConnect(level, nextPipe, direction)
                 && (level.getBlockEntity(nextPipe) instanceof HypertubeBlockEntity tubeEntity && !tubeEntity.isConnected()))
                 continue;

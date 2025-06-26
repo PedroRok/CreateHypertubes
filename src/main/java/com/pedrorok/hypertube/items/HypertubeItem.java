@@ -2,7 +2,7 @@ package com.pedrorok.hypertube.items;
 
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
-import com.pedrorok.hypertube.core.connection.interfaces.TubeConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import com.pedrorok.hypertube.core.placement.ResponseDTO;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
@@ -107,7 +107,7 @@ public class HypertubeItem extends BlockItem {
     public static ResponseDTO select(LevelAccessor world, BlockPos pos, Direction direction, ItemStack heldItem) {
         BlockState blockState = world.getBlockState(pos);
         Block block = blockState.getBlock();
-        if (!(block instanceof TubeConnection tube))
+        if (!(block instanceof ITubeConnection tube))
             return ResponseDTO.get(false);
         if (!(world.getBlockEntity(pos) instanceof ITubeConnectionEntity blockEntity))
             return ResponseDTO.get(false);
