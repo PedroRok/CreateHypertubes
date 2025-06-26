@@ -23,7 +23,6 @@ public record SimpleConnection(BlockPos pos, Direction direction) implements ICo
             Direction.STREAM_CODEC, SimpleConnection::direction,
             SimpleConnection::new
     );
-
     @Override
     @Nullable
     public BezierConnection getThisEntranceConnection(Level level) {
@@ -52,5 +51,13 @@ public record SimpleConnection(BlockPos pos, Direction direction) implements ICo
     @Override
     public SimpleConnection getThisConnection() {
         return this;
+    }
+
+    public BlockPos pos() {
+        return pos;
+    }
+
+    public Direction direction() {
+        return direction;
     }
 }

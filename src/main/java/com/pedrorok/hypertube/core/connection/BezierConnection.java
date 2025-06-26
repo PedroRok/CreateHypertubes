@@ -60,7 +60,6 @@ public class BezierConnection implements IConnection {
     private ResponseDTO valid;
     private final int detailLevel;
 
-
     private BezierConnection(SimpleConnection fromPos, SimpleConnection toPos, List<Vec3> bezierPoints) {
         this(fromPos, toPos, (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter())));
         this.bezierPoints = bezierPoints;

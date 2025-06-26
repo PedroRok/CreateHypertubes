@@ -7,6 +7,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.UUID;
+
 /**
  * @author Rok, Pedro Lucas nmm. Created on 17/06/2025
  * @project Create Hypertube
@@ -14,13 +16,13 @@ import org.jetbrains.annotations.Nullable;
 public interface IConnection {
 
     @Nullable
-    BezierConnection getThisEntranceConnection(Level level);
+    public abstract BezierConnection getThisEntranceConnection(Level level);
 
-    Direction getThisEntranceDirection(Level level);
+    public abstract Direction getThisEntranceDirection(Level level);
 
-    boolean isSameConnection(IConnection connection);
+    public abstract boolean isSameConnection(IConnection connection);
 
-    SimpleConnection getThisConnection();
+    public abstract SimpleConnection getThisConnection();
 
 
     public static SimpleConnection getSameConnectionBlockPos(IConnection conn, Level world, BlockPos pos) {

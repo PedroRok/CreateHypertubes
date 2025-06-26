@@ -100,6 +100,18 @@ public class HypertubeBlockEntity extends BlockEntity implements TubeConnectionE
         return possibleDirections;
     }
 
+    @Override
+    public List<IConnection> getConnections() {
+        List<IConnection> connections = new ArrayList<>();
+        if (connectionOne != null) {
+            connections.add(connectionOne);
+        }
+        if (connectionTwo != null) {
+            connections.add(connectionTwo);
+        }
+        return connections;
+    }
+
 
     @Override
     public @Nullable IConnection getConnectionInDirection(Direction direction) {

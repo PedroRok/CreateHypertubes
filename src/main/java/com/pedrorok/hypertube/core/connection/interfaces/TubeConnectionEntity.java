@@ -115,4 +115,6 @@ public interface TubeConnectionEntity {
     }
 
     List<Direction> getFacesConnectable();
+
+    List<IConnection> getConnections();
 }
