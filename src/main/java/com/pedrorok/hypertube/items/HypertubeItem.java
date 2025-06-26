@@ -3,7 +3,7 @@ package com.pedrorok.hypertube.items;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.TubeConnection;
-import com.pedrorok.hypertube.core.connection.interfaces.TubeConnectionEntity;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import com.pedrorok.hypertube.core.placement.ResponseDTO;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.placement.TubePlacement;
@@ -109,7 +109,7 @@ public class HypertubeItem extends BlockItem {
         Block block = blockState.getBlock();
         if (!(block instanceof TubeConnection tube))
             return ResponseDTO.get(false);
-        if (!(world.getBlockEntity(pos) instanceof TubeConnectionEntity blockEntity))
+        if (!(world.getBlockEntity(pos) instanceof ITubeConnectionEntity blockEntity))
             return ResponseDTO.get(false);
         if (!blockEntity.getFacesConnectable().contains(direction) || tube.isConnected(world, pos, direction)) {
             return ResponseDTO.get(false, "placement.create_hypertube.cant_conn_to_face");

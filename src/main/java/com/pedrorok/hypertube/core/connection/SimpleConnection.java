@@ -3,7 +3,7 @@ package com.pedrorok.hypertube.core.connection;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
-import com.pedrorok.hypertube.core.connection.interfaces.TubeConnectionEntity;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -27,7 +27,7 @@ public record SimpleConnection(BlockPos pos, Direction direction) implements ICo
     @Nullable
     public BezierConnection getThisEntranceConnection(Level level) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof TubeConnectionEntity connection)) {
+        if (!(blockEntity instanceof ITubeConnectionEntity connection)) {
             return null;
         }
         IConnection thisConnection = connection.getThisConnectionFrom(this);

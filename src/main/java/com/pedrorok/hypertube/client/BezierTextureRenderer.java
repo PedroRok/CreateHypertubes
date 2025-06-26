@@ -6,12 +6,15 @@ import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -28,7 +31,9 @@ import java.util.List;
  * @project Create Hypertube
  */
 @OnlyIn(Dist.CLIENT)
-public class BezierTextureRenderer implements BlockEntityRenderer<HypertubeBlockEntity> {
+public class BezierTextureRenderer {
+
+    private static BezierTextureRenderer INSTANCE;
 
     private static final float TUBE_RADIUS = 0.7F;
     private static final float INNER_TUBE_RADIUS = 0.62F;
@@ -39,22 +44,12 @@ public class BezierTextureRenderer implements BlockEntityRenderer<HypertubeBlock
     private final ResourceLocation textureTube;
     private final ResourceLocation textureLine;
 
-    public BezierTextureRenderer(BlockEntityRendererProvider.Context context) {
+    public BezierTextureRenderer() {
         this.textureTube = ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "textures/block/tube_base_glass.png");
         this.textureLine = ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "textures/block/tube_base_glass_2.png");
     }
 
-    @Override
-    public void render(HypertubeBlockEntity blockEntity, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
-        if (blockEntity.getConnectionOne() instanceof BezierConnection bezierConnectionOne) {
-            renderBezierConnection(blockEntity, bezierConnectionOne, poseStack, bufferSource, packedLight, packedOverlay);
-        }
-        if (blockEntity.getConnectionTwo() instanceof BezierConnection bezierConnectionTwo) {
-            renderBezierConnection(blockEntity, bezierConnectionTwo, poseStack, bufferSource, packedLight, packedOverlay);
-        }
-    }
-
-    private void renderBezierConnection(HypertubeBlockEntity blockEntity, BezierConnection connection, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+    public void renderBezierConnection(BlockPos blockPosInitial, BlockState blockState, BezierConnection connection, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
         if (connection == null || !connection.getValidation().valid()) {
             return;
         }
@@ -64,13 +59,13 @@ public class BezierTextureRenderer implements BlockEntityRenderer<HypertubeBlock
         }
 
         poseStack.pushPose();
-        Vec3 blockPos = Vec3.atLowerCornerOf(blockEntity.getBlockPos());
+        Vec3 blockPos = Vec3.atLowerCornerOf(blockPosInitial);
         poseStack.translate(-blockPos.x, -blockPos.y, -blockPos.z);
         Matrix4f pose = poseStack.last().pose();
 
         List<TubeRing> tubeGeometry = calculateAndCacheGeometry(bezierPoints);
 
-        int segmentDistance = blockEntity.getBlockState().getValue(HypertubeBlock.TUBE_SEGMENTS);
+        int segmentDistance = blockState.getValues().containsKey(HypertubeBlock.TUBE_SEGMENTS) ? blockState.getValue(HypertubeBlock.TUBE_SEGMENTS) : 1;
 
         VertexConsumer builderExterior = bufferSource.getBuffer(RenderType.entityTranslucentCull(textureTube));
         renderComponent(builderExterior, pose, packedLight, packedOverlay, tubeGeometry, SectionType.EXTERIOR, segmentDistance);
@@ -267,20 +262,12 @@ public class BezierTextureRenderer implements BlockEntityRenderer<HypertubeBlock
         );
     }
 
-    @Override
-    public boolean shouldRenderOffScreen(@NotNull HypertubeBlockEntity blockEntity) {
-        return true;
-    }
-
-    @Override
-    public boolean shouldRender(@NotNull HypertubeBlockEntity blockEntity, @NotNull Vec3 pos) {
-        return true;
-    }
-
-    @Override
-    public @NotNull AABB getRenderBoundingBox(@NotNull HypertubeBlockEntity blockEntity) {
-        return AABB.INFINITE;
-    }
-
     private enum SectionType {EXTERIOR, INTERIOR, LINE}
+
+    public static BezierTextureRenderer get() {
+        if (INSTANCE == null) {
+            INSTANCE = new BezierTextureRenderer();
+        }
+        return INSTANCE;
+    }
 }

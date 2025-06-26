@@ -4,8 +4,8 @@ import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.TubeConnection;
-import com.pedrorok.hypertube.core.connection.interfaces.TubeConnectionEntity;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
@@ -267,7 +267,7 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
     private BlockState playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState
             state, @NotNull Player player, boolean wrenched) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof TubeConnectionEntity tube))
+        if (!(blockEntity instanceof ITubeConnectionEntity tube))
             return super.playerWillDestroy(level, pos, state, player);
 
         int toDrop = tube.blockBroken();
@@ -293,7 +293,7 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
         if (level.isClientSide()) return;
 
         BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof TubeConnectionEntity thisConnection)) return;
+        if (!(blockEntity instanceof ITubeConnectionEntity thisConnection)) return;
         if (!stack.hasFoil()) {
             level.playSound(null, pos, getSoundType(state, level, pos, placer).getPlaceSound(), SoundSource.BLOCKS,
                     1, level.random.nextFloat() * 0.1f + 0.9f);
@@ -313,7 +313,7 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements TubeC
             return;
         }
         BlockEntity otherBlockEntity = level.getBlockEntity(connectionFrom.pos());
-        if (!(otherBlockEntity instanceof TubeConnectionEntity otherConnection)) return;
+        if (!(otherBlockEntity instanceof ITubeConnectionEntity otherConnection)) return;
 
         level.playSound(null, pos, getSoundType(state, level, pos, placer).getPlaceSound(), SoundSource.BLOCKS,
                 1, level.random.nextFloat() * 0.1f + 0.9f);

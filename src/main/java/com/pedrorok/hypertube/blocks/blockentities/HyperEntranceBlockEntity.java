@@ -1,9 +1,13 @@
 package com.pedrorok.hypertube.blocks.blockentities;
 
+import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
+import com.pedrorok.hypertube.blocks.HypertubeBlock;
+import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
+import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
-import com.pedrorok.hypertube.core.connection.interfaces.TubeConnectionEntity;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravelManager;
@@ -11,27 +15,34 @@ import com.pedrorok.hypertube.registry.ModSounds;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
+import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,28 +50,49 @@ import java.util.UUID;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHaveHoveringInformation {
+public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHaveHoveringInformation, ITubeConnectionEntity {
 
     private static final float RADIUS = 1.0f;
-
     private static final float SPEED_TO_START = 16;
-
     private final UUID tubeSoundId = UUID.randomUUID();
+
+    @Getter
+    private IConnection connection;
 
     public HyperEntranceBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
-
     @Override
-    protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
-        super.write(compound, registries, clientPacket);
+    protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
+        super.loadAdditional(tag, registries);
+        if (tag.contains("Connection")) {
+            connection = getConnection(tag, "Connection");
+        }
     }
 
+    @Override
+    public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
+        super.writeSafe(tag, registries);
+        writeConnection(tag, new Tuple<>(connection, "Connection"));
+    }
 
     @Override
-    protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
-        super.read(compound, registries, clientPacket);
+    public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registries) {
+        CompoundTag tag = super.getUpdateTag(registries);
+        writeSafe(tag, registries);
+        return tag;
+    }
+
+    @Override
+    public @NotNull ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
+        CompoundTag tag = pkt.getTag();
+        loadAdditional(tag, registries);
     }
 
     @Override
@@ -140,7 +172,6 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
     @OnlyIn(Dist.CLIENT)
     private void tickClient(boolean isBlocked) {
 
-        // this is just for sound
         BlockState state = this.getBlockState();
         BlockPos pos = this.getBlockPos();
 
@@ -240,5 +271,91 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         RandomSource random = level.random;
         float pitch = 0.4F + random.nextFloat() * 0.4F;
         level.playSound(null, this.getBlockPos(), open ? ModSounds.HYPERTUBE_ENTRANCE_OPEN.get() : ModSounds.HYPERTUBE_ENTRANCE_CLOSE.get(), SoundSource.BLOCKS, 0.2f, pitch);
+    }
+
+    @Override
+    public @Nullable IConnection getConnectionInDirection(Direction direction) {
+        SimpleConnection sameConnectionBlockPos = IConnection.getSameConnectionBlockPos(connection, level, worldPosition);
+        if (sameConnectionBlockPos != null) {
+            Direction thisConn = sameConnectionBlockPos.direction();
+            if (thisConn != null && thisConn.equals(direction)) {
+                return connection;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public @Nullable IConnection getThisConnectionFrom(SimpleConnection connection) {
+        if (this.connection instanceof BezierConnection bezierConnection) {
+            if (connection.isSameConnection(bezierConnection.getFromPos()))
+                return bezierConnection;
+        }
+        return null;
+    }
+
+    @Override
+    public boolean hasConnectionAvailable() {
+        return connection == null;
+    }
+
+    @Override
+    public boolean isConnected() {
+        return connection != null;
+    }
+
+    @Override
+    public void setConnection(IConnection connection, Direction thisConnectionDir) {
+        if (this.connection == null) {
+            this.connection = connection;
+        } else {
+            HypertubeMod.LOGGER.error(new TubeConnectionException("Connection could not define connection", this.connection, connection).getMessage());
+            return;
+        }
+        setChanged();
+        sync();
+    }
+
+    @Override
+    public void clearConnection(IConnection connection) {
+        if (this.connection != null && this.connection.isSameConnection(connection)) {
+            this.connection = null;
+        } else {
+            HypertubeMod.LOGGER.error(new TubeConnectionException("Connection could not be cleared", this.connection, connection).getMessage());
+            return;
+        }
+        setChanged();
+        sync();
+    }
+
+    @Override
+    public int blockBroken() {
+        int toDrop = 0;
+        if (connection != null) {
+            toDrop = blockBroken(level, connection, worldPosition);
+        }
+        return toDrop;
+    }
+
+    @Override
+    public List<Direction> getFacesConnectable() {
+        if (connection != null)
+            return List.of();
+        return List.of(getBlockState().getValue(HyperEntranceBlock.FACING));
+    }
+
+    @Override
+    public List<IConnection> getConnections() {
+        List<IConnection> connections = new ArrayList<>();
+        if (connection != null) {
+            connections.add(connection);
+        }
+        return connections;
+    }
+
+    public void sync() {
+        if (level != null && !level.isClientSide) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_ALL);
+        }
     }
 }

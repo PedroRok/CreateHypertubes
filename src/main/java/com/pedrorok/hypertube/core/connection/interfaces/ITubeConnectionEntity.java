@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
@@ -18,7 +19,7 @@ import java.util.List;
  * @author Rok, Pedro Lucas nmm. Created on 24/06/2025
  * @project Create Hypertube
  */
-public interface TubeConnectionEntity {
+public interface ITubeConnectionEntity {
 
 
     default IConnection getConnection(CompoundTag tag, String key) {
@@ -31,12 +32,10 @@ public interface TubeConnectionEntity {
         }
     }
 
-    default void writeConnection(CompoundTag tag, IConnection connectionTo, IConnection connectionFrom) {
-        if (connectionTo != null) {
-            writeConnection(tag, connectionTo, "ConnectionTo");
-        }
-        if (connectionFrom != null) {
-            writeConnection(tag, connectionFrom, "ConnectionFrom");
+    default void writeConnection(CompoundTag tag, Tuple<@Nullable IConnection, String>... connections) {
+        for (Tuple<@Nullable IConnection, String> connection : connections) {
+            if (connection.getA() == null) continue;
+            writeConnection(tag, connection.getA(), connection.getB());
         }
     }
 
@@ -107,7 +106,7 @@ public interface TubeConnectionEntity {
 
         if (connectionToClear != null) {
             BlockEntity otherBlock = level.getBlockEntity(otherBlockPos);
-            if (otherBlock instanceof TubeConnectionEntity tubeConnection) {
+            if (otherBlock instanceof ITubeConnectionEntity tubeConnection) {
                 tubeConnection.clearConnection(connectionToClear);
             }
         }

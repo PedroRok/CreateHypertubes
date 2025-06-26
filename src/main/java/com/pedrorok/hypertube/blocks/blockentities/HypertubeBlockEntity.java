@@ -1,11 +1,12 @@
 package com.pedrorok.hypertube.blocks.blockentities;
 
-import com.mojang.datafixers.kinds.IdF;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
-import com.pedrorok.hypertube.core.connection.*;
+import com.pedrorok.hypertube.core.connection.BezierConnection;
+import com.pedrorok.hypertube.core.connection.SimpleConnection;
+import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
-import com.pedrorok.hypertube.core.connection.interfaces.TubeConnectionEntity;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,6 +14,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -28,7 +30,7 @@ import java.util.List;
  * @project Create Hypertube
  */
 @Getter
-public class HypertubeBlockEntity extends BlockEntity implements TubeConnectionEntity {
+public class HypertubeBlockEntity extends BlockEntity implements ITubeConnectionEntity {
 
     private IConnection connectionOne;
     private IConnection connectionTwo;
@@ -41,11 +43,7 @@ public class HypertubeBlockEntity extends BlockEntity implements TubeConnectionE
     @Override
     protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
         super.saveAdditional(tag, registries);
-        writeConnection(tag);
-    }
-
-    private void writeConnection(CompoundTag tag) {
-        writeConnection(tag, connectionOne, connectionTwo);
+        writeConnection(tag, new Tuple<>(connectionOne, "ConnectionTo"), new Tuple<>(connectionTwo, "ConnectionFrom"));
     }
 
     @Override
@@ -160,7 +158,8 @@ public class HypertubeBlockEntity extends BlockEntity implements TubeConnectionE
         } else if (connectionTwo == null) {
             connectionTwo = connection;
         } else {
-            throw new IllegalStateException("HypertubeBlockEntity already has two connections set.");
+            HypertubeMod.LOGGER.error(new TubeConnectionException("Connection could not define connection", connection, connectionOne, connectionTwo).getMessage());
+            return;
         }
         if (level != null && !level.isClientSide()) {
             BlockState blockState = level.getBlockState(worldPosition);
@@ -183,12 +182,8 @@ public class HypertubeBlockEntity extends BlockEntity implements TubeConnectionE
         } else if (connectionTwo != null && connectionTwo.isSameConnection(connection)) {
             connectionTwo = null;
         } else {
-            try {
-                throw new TubeConnectionException("Connection could not be cleared", connection, connectionOne, connectionTwo);
-            } catch (TubeConnectionException e) {
-                HypertubeMod.LOGGER.error(e.getMessage());
-                return;
-            }
+            HypertubeMod.LOGGER.error(new TubeConnectionException("Connection could not be cleared", connection, connectionOne, connectionTwo).getMessage());
+            return;
         }
 
         if (level != null && !level.isClientSide()) {

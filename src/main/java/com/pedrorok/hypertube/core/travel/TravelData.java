@@ -6,7 +6,7 @@ import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.TubeConnection;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
-import com.pedrorok.hypertube.core.connection.interfaces.TubeConnectionEntity;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.BlockPos;
@@ -58,7 +58,7 @@ public class TravelData {
         blockConnections.add(entrancePos);
         travelPoints.add(firstPipe.getCenter());
         blockConnections.add(firstPipe);
-
+        addTravelPoint(entrancePos, level);
         addTravelPoint(firstPipe, level);
         checkAndRemoveNearPoints();
     }
@@ -102,14 +102,14 @@ public class TravelData {
 
 
     private boolean addCurvedTravelPoint(BlockPos pos, Level level) {
-        if (!(level.getBlockEntity(pos) instanceof TubeConnectionEntity hypertubeBlockEntity)) return false;
+        if (!(level.getBlockEntity(pos) instanceof ITubeConnectionEntity hypertubeBlockEntity)) return false;
         boolean connected = false;
         for (IConnection connection : hypertubeBlockEntity.getConnections()) {
             BezierConnection bezier = null;
             boolean inverse = false;
             if (connection instanceof SimpleConnection simple) {
                 BlockEntity blockEntity = level.getBlockEntity(simple.pos());
-                if (!(blockEntity instanceof TubeConnectionEntity fromTube)) continue;
+                if (!(blockEntity instanceof ITubeConnectionEntity fromTube)) continue;
                 IConnection fromTubeConn = fromTube.getThisConnectionFrom(simple);
                 if (!(fromTubeConn instanceof BezierConnection fromTubeBezier)) continue;
                 bezier = fromTubeBezier;

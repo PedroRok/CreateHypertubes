@@ -257,6 +257,4 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
     protected @NotNull FluidState getFluidState(BlockState p_313789_) {
         return p_313789_.getValue(WATERLOGGED) ? Fluids.WATER.getSource(true) : super.getFluidState(p_313789_);
     }
-
-
 }
