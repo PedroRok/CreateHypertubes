@@ -84,24 +84,6 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         writeConnection(compound, new Tuple<>(connection, "Connection"));
         compound.put("TubeSegmentCount", NbtOps.INSTANCE.createInt(tubeSegmentCount));
     }
-
-    /*@Override
-    public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registries) {
-        CompoundTag tag = super.getUpdateTag(registries);
-        write(tag, registries, false);
-        return tag;
-    }
-
-    @Override
-    public @NotNull ClientboundBlockEntityDataPacket getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this);
-    }
-
-    @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
-        CompoundTag tag = pkt.getTag();
-        loadAdditional(tag, registries);
-    }*/
     // --------- Nbt Methods ---------
 
     // --------- Tube Segment Methods ---------

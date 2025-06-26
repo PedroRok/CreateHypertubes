@@ -87,8 +87,9 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements ITube
         if (state == null) return null;
         for (Direction direction : Direction.values()) {
             BlockPos relative = context.getClickedPos().relative(direction);
-            BlockState otherState = context.getLevel().getBlockState(relative);
-            if (otherState.getBlock() instanceof ITubeConnection) {
+            BlockEntity otherEntity = context.getLevel().getBlockEntity(relative);
+            if (otherEntity instanceof ITubeConnectionEntity otherTube
+                && otherTube.getFacesConnectable().contains(direction.getOpposite())) {
                 return getState(state, List.of(direction), true);
             }
         }
@@ -284,8 +285,7 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements ITube
     }
 
     @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack
-            stack) {
+    public void setPlacedBy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @Nullable LivingEntity placer, @NotNull ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (!(placer instanceof Player player)) return;
         if (level.isClientSide()) return;
@@ -330,14 +330,12 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements ITube
     }
 
     @Override
-    public @NotNull ItemStack getCloneItemStack(@NotNull LevelReader level, @NotNull BlockPos
-            pos, @NotNull BlockState state) {
+    public @NotNull ItemStack getCloneItemStack(@NotNull LevelReader level, @NotNull BlockPos pos, @NotNull BlockState state) {
         return ModBlocks.HYPERTUBE.asStack();
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player
-            player) {
+    public @NotNull ItemStack getCloneItemStack(@NotNull BlockState state, @NotNull HitResult target, @NotNull LevelReader level, @NotNull BlockPos pos, @NotNull Player player) {
         return ModBlocks.HYPERTUBE.asStack();
     }
 
