@@ -1,11 +1,10 @@
 package com.pedrorok.hypertube.items;
 
-import com.pedrorok.hypertube.blocks.HypertubeBlock;
-import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
-import com.pedrorok.hypertube.managers.placement.ResponseDTO;
-import com.pedrorok.hypertube.managers.connection.SimpleConnection;
-import com.pedrorok.hypertube.managers.placement.TubePlacement;
-import com.pedrorok.hypertube.registry.ModBlockEntities;
+import com.pedrorok.hypertube.core.connection.SimpleConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
+import com.pedrorok.hypertube.core.placement.ResponseDTO;
+import com.pedrorok.hypertube.core.placement.TubePlacement;
 import com.pedrorok.hypertube.registry.ModDataComponent;
 import com.pedrorok.hypertube.utils.MessageUtils;
 import net.minecraft.ChatFormatting;
@@ -24,10 +23,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Optional;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 23/04/2025
@@ -81,13 +79,13 @@ public class HypertubeItem extends BlockItem {
             return InteractionResult.FAIL;
         }
 
-        boolean isHypertubeClicked = (state.getBlock() instanceof HypertubeBlock);
+        boolean isHypertubeClicked = (state.getBlock() instanceof ITubeConnection);
         boolean success = false;
 
         if (isHypertubeClicked) {
-            Optional<HypertubeBlockEntity> blockEntity = level.getBlockEntity(pos, ModBlockEntities.HYPERTUBE.get());
-            if (blockEntity.isPresent()) {
-                success = TubePlacement.handleHypertubeClicked(blockEntity.get(), player, simpleConnection, pos, direction, level, stack);
+            BlockEntity blockEntity = level.getBlockEntity(pos);
+            if (blockEntity instanceof ITubeConnectionEntity tube) {
+                success = TubePlacement.handleHypertubeClicked(tube, player, simpleConnection, pos, direction, level, stack);
             }
             SoundType soundtype = state.getSoundType();
             if (success) {
@@ -105,13 +103,11 @@ public class HypertubeItem extends BlockItem {
     public static ResponseDTO select(LevelAccessor world, BlockPos pos, Direction direction, ItemStack heldItem) {
         BlockState blockState = world.getBlockState(pos);
         Block block = blockState.getBlock();
-        if (!(block instanceof HypertubeBlock tube))
+        if (!(block instanceof ITubeConnection tube))
             return ResponseDTO.get(false);
-        HypertubeBlockEntity blockEntity = (HypertubeBlockEntity) world.getBlockEntity(pos);
-        if (blockEntity == null) {
+        if (!(world.getBlockEntity(pos) instanceof ITubeConnectionEntity blockEntity))
             return ResponseDTO.get(false);
-        }
-        if (!blockEntity.getFacesConnectable().contains(direction)) {
+        if (!blockEntity.getFacesConnectable().contains(direction) || tube.isConnected(world, pos, direction)) {
             return ResponseDTO.get(false, "placement.create_hypertube.cant_conn_to_face");
         }
 

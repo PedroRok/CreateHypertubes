@@ -1,8 +1,9 @@
-package com.pedrorok.hypertube.data;
+package com.pedrorok.hypertube.core.data;
 
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
@@ -19,7 +20,6 @@ import java.util.function.Consumer;
  * @project Create Hypertube
  */
 public class HypertubeRecipeGen extends RecipeProvider {
-
 
     public HypertubeRecipeGen(PackOutput p_248933_) {
         super(p_248933_);
@@ -45,6 +45,5 @@ public class HypertubeRecipeGen extends RecipeProvider {
                 .define('G', AllBlocks.COGWHEEL)
                 .unlockedBy("has_brass_sheet", has(AllItems.BRASS_SHEET))
                 .save(consumer);
-        System.out.println("REGISTREI TUDO");
     }
 }

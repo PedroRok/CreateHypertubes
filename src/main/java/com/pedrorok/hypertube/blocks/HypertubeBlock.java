@@ -1,9 +1,12 @@
 package com.pedrorok.hypertube.blocks;
 
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
-import com.pedrorok.hypertube.managers.connection.BezierConnection;
-import com.pedrorok.hypertube.managers.connection.SimpleConnection;
-import com.pedrorok.hypertube.managers.travel.TravelConstants;
+import com.pedrorok.hypertube.core.connection.BezierConnection;
+import com.pedrorok.hypertube.core.connection.SimpleConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
+import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModDataComponent;
@@ -33,12 +36,14 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HalfTransparentBlock;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.WaterloggedTransparentBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -56,7 +61,7 @@ import java.util.Set;
  * @author Rok, Pedro Lucas nmm. Created on 21/05/2025
  * @project Create Hypertube
  */
-public class HypertubeBlock extends HalfTransparentBlock implements TubeConnection, IBE<HypertubeBlockEntity>, IWrenchable {
+public class HypertubeBlock extends WaterloggedTransparentBlock implements ITubeConnection, IBE<HypertubeBlockEntity>, IWrenchable {
 
     public static final BooleanProperty CONNECTED = BooleanProperty.create("connected");
     public static final BooleanProperty NORTH_SOUTH = BooleanProperty.create("north_south");
@@ -73,7 +78,7 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(NORTH_SOUTH, EAST_WEST, UP_DOWN, CONNECTED);
+        builder.add(NORTH_SOUTH, EAST_WEST, UP_DOWN, CONNECTED, WATERLOGGED);
     }
 
     @Override
@@ -82,9 +87,10 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
         if (state == null) return null;
         for (Direction direction : Direction.values()) {
             BlockPos relative = context.getClickedPos().relative(direction);
-            BlockState otherState = context.getLevel().getBlockState(relative);
-            if (otherState.getBlock() instanceof TubeConnection) {
-                return getState(List.of(direction), true);
+            BlockEntity otherEntity = context.getLevel().getBlockEntity(relative);
+            if (otherEntity instanceof ITubeConnectionEntity otherTube
+                && otherTube.getFacesConnectable().contains(direction.getOpposite())) {
+                return getState(state, List.of(direction), true);
             }
         }
 
@@ -103,7 +109,7 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
             direction = Direction.DOWN;
         }
 
-        return getState(List.of(direction), false);
+        return getState(state, List.of(direction), false);
     }
 
     public VoxelShape getShape(BlockState state, @Nullable CollisionContext ctx) {
@@ -124,48 +130,34 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
     @Override
     public void neighborChanged(@NotNull BlockState state, @NotNull Level world, @NotNull BlockPos pos, @NotNull Block block, @NotNull BlockPos pos1, boolean b) {
         super.neighborChanged(state, world, pos, block, pos1, b);
-        BlockState newState = getStateFromBlockEntity(world, pos);
+        BlockState newState = getStateFromBlockEntity(state, world, pos);
         world.setBlockAndUpdate(pos, newState);
     }
 
-    private BlockState getStateFromBlockEntity(Level world, BlockPos pos) {
+    private BlockState getStateFromBlockEntity(BlockState blockState, Level world, BlockPos pos) {
         BlockEntity be = world.getBlockEntity(pos);
         if (!(be instanceof HypertubeBlockEntity hypertube)) {
-            return getState(world, pos);
+            return getState(blockState, world, pos);
+        }
+        IConnection conn = hypertube.getConnectionOne();
+        SimpleConnection connection = IConnection.getSameConnectionBlockPos(conn, world, pos);
+        if (connection != null) {
+            return getState(blockState, Set.of(connection.direction()), true);
         }
 
-        BezierConnection connTo = hypertube.getConnectionTo();
-        if (connTo != null) {
-            Direction dirTo = connTo.getFromPos().direction();
-            if (dirTo != null) {
-                return getState(Set.of(dirTo), true);
-            }
+        conn = hypertube.getConnectionTwo();
+        connection = IConnection.getSameConnectionBlockPos(conn, world, pos);
+        if (connection != null) {
+            return getState(blockState, Set.of(connection.direction()), true);
         }
 
-        SimpleConnection connFrom = hypertube.getConnectionFrom();
-        if (connFrom == null) {
-            return getState(world, pos);
-        }
-
-        BlockEntity otherBE = world.getBlockEntity(connFrom.pos());
-        if (!(otherBE instanceof HypertubeBlockEntity other)) {
-            return getState(world, pos);
-        }
-
-        BezierConnection otherTo = other.getConnectionTo();
-        if (otherTo != null) {
-            Direction dirFrom = otherTo.getToPos().direction();
-            if (dirFrom != null) {
-                return getState(Set.of(dirFrom), true);
-            }
-        }
-        return getState(world, pos);
+        return getState(blockState, world, pos);
     }
 
 
-    public BlockState getState(Collection<Direction> activeDirections, boolean connected) {
+    public BlockState getState(BlockState blockState, Collection<Direction> activeDirections, boolean connected) {
         if (activeDirections == null) {
-            return defaultBlockState()
+            return blockState
                     .setValue(NORTH_SOUTH, false)
                     .setValue(EAST_WEST, false)
                     .setValue(UP_DOWN, false);
@@ -174,29 +166,32 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
         boolean eastWest = activeDirections.contains(Direction.EAST) || activeDirections.contains(Direction.WEST);
         boolean upDown = activeDirections.contains(Direction.UP) || activeDirections.contains(Direction.DOWN);
         // only one axis can be true at a time
-        return defaultBlockState()
+        return blockState
                 .setValue(NORTH_SOUTH, northSouth)
                 .setValue(EAST_WEST, eastWest && !northSouth)
                 .setValue(UP_DOWN, upDown && !northSouth && !eastWest)
                 .setValue(CONNECTED, connected && (northSouth || eastWest || upDown));
     }
 
-    private BlockState getState(Level world, BlockPos pos) {
+    private BlockState getState(BlockState blockState, Level world, BlockPos pos) {
+        if (blockState == null) {
+            blockState = defaultBlockState();
+        }
         boolean northSouth = isConnected(world, pos, Direction.NORTH) || isConnected(world, pos, Direction.SOUTH);
         boolean eastWest = isConnected(world, pos, Direction.EAST) || isConnected(world, pos, Direction.WEST);
         boolean upDown = isConnected(world, pos, Direction.UP) || isConnected(world, pos, Direction.DOWN);
 
-        return defaultBlockState()
+        return blockState
                 .setValue(NORTH_SOUTH, northSouth)
                 .setValue(EAST_WEST, eastWest && !northSouth)
                 .setValue(UP_DOWN, upDown && !northSouth && !eastWest)
                 .setValue(CONNECTED, northSouth || eastWest || upDown);
     }
 
-    public void updateBlockStateFromEntity(Level world, BlockPos pos) {
+    public void updateBlockStateFromEntity(BlockState state, Level world, BlockPos pos) {
         if (world.isClientSide()) return;
 
-        BlockState newState = getStateFromBlockEntity(world, pos);
+        BlockState newState = getStateFromBlockEntity(state, world, pos);
         updateBlockState(world, pos, newState);
     }
 
@@ -230,26 +225,19 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
         return directions;
     }
 
-    public boolean isConnected(Level world, BlockPos pos, Direction facing) {
-        return canConnect(world, pos, facing);
-    }
-
-    public boolean canConnect(LevelAccessor world, BlockPos pos, Direction facing) {
-        return world.getBlockState(pos.relative(facing)).getBlock() instanceof TubeConnection;
-    }
-
     @Override
     public boolean canTravelConnect(LevelAccessor world, BlockPos posSelf, Direction facing) {
         BlockPos relative = posSelf.relative(facing);
         BlockState otherState = world.getBlockState(relative);
         Block block = otherState.getBlock();
-        return block instanceof TubeConnection
+        return block instanceof ITubeConnection
                && (!(block instanceof HypertubeBlock hypertubeBlock)
                    || canOtherConnectTo(world, relative, hypertubeBlock, facing));
     }
 
-    private boolean canOtherConnectTo(LevelAccessor world, BlockPos otherPos, HypertubeBlock otherTube, Direction facing) {
-        List<Direction> connectedFaces = otherTube.getConnectedFaces(otherTube.getState((Level) world, otherPos));
+    private boolean canOtherConnectTo(LevelAccessor world, BlockPos otherPos, HypertubeBlock otherTube, Direction
+            facing) {
+        List<Direction> connectedFaces = otherTube.getConnectedFaces(otherTube.getState(null, (Level) world, otherPos));
         return connectedFaces.isEmpty() || connectedFaces.contains(facing);
     }
 
@@ -275,32 +263,10 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
 
     private void playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Player player, boolean wrenched) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof HypertubeBlockEntity hypertubeEntity))
-            return;
+        if (!(blockEntity instanceof ITubeConnectionEntity tube))
+            return super.playerWillDestroy(level, pos, state, player);
 
-        SimpleConnection connectionFrom = hypertubeEntity.getConnectionFrom();
-        BezierConnection connectionTo = hypertubeEntity.getConnectionTo();
-
-        int toDrop = 0;
-        if (connectionFrom != null) {
-            BlockPos otherPos = connectionFrom.pos();
-            BlockEntity otherBlock = level.getBlockEntity(otherPos);
-            if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity
-                && otherHypertubeEntity.getConnectionTo() != null) {
-                toDrop += (int) otherHypertubeEntity.getConnectionTo().distance();
-                otherHypertubeEntity.setConnectionTo(null);
-            }
-        }
-
-        if (connectionTo != null) {
-            BlockPos otherPos = connectionTo.getToPos().pos();
-            BlockEntity otherBlock = level.getBlockEntity(otherPos);
-            if (otherBlock instanceof HypertubeBlockEntity otherHypertubeEntity
-                && otherHypertubeEntity.getConnectionFrom() != null) {
-                toDrop += (int) connectionTo.distance();
-                otherHypertubeEntity.setConnectionFrom(null, null);
-            }
-        }
+        int toDrop = tube.blockBroken();
 
         if (!player.isCreative()) {
             if (toDrop != 0 || wrenched) {
@@ -321,7 +287,7 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
         if (level.isClientSide()) return;
 
         BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof HypertubeBlockEntity hypertubeEntity)) return;
+        if (!(blockEntity instanceof ITubeConnectionEntity thisConnection)) return;
         if (!stack.hasFoil()) {
             level.playSound(null, pos, getSoundType(state, level, pos, placer).getPlaceSound(), SoundSource.BLOCKS,
                     1, level.random.nextFloat() * 0.1f + 0.9f);
@@ -331,7 +297,7 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
         SimpleConnection connectionFrom = ModDataComponent.decodeSimpleConnection(stack);
         if (connectionFrom == null) return;
 
-        Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, null, true);
+        Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, () -> state.getBlock() instanceof ITubeConnection, true);
         SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
 
@@ -340,35 +306,23 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
                     1, 0.5f);
             return;
         }
+        BlockEntity otherBlockEntity = level.getBlockEntity(connectionFrom.pos());
+        if (!(otherBlockEntity instanceof ITubeConnectionEntity otherConnection)) return;
 
         level.playSound(null, pos, getSoundType(state, level, pos, placer).getPlaceSound(), SoundSource.BLOCKS,
                 1, level.random.nextFloat() * 0.1f + 0.9f);
 
-        BlockEntity otherBlockEntity = level.getBlockEntity(connectionFrom.pos());
-        boolean inverted = false;
-
-        if (otherBlockEntity instanceof HypertubeBlockEntity otherHypertubeEntity) {
-            if (otherHypertubeEntity.getConnectionTo() == null) {
-                otherHypertubeEntity.setConnectionTo(bezierConnection);
-            } else if (otherHypertubeEntity.getConnectionFrom() == null) {
-                bezierConnection = bezierConnection.invert();
-                connectionTo = bezierConnection.getFromPos();
-                otherHypertubeEntity.setConnectionFrom(connectionTo, bezierConnection.getToPos().direction());
-                inverted = true;
-            } else {
-                MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.invalid_conn").withStyle(ChatFormatting.RED), true);
-                return;
-            }
+        if (!otherConnection.hasConnectionAvailable()) {
+            MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.invalid_conn").withColor(0xFF0000), true);
+            return;
         }
 
-        if (inverted)
-            hypertubeEntity.setConnectionTo(bezierConnection);
-        else
-            hypertubeEntity.setConnectionFrom(connectionFrom, bezierConnection.getToPos().direction());
+        otherConnection.setConnection(bezierConnection, bezierConnection.getFromPos().direction());
+        thisConnection.setConnection(connectionFrom, finalDirection);
 
         MessageUtils.sendActionMessage(player, Component.empty(), true);
         if (!(level.getBlockState(pos).getBlock() instanceof HypertubeBlock hypertubeBlock)) return;
-        hypertubeBlock.updateBlockState(level, pos, hypertubeBlock.getState(List.of(finalDirection), true));
+        hypertubeBlock.updateBlockState(level, pos, hypertubeBlock.getState(state, List.of(finalDirection), true));
     }
 
     @Override
@@ -377,27 +331,32 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
     }
 
     @Override
-    public boolean propagatesSkylightDown(@NotNull BlockState state, @NotNull BlockGetter reader, @NotNull BlockPos pos) {
+    public boolean propagatesSkylightDown(@NotNull BlockState state, @NotNull BlockGetter reader, @NotNull BlockPos
+            pos) {
         return true;
     }
 
     @Override
-    public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos, @NotNull CollisionContext context) {
+    public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos
+            pos, @NotNull CollisionContext context) {
         return getShape(state, context);
     }
 
     @Override
-    public @NotNull VoxelShape getCollisionShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos, @NotNull CollisionContext context) {
+    public @NotNull VoxelShape getCollisionShape(@NotNull BlockState state, @NotNull BlockGetter
+            worldIn, @NotNull BlockPos pos, @NotNull CollisionContext context) {
         return getShape(state, context);
     }
 
     @Override
-    public @NotNull VoxelShape getBlockSupportShape(@NotNull BlockState state, @NotNull BlockGetter reader, @NotNull BlockPos pos) {
+    public @NotNull VoxelShape getBlockSupportShape(@NotNull BlockState state, @NotNull BlockGetter
+            reader, @NotNull BlockPos pos) {
         return getShape(state);
     }
 
     @Override
-    public @NotNull VoxelShape getInteractionShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos) {
+    public @NotNull VoxelShape getInteractionShape(@NotNull BlockState state, @NotNull BlockGetter
+            worldIn, @NotNull BlockPos pos) {
         return getShape(state);
     }
 
@@ -436,7 +395,18 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
         if (context.getPlayer() == null) return InteractionResult.PASS;
-        if (state.getValue(CONNECTED)) return InteractionResult.PASS;
+        Level level = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+        Player player = context.getPlayer();
+        if (state.getValue(CONNECTED)) {
+            if (level.getBlockEntity(pos) instanceof ITubeConnectionEntity tube) {
+                tube.wrenchClicked(context.getClickedFace());
+            }
+            updateAfterWrenched(state, context);
+            IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
+            return InteractionResult.SUCCESS;
+        }
+
         if (state.getValue(EAST_WEST)) {
             state = state.setValue(EAST_WEST, false)
                     .setValue(UP_DOWN, true);
@@ -447,11 +417,9 @@ public class HypertubeBlock extends HalfTransparentBlock implements TubeConnecti
             state = state.setValue(NORTH_SOUTH, false)
                     .setValue(EAST_WEST, true);
         } else {
-            state = getState(List.of(context.getClickedFace()), false);
+            state = getState(state, List.of(context.getClickedFace()), false);
         }
-        Level level = context.getLevel();
-        BlockPos pos = context.getClickedPos();
-        Player player = context.getPlayer();
+
         level.playSound(player, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.75f, 1);
 
         return IWrenchable.super.onWrenched(state, context);

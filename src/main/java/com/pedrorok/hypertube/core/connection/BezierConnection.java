@@ -1,7 +1,8 @@
-package com.pedrorok.hypertube.managers.connection;
+package com.pedrorok.hypertube.core.connection;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.managers.placement.ResponseDTO;
 import lombok.Getter;
 import net.createmod.catnip.animation.LerpedFloat;
@@ -10,6 +11,8 @@ import net.createmod.catnip.outliner.Outliner;
 import net.createmod.catnip.theme.Color;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -30,6 +33,7 @@ public class BezierConnection implements IConnection {
     public static final Codec<BezierConnection> CODEC = RecordCodecBuilder.create(i -> i.group(
             SimpleConnection.CODEC.fieldOf("fromPos").forGetter(BezierConnection::getFromPos),
             SimpleConnection.CODEC.fieldOf("toPos").forGetter(BezierConnection::getToPos),
+            Codec.INT.fieldOf("tubeSegments").forGetter(BezierConnection::getTubeSegments),
             Vec3.CODEC.listOf().fieldOf("curvePoints").forGetter(BezierConnection::getBezierPoints)
     ).apply(i, BezierConnection::new));
 
@@ -42,25 +46,29 @@ public class BezierConnection implements IConnection {
     private final SimpleConnection fromPos;
     @Getter
     private @Nullable SimpleConnection toPos;
+
+    @Getter
+    private int tubeSegments;
+
     private List<Vec3> bezierPoints;
 
     private ResponseDTO valid;
     private final int detailLevel;
 
-
-    private BezierConnection(SimpleConnection fromPos, SimpleConnection toPos, List<Vec3> bezierPoints) {
-        this(fromPos, toPos, (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter())));
+    private BezierConnection(SimpleConnection fromPos, SimpleConnection toPos, int tubeSegments, List<Vec3> bezierPoints) {
+        this(fromPos, toPos, tubeSegments, (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter())));
         this.bezierPoints = bezierPoints;
     }
 
     public BezierConnection(SimpleConnection fromPos, @Nullable SimpleConnection toPos) {
-        this(fromPos, toPos, toPos != null ? (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter())) : 0);
+        this(fromPos, toPos, 1, toPos != null ? (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter())) : 0);
     }
 
-    public BezierConnection(SimpleConnection fromPos, SimpleConnection toPos, int detailLevel) {
+    public BezierConnection(SimpleConnection fromPos, SimpleConnection toPos, int tubeSegments, int detailLevel) {
         this.fromPos = fromPos;
         this.toPos = toPos;
         this.detailLevel = detailLevel;
+        this.tubeSegments = tubeSegments;
     }
 
     public List<Vec3> getBezierPoints() {
@@ -237,9 +245,33 @@ public class BezierConnection implements IConnection {
     public BezierConnection invert() {
         List<Vec3> newBezier = new ArrayList<>(bezierPoints);
         Collections.reverse(newBezier);
-        return new BezierConnection(new SimpleConnection(toPos.pos(), toPos.direction().getOpposite()), fromPos, newBezier);
+        return new BezierConnection(new SimpleConnection(toPos.pos(), toPos.direction().getOpposite()), fromPos, tubeSegments, newBezier);
     }
 
+    @Override
+    public BezierConnection getThisEntranceConnection(Level level) {
+        return this;
+    }
+
+    @Override
+    public Direction getThisEntranceDirection(Level level) {
+        return fromPos.direction();
+    }
+
+    @Override
+    public boolean isSameConnection(IConnection connection) {
+        return fromPos.isSameConnection(connection) || connection.equals(this);
+    }
+
+    @Override
+    public SimpleConnection getThisConnection() {
+        return getFromPos();
+    }
+
+    @Override
+    public void updateTubeSegments(Level level) {
+        tubeSegments = tubeSegments == 1 ? 2 : 1;
+    }
 
     @Override
     public String toString() {

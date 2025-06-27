@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube.network;
 
 import com.pedrorok.hypertube.HypertubeMod;
+import com.pedrorok.hypertube.network.packets.PlayerTravelDirDataPacket;
 import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -41,6 +42,11 @@ public class NetworkHandler {
                     }
                 },
                 Packet::execute
+        );
+        registrar.playToClient(
+                PlayerTravelDirDataPacket.TYPE,
+                PlayerTravelDirDataPacket.STREAM_CODEC,
+                PlayerTravelDirDataPacket::handle
         );
     }
 }

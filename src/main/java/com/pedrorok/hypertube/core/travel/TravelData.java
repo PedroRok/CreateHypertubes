@@ -1,10 +1,12 @@
-package com.pedrorok.hypertube.managers.travel;
+package com.pedrorok.hypertube.core.travel;
 
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
-import com.pedrorok.hypertube.blocks.TubeConnection;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
-import com.pedrorok.hypertube.managers.connection.BezierConnection;
-import com.pedrorok.hypertube.managers.connection.SimpleConnection;
+import com.pedrorok.hypertube.core.connection.BezierConnection;
+import com.pedrorok.hypertube.core.connection.SimpleConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.BlockPos;
@@ -56,7 +58,7 @@ public class TravelData {
         blockConnections.add(entrancePos);
         travelPoints.add(firstPipe.getCenter());
         blockConnections.add(firstPipe);
-
+        addTravelPoint(entrancePos, level);
         addTravelPoint(firstPipe, level);
         checkAndRemoveNearPoints();
     }
@@ -87,7 +89,7 @@ public class TravelData {
         for (Direction direction : connectedFaces) {
             BlockPos nextPipe = pos.relative(direction);
             if (blockConnections.contains(nextPipe)) continue;
-            if (!(level.getBlockState(nextPipe).getBlock() instanceof TubeConnection connection)) continue;
+            if (!(level.getBlockState(nextPipe).getBlock() instanceof ITubeConnection connection)) continue;
             if (!connection.canTravelConnect(level, nextPipe, direction)
                 && (level.getBlockEntity(nextPipe) instanceof HypertubeBlockEntity tubeEntity && !tubeEntity.isConnected()))
                 continue;
@@ -100,45 +102,46 @@ public class TravelData {
 
 
     private boolean addCurvedTravelPoint(BlockPos pos, Level level) {
-        if (!(level.getBlockEntity(pos) instanceof HypertubeBlockEntity hypertubeBlockEntity)) return false;
-        BezierConnection connection = hypertubeBlockEntity.getConnectionTo();
-        boolean inverse = false;
-        if (connection == null
-            || bezierConnections.contains(connection.getUuid())) {
-            SimpleConnection connectionFrom = hypertubeBlockEntity.getConnectionFrom();
-            if (connectionFrom == null) {
-                return false;
+        if (!(level.getBlockEntity(pos) instanceof ITubeConnectionEntity hypertubeBlockEntity)) return false;
+        boolean connected = false;
+        for (IConnection connection : hypertubeBlockEntity.getConnections()) {
+            BezierConnection bezier = null;
+            boolean inverse = false;
+            if (connection instanceof SimpleConnection simple) {
+                BlockEntity blockEntity = level.getBlockEntity(simple.pos());
+                if (!(blockEntity instanceof ITubeConnectionEntity fromTube)) continue;
+                IConnection fromTubeConn = fromTube.getThisConnectionFrom(simple);
+                if (!(fromTubeConn instanceof BezierConnection fromTubeBezier)) continue;
+                bezier = fromTubeBezier;
+                inverse = true;
+            } else {
+                if (!(connection instanceof BezierConnection bezierConnection)) continue;
+                bezier = bezierConnection;
             }
-            BlockEntity blockEntity = level.getBlockEntity(connectionFrom.pos());
-            if (!(blockEntity instanceof HypertubeBlockEntity fromTube)) return false;
-            BezierConnection fromTubeBezier = fromTube.getConnectionTo();
-            if (fromTubeBezier == null) return false;
-            if (bezierConnections.contains(fromTubeBezier.getUuid())) return false;
-            connection = fromTubeBezier;
-            inverse = true;
+            if (bezierConnections.contains(bezier.getUuid())) continue;
+
+            List<Vec3> bezierPoints = new ArrayList<>(bezier.getBezierPoints());
+            if (inverse) {
+                Collections.reverse(bezierPoints);
+            }
+            bezierPoints.remove(bezierPoints.size() - 1);
+            bezierPoints.remove(0);
+            travelPoints.addAll(bezierPoints);
+            bezierConnections.add(bezier.getUuid());
+            BlockPos toPos = bezier.getToPos().pos();
+            BlockPos fromPos = bezier.getFromPos().pos();
+
+            final BlockPos toPosFinal = inverse ? fromPos : toPos;
+            final BlockPos fromPosFinal = inverse ? toPos : fromPos;
+
+            if (!blockConnections.contains(toPosFinal))
+                blockConnections.add(toPosFinal);
+            if (!blockConnections.contains(fromPosFinal))
+                blockConnections.add(fromPosFinal);
+            addTravelPoint(toPosFinal, level);
+            connected = true;
         }
-
-
-        List<Vec3> bezierPoints = new ArrayList<>(connection.getBezierPoints());
-        if (inverse) {
-            Collections.reverse(bezierPoints);
-        }
-        bezierPoints.remove(bezierPoints.size() - 1);
-        bezierPoints.remove(0);
-        travelPoints.addAll(bezierPoints);
-        bezierConnections.add(connection.getUuid());
-        BlockPos toPos = connection.getToPos().pos();
-        BlockPos fromPos = connection.getFromPos().pos();
-
-        final BlockPos toPosFinal = inverse ? fromPos : toPos;
-        final BlockPos fromPosFinal = inverse ? toPos : fromPos;
-
-        if (!blockConnections.contains(toPosFinal))
-            blockConnections.add(toPosFinal);
-        if (!blockConnections.contains(fromPosFinal))
-            blockConnections.add(fromPosFinal);
-        addTravelPoint(toPosFinal, level);
-        return true;
+        return connected;
     }
 
     public Vec3 getTravelPoint() {

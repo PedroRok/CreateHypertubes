@@ -1,18 +1,18 @@
 package com.pedrorok.hypertube.blocks;
 
 import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
-import com.pedrorok.hypertube.managers.travel.TravelConstants;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
+import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.utils.MessageUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;
+import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.content.kinetics.base.KineticBlock;
 import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -30,6 +30,8 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -40,13 +42,14 @@ import org.jetbrains.annotations.Nullable;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICogWheel, TubeConnection {
+public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICogWheel, ITubeConnection, SimpleWaterloggedBlock {
 
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
     public static final BooleanProperty LOCKED = BlockStateProperties.LOCKED;
 
     public static final BooleanProperty IN_FRONT = BooleanProperty.create("has_block_in_front");
+    public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
     private static final VoxelShape SHAPE_NORTH = Block.box(0D, 0D, 0D, 16D, 16D, 23D);
     private static final VoxelShape SHAPE_SOUTH = Block.box(0D, 0D, -7D, 16D, 16D, 16D);
@@ -62,12 +65,13 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
                 .setValue(FACING, Direction.NORTH)
                 .setValue(OPEN, false)
                 .setValue(LOCKED, true)
-                .setValue(IN_FRONT, false));
+                .setValue(IN_FRONT, false)
+                .setValue(WATERLOGGED, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, OPEN, IN_FRONT, LOCKED);
+        builder.add(FACING, OPEN, IN_FRONT, LOCKED, WATERLOGGED);
         super.createBlockStateDefinition(builder);
     }
 
@@ -76,9 +80,12 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         Player player = context.getPlayer();
         Level level = context.getLevel();
+        FluidState fluidstate = context.getLevel().getFluidState(context.getClickedPos());
         if (player == null) {
-            return this.defaultBlockState().setValue(FACING, context.getClickedFace().getOpposite())
-                    .setValue(OPEN, false);
+            return this.defaultBlockState()
+                    .setValue(FACING, context.getClickedFace().getOpposite())
+                    .setValue(OPEN, false)
+                    .setValue(WATERLOGGED, fluidstate.is(Fluids.WATER));
         }
         Direction direction = player.getDirection();
         if (player.getXRot() < -45) {
@@ -96,7 +103,8 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
                 .setValue(FACING, direction)
                 .setValue(OPEN, false)
                 .setValue(LOCKED, true)
-                .setValue(IN_FRONT, isFrontBlocked);
+                .setValue(IN_FRONT, isFrontBlocked)
+                .setValue(WATERLOGGED, fluidstate.is(Fluids.WATER));
     }
 
     @Override
@@ -212,6 +220,14 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
 
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+
+        BlockEntity blockEntity = context.getLevel().getBlockEntity(context.getClickedPos());
+        if (blockEntity instanceof HyperEntranceBlockEntity entrance) {
+            if (entrance.wrenchClicked(context.getClickedFace())) {
+                IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
+                return InteractionResult.SUCCESS;
+            }
+        }
         Player player = context.getPlayer();
         BlockState blockState = state.setValue(LOCKED, !state.getValue(LOCKED));
         Level level = context.getLevel();
@@ -230,10 +246,19 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
                     Component.translatable("block.hypertube.hyper_entrance.automatic_lock")
                             .withStyle(ChatFormatting.GREEN), true);
         }
-        level.playSound(player, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.75f, 1);
-
+        IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
         return InteractionResult.SUCCESS;
     }
 
+    protected @NotNull BlockState updateShape(BlockState p_313906_, @NotNull Direction p_313739_, @NotNull BlockState p_313829_, @NotNull LevelAccessor p_313692_, @NotNull BlockPos p_313842_, @NotNull BlockPos p_313843_) {
+        if (p_313906_.getValue(WATERLOGGED)) {
+            p_313692_.scheduleTick(p_313842_, Fluids.WATER, Fluids.WATER.getTickDelay(p_313692_));
+        }
 
+        return super.updateShape(p_313906_, p_313739_, p_313829_, p_313692_, p_313842_, p_313843_);
+    }
+
+    protected @NotNull FluidState getFluidState(BlockState p_313789_) {
+        return p_313789_.getValue(WATERLOGGED) ? Fluids.WATER.getSource(true) : super.getFluidState(p_313789_);
+    }
 }

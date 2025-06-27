@@ -2,15 +2,15 @@ package com.pedrorok.hypertube.events;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import com.pedrorok.hypertube.managers.camera.DetachedCameraController;
-import com.pedrorok.hypertube.managers.placement.TubePlacement;
-import com.pedrorok.hypertube.managers.sound.TubeSoundManager;
-import com.pedrorok.hypertube.managers.travel.TravelConstants;
+import com.pedrorok.hypertube.core.camera.DetachedCameraController;
+import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
+import com.pedrorok.hypertube.core.placement.TubePlacement;
+import com.pedrorok.hypertube.core.sound.TubeSoundManager;
+import com.pedrorok.hypertube.core.travel.TravelConstants;
 import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
@@ -49,6 +49,10 @@ public class ClientEvents {
         DetachedCameraController.cameraTick();
     }
 
+    @SubscribeEvent
+    public static void renderFrame(RenderPlayerEvent.Pre event) {
+        DetachedPlayerDirController.tickPlayer();
+    }
 
     @SubscribeEvent
     public static void onRenderWorld(RenderLevelStageEvent event) {
@@ -71,25 +75,20 @@ public class ClientEvents {
     }
 
     @SubscribeEvent
-    public static void onRenderPlayer(RenderPlayerEvent.Pre event) {
-        Player player = event.getEntity();
-        if (!player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
-
+    public static void onRenderEntity(RenderLivingEvent.Pre event) {
+        LivingEntity entity = event.getEntity();
+        if (!entity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
         PoseStack poseStack = event.getPoseStack();
-
-        poseStack.pushPose();
-        poseStack.translate(0, 0.2, 0);
-        poseStack.mulPose(Axis.YP.rotationDegrees(-player.getYRot()));
-        poseStack.mulPose(Axis.XP.rotationDegrees(player.getXRot() + 90));
-        poseStack.mulPose(Axis.YP.rotationDegrees(player.getYRot()));
-        poseStack.translate(0, -0.5, 0);
-        poseStack.scale(0.8f, 0.8f, 0.8f);
+        TravelConstants.Client.ENTITIES_RENDER
+                .get(entity.getType())
+                .renderEntityOnTube()
+                .accept(entity, poseStack);
     }
 
     @SubscribeEvent
-    public static void onRenderPlayerPost(RenderPlayerEvent.Post event) {
-        Player player = event.getEntity();
-        if (!player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
+    public static void onRenderEntityPost(RenderLivingEvent.Post event) {
+        LivingEntity entity = event.getEntity();
+        if (!entity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
 
         event.getPoseStack().popPose();
 

@@ -6,12 +6,14 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "EntityTravelingMixin",
+    "PlayerMixin",
     "PlayerModelMixin",
     "PlayerMovementMixin"
   ],
   "client": [
     "CameraAccessorMixin",
-    "CameraMixin"
+    "CameraMixin",
+    "LocalPlayerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

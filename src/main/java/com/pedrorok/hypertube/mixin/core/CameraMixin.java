@@ -1,8 +1,9 @@
 package com.pedrorok.hypertube.mixin.core;
 
-import com.pedrorok.hypertube.managers.camera.DetachedCameraController;
+import com.pedrorok.hypertube.core.camera.DetachedCameraController;
 import com.pedrorok.hypertube.config.ClientConfig;
-import com.pedrorok.hypertube.managers.travel.TravelManager;
+import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
+import com.pedrorok.hypertube.core.travel.TravelManager;
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -43,12 +44,8 @@ public class CameraMixin {
         if (renderViewEntity != player) return;
         if (!TravelManager.hasHyperTubeData(renderViewEntity) || (
                 options.getCameraType().isFirstPerson() && ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get())) {
-
-            if (DetachedCameraController.get().isDetached()) {
-                renderViewEntity.setYRot(DetachedCameraController.get().getYaw());
-                renderViewEntity.setXRot(DetachedCameraController.get().getPitch());
-            }
             DetachedCameraController.get().setDetached(false);
+            DetachedPlayerDirController.get().setDetached(false);
             return;
         }
 
