@@ -16,6 +16,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -151,49 +152,62 @@ public class BezierTextureRenderer {
 
     private List<TubeRing> calculateAndCacheGeometry(List<Vec3> points) {
         List<TubeRing> cachedGeometry = new ArrayList<>();
-        float currentDistance = 0;
-        Vector3f lastTangent = null;
-        Vector3f perpA = null, perpB = null;
+        Vector3f upVector = new Vector3f(0, 1, 0);
 
         for (int i = 0; i < points.size(); i++) {
             Vec3 currentPoint = points.get(i);
 
-            Vector3f tangent;
-            if (i == points.size() - 1) {
-                tangent = new Vector3f((float) (currentPoint.x - points.get(i - 1).x), (float) (currentPoint.y - points.get(i - 1).y), (float) (currentPoint.z - points.get(i - 1).z));
-            } else {
-                tangent = new Vector3f((float) (points.get(i + 1).x - currentPoint.x), (float) (points.get(i + 1).y - currentPoint.y), (float) (points.get(i + 1).z - currentPoint.z));
-            }
-            tangent.normalize();
-
-            if (i == 0) {
-                Vector3f[] perpendiculars = computePerpendiculars(tangent);
-                perpA = perpendiculars[0];
-                perpB = perpendiculars[1];
-            } else {
-                Vector3f rotationAxis = new Vector3f();
-                lastTangent.cross(tangent, rotationAxis);
-                float dot = lastTangent.dot(tangent);
-                float angle = (float) Math.acos(Math.max(-1, Math.min(1, dot)));
-                if (rotationAxis.lengthSquared() > 1e-6 && angle > 1e-4f) {
-                    rotationAxis.normalize();
-                    perpA = rotateAroundAxis(perpA, rotationAxis, angle);
-                    perpB = rotateAroundAxis(perpB, rotationAxis, angle);
-                }
-            }
-            lastTangent = tangent;
+            Vector3f tangent = getTangent(points, i, currentPoint);
+            Vector3f[] perpendiculars = computePerpendicularsMaintainingUp(tangent, upVector);
+            Vector3f perpA = perpendiculars[0];
+            Vector3f perpB = perpendiculars[1];
 
             List<Vector3f> ringExterior = generateRingOffsets(perpA, perpB, TUBE_RADIUS);
             List<Vector3f> ringInterior = generateRingOffsets(perpA, perpB, INNER_TUBE_RADIUS);
             List<Vector3f> ringLine = generateRingOffsets(perpA, perpB, LINE_RADIUS);
 
             cachedGeometry.add(new TubeRing(currentPoint, ringExterior, ringInterior, ringLine, 0.8f / TILING_UNIT));
-
-            if (i < points.size() - 1) {
-                currentDistance += (float) currentPoint.distanceTo(points.get(i + 1));
-            }
         }
         return cachedGeometry;
+    }
+
+    private static @NotNull Vector3f getTangent(List<Vec3> points, int i, Vec3 currentPoint) {
+        Vector3f tangent;
+        if (i == points.size() - 1) {
+            tangent = new Vector3f((float) (currentPoint.x - points.get(i - 1).x),
+                    (float) (currentPoint.y - points.get(i - 1).y),
+                    (float) (currentPoint.z - points.get(i - 1).z));
+        } else {
+            tangent = new Vector3f((float) (points.get(i + 1).x - currentPoint.x),
+                    (float) (points.get(i + 1).y - currentPoint.y),
+                    (float) (points.get(i + 1).z - currentPoint.z));
+        }
+        tangent.normalize();
+        return tangent;
+    }
+
+    private Vector3f[] computePerpendicularsMaintainingUp(Vector3f tangent, Vector3f upVector) {
+        Vector3f perpA = new Vector3f();
+        Vector3f perpB = new Vector3f();
+        float dotWithUp = Math.abs(tangent.dot(upVector));
+        if (dotWithUp > 0.99f) {
+            Vector3f alternativeUp = new Vector3f(1, 0, 0);
+            tangent.cross(alternativeUp, perpA);
+            perpA.normalize();
+            tangent.cross(perpA, perpB);
+            perpB.normalize();
+        } else {
+            Vector3f projectedUp = new Vector3f(upVector);
+            float dotProduct = tangent.dot(upVector);
+            Vector3f tangentComponent = new Vector3f(tangent).mul(dotProduct);
+            projectedUp.sub(tangentComponent);
+            projectedUp.normalize();
+
+            perpA = projectedUp;
+            tangent.cross(perpA, perpB);
+            perpB.normalize();
+        }
+        return new Vector3f[]{perpA, perpB};
     }
 
     private void addVertex(VertexConsumer builder, Matrix4f pose,
@@ -215,14 +229,6 @@ public class BezierTextureRenderer {
                 .setNormal(nx, ny, nz);
     }
 
-    private Vector3f[] computePerpendiculars(Vector3f direction) {
-        Vector3f perpA = findPerpendicularVector(direction);
-        Vector3f perpB = new Vector3f();
-        direction.cross(perpA, perpB);
-        perpB.normalize();
-        return new Vector3f[]{perpA, perpB};
-    }
-
     private List<Vector3f> generateRingOffsets(Vector3f perpA, Vector3f perpB, float radius) {
         List<Vector3f> ring = new ArrayList<>();
         for (int j = 0; j < SEGMENTS_AROUND; j++) {
@@ -230,17 +236,6 @@ public class BezierTextureRenderer {
             ring.add(getOffset(perpA, perpB, angle, radius));
         }
         return ring;
-    }
-
-    private Vector3f rotateAroundAxis(Vector3f vec, Vector3f axis, float angle) {
-        float cos = Mth.cos(angle);
-        float sin = Mth.sin(angle);
-        float oneMinusCos = 1.0f - cos;
-        Vector3f rotated = new Vector3f();
-        rotated.x = vec.x * (cos + axis.x * axis.x * oneMinusCos) + vec.y * (axis.x * axis.y * oneMinusCos - axis.z * sin) + vec.z * (axis.x * axis.z * oneMinusCos + axis.y * sin);
-        rotated.y = vec.x * (axis.y * axis.x * oneMinusCos + axis.z * sin) + vec.y * (cos + axis.y * axis.y * oneMinusCos) + vec.z * (axis.y * axis.z * oneMinusCos - axis.x * sin);
-        rotated.z = vec.x * (axis.z * axis.x * oneMinusCos - axis.y * sin) + vec.y * (axis.z * axis.y * oneMinusCos + axis.x * sin) + vec.z * (cos + axis.z * axis.z * oneMinusCos);
-        return rotated;
     }
 
     private Vector3f findPerpendicularVector(Vector3f vec) {
