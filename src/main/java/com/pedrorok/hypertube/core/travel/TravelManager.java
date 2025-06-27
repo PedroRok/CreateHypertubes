@@ -150,6 +150,8 @@ public class TravelManager {
         entity.getPersistentData().putFloat(LAST_TRAVEL_SPEED, travelData.getSpeed());
         entity.getPersistentData().putBoolean(IMMUNITY_TAG, true);
 
+        syncPersistentData(entity);
+
         Vec3 lastDir = travelData.getLastDir();
         Vec3 lastBlockPos = travelData.getLastBlockPos().getCenter();
         if (!forced) {
@@ -159,10 +161,10 @@ public class TravelManager {
             entity.teleportRelative(lastDir.x, lastDir.y, lastDir.z);
             entity.setDeltaMovement(lastDir.scale(travelData.getSpeed() + DEFAULT_MIN_SPEED));
         }
-        entity.setPose(Pose.CROUCHING);
         entity.hurtMarked = true;
 
-        syncPersistentData(entity);
+        entity.setPose(Pose.SWIMMING);
+
         TubeSoundManager.playTubeSuctionSound(entity, entity.position());
     }
 
@@ -289,7 +291,7 @@ public class TravelManager {
         entity.setYRot(yaw);
         entity.setXRot(pitch);
         if (entity instanceof Player player) {
-            PacketDistributor.sendToPlayer((ServerPlayer) player, PlayerTravelDirDataPacket.create(entity));
+            PacketDistributor.sendToPlayer((ServerPlayer) player, new PlayerTravelDirDataPacket(yaw, pitch));
         }
     }
 

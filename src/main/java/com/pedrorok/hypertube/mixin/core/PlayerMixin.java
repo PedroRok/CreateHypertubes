@@ -1,7 +1,7 @@
 package com.pedrorok.hypertube.mixin.core;
 
+import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
-import com.pedrorok.hypertube.network.packets.PlayerTravelDirDataPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -41,7 +41,7 @@ public class PlayerMixin {
         if (!Minecraft.getInstance().player.getUUID().equals(player.getUUID())) {
             return;
         }
-        player.setYRot(PlayerTravelDirDataPacket.YAW);
-        player.setXRot(PlayerTravelDirDataPacket.PITCH);
+        player.setYRot(DetachedPlayerDirController.get().getYaw());
+        player.setXRot(DetachedPlayerDirController.get().getPitch());
     }
 }

@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube.network.packets;
 
 import com.pedrorok.hypertube.HypertubeMod;
+import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -14,10 +15,6 @@ import org.jetbrains.annotations.NotNull;
  * @project Create Hypertube
  */
 public record PlayerTravelDirDataPacket(float yaw, float pitch) implements CustomPacketPayload {
-
-
-    public static float YAW = 0.0f;
-    public static float PITCH = 0.0f;
 
     public static final Type<PlayerTravelDirDataPacket> TYPE = new Type<>(
             ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "player_travel_dir")
@@ -58,8 +55,8 @@ public record PlayerTravelDirDataPacket(float yaw, float pitch) implements Custo
 
     private static void handleClient(PlayerTravelDirDataPacket packet) {
         try {
-            YAW = packet.yaw;
-            PITCH = packet.pitch;
+            DetachedPlayerDirController.get().setDetached(true);
+            DetachedPlayerDirController.get().updateRotation(packet.yaw, packet.pitch);
         } catch (Exception e) {
             HypertubeMod.LOGGER.error("Failed to handle PlayerTravelDirDataPacket", e);
         }

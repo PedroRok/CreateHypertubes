@@ -3,6 +3,7 @@ package com.pedrorok.hypertube.events;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.pedrorok.hypertube.core.camera.DetachedCameraController;
+import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
 import com.pedrorok.hypertube.core.placement.TubePlacement;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
@@ -15,6 +16,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.RenderLivingEvent;
 
@@ -46,6 +48,10 @@ public class ClientEvents {
         DetachedCameraController.tickCamera();
     }
 
+    @SubscribeEvent
+    public static void renderFrame(RenderFrameEvent.Pre event) {
+        DetachedPlayerDirController.tickPlayer();
+    }
 
     @SubscribeEvent
     public static void onRenderWorld(RenderLevelStageEvent event) {

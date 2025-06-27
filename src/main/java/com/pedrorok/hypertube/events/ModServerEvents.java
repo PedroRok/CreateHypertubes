@@ -9,6 +9,7 @@ import com.pedrorok.hypertube.utils.TubeUtils;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -18,6 +19,7 @@ import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 22/04/2025
@@ -45,21 +47,16 @@ public class ModServerEvents {
     }
 
     @SubscribeEvent
-    public static void entityHitBoxChangesWhenInHypertube(EntityEvent.Size event) {
+    public static void entityHitBoxChangesWhenInHypertube(EntityEvent.@NotNull Size event) {
         Entity entity = event.getEntity();
         if (!entity.isAddedToLevel())
             return;
         if (!TravelManager.hasHyperTubeData(entity))
             return;
 
-        float scale;
-        if (entity instanceof LivingEntity le) {
-            scale = le.getScale();
-        } else {
-            scale = 1.0F;
-        }
-
-        event.setNewSize(EntityDimensions.fixed(0.5F * scale, 0.5F * scale));
+        event.setNewSize(EntityDimensions.fixed(0.5F, 0.5F));
+        if (entity.level().isClientSide) return;
+        entity.setPose(Pose.CROUCHING);
     }
 
 
