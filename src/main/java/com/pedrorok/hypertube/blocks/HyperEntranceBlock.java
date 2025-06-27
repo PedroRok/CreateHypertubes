@@ -224,7 +224,7 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
         BlockEntity blockEntity = context.getLevel().getBlockEntity(context.getClickedPos());
         if (blockEntity instanceof HyperEntranceBlockEntity entrance) {
             if (entrance.wrenchClicked(context.getClickedFace())) {
-                IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
+                playRotateSound(context.getLevel(), context.getClickedPos());
                 return InteractionResult.SUCCESS;
             }
         }
@@ -246,7 +246,7 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
                     Component.translatable("block.hypertube.hyper_entrance.automatic_lock")
                             .withStyle(ChatFormatting.GREEN), true);
         }
-        IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
+        playRotateSound(context.getLevel(), context.getClickedPos());
         return InteractionResult.SUCCESS;
     }
 

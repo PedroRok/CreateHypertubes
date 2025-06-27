@@ -408,7 +408,7 @@ public class HypertubeBlock extends HalfTransparentBlock implements ITubeConnect
                 tube.wrenchClicked(context.getClickedFace());
             }
             updateAfterWrenched(state, context);
-            IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
+            playRotateSound(context.getLevel(), context.getClickedPos());
             return InteractionResult.SUCCESS;
         }
 
