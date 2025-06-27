@@ -35,12 +35,14 @@ public class BezierConnection implements IConnection {
     public static final Codec<BezierConnection> CODEC = RecordCodecBuilder.create(i -> i.group(
             SimpleConnection.CODEC.fieldOf("fromPos").forGetter(BezierConnection::getFromPos),
             SimpleConnection.CODEC.fieldOf("toPos").forGetter(BezierConnection::getToPos),
+            Codec.INT.fieldOf("tubeSegments").forGetter(BezierConnection::getTubeSegments),
             Vec3.CODEC.listOf().fieldOf("curvePoints").forGetter(BezierConnection::getBezierPoints)
     ).apply(i, BezierConnection::new));
 
     public static final StreamCodec<ByteBuf, BezierConnection> STREAM_CODEC = StreamCodec.composite(
             SimpleConnection.STREAM_CODEC, BezierConnection::getFromPos,
             SimpleConnection.STREAM_CODEC, BezierConnection::getToPos,
+            CodecUtils.INTEGER, BezierConnection::getTubeSegments,
             CodecUtils.VEC3_LIST, BezierConnection::getBezierPoints,
             BezierConnection::new
     );
@@ -55,24 +57,29 @@ public class BezierConnection implements IConnection {
     private final SimpleConnection fromPos;
     @Getter
     private @Nullable SimpleConnection toPos;
+
+    @Getter
+    private int tubeSegments;
+
     private List<Vec3> bezierPoints;
 
     private ResponseDTO valid;
     private final int detailLevel;
 
-    private BezierConnection(SimpleConnection fromPos, SimpleConnection toPos, List<Vec3> bezierPoints) {
-        this(fromPos, toPos, (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter())));
+    private BezierConnection(SimpleConnection fromPos, SimpleConnection toPos, int tubeSegments, List<Vec3> bezierPoints) {
+        this(fromPos, toPos, tubeSegments, (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter())));
         this.bezierPoints = bezierPoints;
     }
 
     public BezierConnection(SimpleConnection fromPos, @Nullable SimpleConnection toPos) {
-        this(fromPos, toPos, toPos != null ? (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter())) : 0);
+        this(fromPos, toPos,1,  toPos != null ? (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter())) : 0);
     }
 
-    public BezierConnection(SimpleConnection fromPos, SimpleConnection toPos, int detailLevel) {
+    public BezierConnection(SimpleConnection fromPos, SimpleConnection toPos, int tubeSegments, int detailLevel) {
         this.fromPos = fromPos;
         this.toPos = toPos;
         this.detailLevel = detailLevel;
+        this.tubeSegments = tubeSegments;
     }
 
     public List<Vec3> getBezierPoints() {
@@ -251,7 +258,7 @@ public class BezierConnection implements IConnection {
     public BezierConnection invert() {
         List<Vec3> newBezier = new ArrayList<>(bezierPoints);
         Collections.reverse(newBezier);
-        return new BezierConnection(new SimpleConnection(toPos.pos(), toPos.direction().getOpposite()), fromPos, newBezier);
+        return new BezierConnection(new SimpleConnection(toPos.pos(), toPos.direction().getOpposite()), fromPos, tubeSegments, newBezier);
     }
 
     @Override
@@ -272,6 +279,11 @@ public class BezierConnection implements IConnection {
     @Override
     public SimpleConnection getThisConnection() {
         return getFromPos();
+    }
+
+    @Override
+    public void updateTubeSegments(Level level) {
+        tubeSegments = tubeSegments == 1 ? 2 : 1;
     }
 
     @Override

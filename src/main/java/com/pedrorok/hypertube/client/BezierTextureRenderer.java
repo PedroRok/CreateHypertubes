@@ -52,7 +52,7 @@ public class BezierTextureRenderer {
         this.textureLine = ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "textures/block/tube_base_glass_2.png");
     }
 
-    public void renderBezierConnection(BlockPos blockPosInitial, BlockState blockState, BezierConnection connection, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+    public void renderBezierConnection(BlockPos blockPosInitial, BezierConnection connection, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
         if (connection == null || !connection.getValidation().valid()) {
             return;
         }
@@ -63,10 +63,10 @@ public class BezierTextureRenderer {
 
         Level level = Minecraft.getInstance().level;
         BlockEntity blockEntity = level.getBlockEntity(blockPosInitial);
-        if (!(blockEntity instanceof ITubeConnectionEntity tube)) {
+        if (!(blockEntity instanceof ITubeConnectionEntity)) {
             return;
         }
-        int segmentDistance =  tube.getTubeSegmentCount();
+        int segmentDistance =  connection.getTubeSegments();
 
 
         poseStack.pushPose();

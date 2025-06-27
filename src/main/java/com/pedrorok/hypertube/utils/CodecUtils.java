@@ -29,6 +29,17 @@ public class CodecUtils {
 
     };
 
+    public static StreamCodec<ByteBuf, Integer> INTEGER = new StreamCodec<>() {
+        @Override
+        public @NotNull Integer decode(ByteBuf byteBuf) {
+            return byteBuf.readInt();
+        }
+
+        @Override
+        public void encode(ByteBuf byteBuf, Integer integer) {
+            byteBuf.writeInt(integer);
+        }
+    };
     public static StreamCodec<ByteBuf, List<Vec3>> VEC3_LIST = new StreamCodec<>() {
         @Override
         public List<Vec3> decode(ByteBuf byteBuf) {

@@ -35,9 +35,6 @@ public class HypertubeBlockEntity extends BlockEntity implements ITubeConnection
 
     private IConnection connectionOne;
     private IConnection connectionTwo;
-
-    private int tubeSegmentCount = 1;
-
     public HypertubeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
@@ -47,7 +44,6 @@ public class HypertubeBlockEntity extends BlockEntity implements ITubeConnection
     protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
         super.saveAdditional(tag, registries);
         writeConnection(tag, new Tuple<>(connectionOne, "ConnectionTo"), new Tuple<>(connectionTwo, "ConnectionFrom"));
-        tag.put("TubeSegmentCount", NbtOps.INSTANCE.createInt(tubeSegmentCount));
     }
 
     @Override
@@ -59,9 +55,6 @@ public class HypertubeBlockEntity extends BlockEntity implements ITubeConnection
         }
         if (tag.contains("ConnectionFrom")) {
             this.connectionTwo = getConnection(tag, "ConnectionFrom");
-        }
-        if (tag.contains("TubeSegmentCount")) {
-            this.tubeSegmentCount = tag.getInt("TubeSegmentCount");
         }
     }
 
@@ -85,13 +78,19 @@ public class HypertubeBlockEntity extends BlockEntity implements ITubeConnection
     // --------- Nbt Methods ---------
 
     // --------- Tube Segment Methods ---------
-    public void setTubeSegmentCount(int count) {
-        if (count < 1 || count > 4) {
-            throw new IllegalArgumentException("Tube segment count must be between 1 and 4.");
+    public boolean wrenchClicked(Direction direction) {
+        IConnection connectionInDirection = getConnectionInDirection(direction);
+        if (connectionInDirection == null) {
+            if (connectionOne != null) {
+                connectionOne.updateTubeSegments(level);
+            }
+            if (connectionTwo != null) {
+                connectionTwo.updateTubeSegments(level);
+            }
+            return true;
         }
-        this.tubeSegmentCount = count;
-        setChanged();
-        sync();
+        connectionInDirection.updateTubeSegments(level);
+        return true;
     }
     // --------- Tube Segment Methods ---------
 

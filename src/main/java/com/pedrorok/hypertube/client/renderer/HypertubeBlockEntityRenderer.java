@@ -26,10 +26,10 @@ public class HypertubeBlockEntityRenderer implements BlockEntityRenderer<Hypertu
     @Override
     public void render(HypertubeBlockEntity blockEntity, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
         if (blockEntity.getConnectionOne() instanceof BezierConnection bezierConnectionOne) {
-            tubeRenderer.renderBezierConnection(blockEntity.getBlockPos(), blockEntity.getBlockState(), bezierConnectionOne, poseStack, bufferSource, packedLight, packedOverlay);
+            tubeRenderer.renderBezierConnection(blockEntity.getBlockPos(), bezierConnectionOne, poseStack, bufferSource, packedLight, packedOverlay);
         }
         if (blockEntity.getConnectionTwo() instanceof BezierConnection bezierConnectionTwo) {
-            tubeRenderer.renderBezierConnection(blockEntity.getBlockPos(), blockEntity.getBlockState(), bezierConnectionTwo, poseStack, bufferSource, packedLight, packedOverlay);
+            tubeRenderer.renderBezierConnection(blockEntity.getBlockPos(), bezierConnectionTwo, poseStack, bufferSource, packedLight, packedOverlay);
         }
     }
 

@@ -58,8 +58,6 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
     private final UUID tubeSoundId = UUID.randomUUID();
 
     @Getter
-    private int tubeSegmentCount = 1;
-    @Getter
     private IConnection connection;
 
     public HyperEntranceBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -73,27 +71,21 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         if (compound.contains("Connection")) {
             connection = getConnection(compound, "Connection");
         }
-        if (compound.contains("TubeSegmentCount")) {
-            tubeSegmentCount = compound.getInt("TubeSegmentCount");
-        }
     }
 
     @Override
     protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(compound, registries, clientPacket);
         writeConnection(compound, new Tuple<>(connection, "Connection"));
-        compound.put("TubeSegmentCount", NbtOps.INSTANCE.createInt(tubeSegmentCount));
     }
     // --------- Nbt Methods ---------
 
     // --------- Tube Segment Methods ---------
-    public void setTubeSegmentCount(int count) {
-        if (count < 1 || count > 4) {
-            throw new IllegalArgumentException("Tube segment count must be between 1 and 4.");
-        }
-        this.tubeSegmentCount = count;
-        setChanged();
-        sync();
+    public boolean wrenchClicked(Direction direction) {
+        IConnection connectionInDirection = getConnectionInDirection(direction);
+        if (connectionInDirection == null) return false;
+        connectionInDirection.updateTubeSegments(level);
+        return true;
     }
     // --------- Tube Segment Methods ---------
 

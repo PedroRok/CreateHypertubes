@@ -6,6 +6,7 @@ import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.utils.MessageUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;
+import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.content.kinetics.base.KineticBlock;
 import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import net.minecraft.core.BlockPos;
@@ -221,6 +222,14 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
 
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+
+        BlockEntity blockEntity = context.getLevel().getBlockEntity(context.getClickedPos());
+        if (blockEntity instanceof HyperEntranceBlockEntity entrance) {
+            if (entrance.wrenchClicked(context.getClickedFace())) {
+                IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
+                return InteractionResult.SUCCESS;
+            }
+        }
         Player player = context.getPlayer();
         BlockState blockState = state.setValue(LOCKED, !state.getValue(LOCKED));
         Level level = context.getLevel();
@@ -239,12 +248,9 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
                     Component.translatable("block.hypertube.hyper_entrance.automatic_lock")
                             .withColor(0x55FF00), true);
         }
-        level.playSound(player, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.75f, 1);
-
+        IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
         return InteractionResult.SUCCESS;
     }
-
-
 
     protected @NotNull BlockState updateShape(BlockState p_313906_, @NotNull Direction p_313739_, @NotNull BlockState p_313829_, @NotNull LevelAccessor p_313692_, @NotNull BlockPos p_313842_, @NotNull BlockPos p_313843_) {
         if (p_313906_.getValue(WATERLOGGED)) {

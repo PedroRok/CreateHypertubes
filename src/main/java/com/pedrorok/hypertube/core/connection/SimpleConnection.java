@@ -53,6 +53,14 @@ public record SimpleConnection(BlockPos pos, Direction direction) implements ICo
         return this;
     }
 
+    @Override
+    public void updateTubeSegments(Level level) {
+        BezierConnection thisEntranceConnection = getThisEntranceConnection(level);
+        if (thisEntranceConnection != null) {
+            thisEntranceConnection.updateTubeSegments(level);
+        }
+    }
+
     public BlockPos pos() {
         return pos;
     }

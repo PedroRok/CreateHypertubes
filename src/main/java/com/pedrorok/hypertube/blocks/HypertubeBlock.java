@@ -42,7 +42,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
@@ -408,14 +407,15 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements ITube
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
         Player player = context.getPlayer();
-        level.playSound(player, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.75f, 1);
         if (state.getValue(CONNECTED)) {
             if (level.getBlockEntity(pos) instanceof ITubeConnectionEntity tube) {
-                tube.setTubeSegmentCount(tube.getTubeSegmentCount() == 1 ? 2 : 1);
+                tube.wrenchClicked(context.getClickedFace());
             }
             updateAfterWrenched(state, context);
-            return IWrenchable.super.onWrenched(state, context);
+            IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
+            return InteractionResult.SUCCESS;
         }
+
         if (state.getValue(EAST_WEST)) {
             state = state.setValue(EAST_WEST, false)
                     .setValue(UP_DOWN, true);
@@ -428,6 +428,8 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements ITube
         } else {
             state = getState(state, List.of(context.getClickedFace()), false);
         }
+
+        level.playSound(player, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.75f, 1);
 
         return IWrenchable.super.onWrenched(state, context);
     }

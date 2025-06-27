@@ -16,16 +16,18 @@ import java.util.UUID;
 public interface IConnection {
 
     @Nullable
-    public abstract BezierConnection getThisEntranceConnection(Level level);
+    BezierConnection getThisEntranceConnection(Level level);
 
-    public abstract Direction getThisEntranceDirection(Level level);
+    Direction getThisEntranceDirection(Level level);
 
-    public abstract boolean isSameConnection(IConnection connection);
+    boolean isSameConnection(IConnection connection);
 
-    public abstract SimpleConnection getThisConnection();
+    SimpleConnection getThisConnection();
+
+    void updateTubeSegments(Level level);
 
 
-    public static SimpleConnection getSameConnectionBlockPos(IConnection conn, Level world, BlockPos pos) {
+    static SimpleConnection getSameConnectionBlockPos(IConnection conn, Level world, BlockPos pos) {
         if (conn != null) {
             BezierConnection bezier = conn.getThisEntranceConnection(world);
             if (bezier != null) {

@@ -51,7 +51,7 @@ public class EntranceBlockEntityRenderer extends KineticBlockEntityRenderer<Hype
         cogwheelModel.renderInto(ms, buffer.getBuffer(RenderType.solid()));
 
         if (be.getConnection() instanceof BezierConnection bezierConnection) {
-            tubeRenderer.renderBezierConnection(be.getBlockPos(), be.getBlockState(), bezierConnection, ms, buffer, light, overlay);
+            tubeRenderer.renderBezierConnection(be.getBlockPos(), bezierConnection, ms, buffer, light, overlay);
         }
     }
 
