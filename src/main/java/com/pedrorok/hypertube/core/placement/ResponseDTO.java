@@ -12,6 +12,7 @@ public record ResponseDTO(boolean valid, String errorMessage) {
     public static ResponseDTO get(boolean valid) {
         return new ResponseDTO(valid, "");
     }
+
     public static ResponseDTO get(boolean valid, String errorMessage) {
         return new ResponseDTO(valid, errorMessage);
     }
@@ -19,6 +20,7 @@ public record ResponseDTO(boolean valid, String errorMessage) {
     public static ResponseDTO invalid(String errorMessageKey) {
         return new ResponseDTO(false, errorMessageKey);
     }
+
     public static ResponseDTO invalid() {
         return new ResponseDTO(false, "");
     }

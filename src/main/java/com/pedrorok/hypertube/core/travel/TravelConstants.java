@@ -5,9 +5,8 @@ import net.minecraft.world.entity.EntityType;
 import java.util.Map;
 
 /**
- *
- * @project Create Hypertube
  * @author Rok, Pedro Lucas nmm. Created on 15/06/2025
+ * @project Create Hypertube
  */
 public class TravelConstants {
 

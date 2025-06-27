@@ -1,10 +1,10 @@
 package com.pedrorok.hypertube.utils;
 
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
-import com.pedrorok.hypertube.items.HypertubeItem;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
-import com.pedrorok.hypertube.core.placement.ResponseDTO;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
+import com.pedrorok.hypertube.core.placement.ResponseDTO;
+import com.pedrorok.hypertube.items.HypertubeItem;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModDataComponent;
 import net.minecraft.core.BlockPos;

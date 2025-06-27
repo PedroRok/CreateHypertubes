@@ -4,8 +4,8 @@ import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
-import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
@@ -152,7 +152,6 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements ITube
 
         return getState(blockState, world, pos);
     }
-
 
 
     public BlockState getState(BlockState blockState, Collection<Direction> activeDirections, boolean connected) {

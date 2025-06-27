@@ -7,8 +7,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.UUID;
-
 /**
  * @author Rok, Pedro Lucas nmm. Created on 17/06/2025
  * @project Create Hypertube

@@ -102,8 +102,6 @@ public interface ITubeConnectionEntity {
             }
         }
 
-
-
         if (connectionToClear != null) {
             BlockEntity otherBlock = level.getBlockEntity(otherBlockPos);
             if (otherBlock instanceof ITubeConnectionEntity tubeConnection) {

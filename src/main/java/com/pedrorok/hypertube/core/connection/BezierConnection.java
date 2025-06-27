@@ -72,7 +72,7 @@ public class BezierConnection implements IConnection {
     }
 
     public BezierConnection(SimpleConnection fromPos, @Nullable SimpleConnection toPos) {
-        this(fromPos, toPos,1,  toPos != null ? (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter())) : 0);
+        this(fromPos, toPos, 1, toPos != null ? (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter())) : 0);
     }
 
     public BezierConnection(SimpleConnection fromPos, SimpleConnection toPos, int tubeSegments, int detailLevel) {
@@ -247,8 +247,8 @@ public class BezierConnection implements IConnection {
 
     @OnlyIn(Dist.CLIENT)
     public static void outlineBlocks(BlockPos pos) {
-        Outliner.getInstance().showAABB(pos.asLong(), new AABB(pos.getX() +1, pos.getY() +1, pos.getZ()+1,
-                        pos.getX() , pos.getY(), pos.getZ()))
+        Outliner.getInstance().showAABB(pos.asLong(), new AABB(pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1,
+                        pos.getX(), pos.getY(), pos.getZ()))
                 .colored(0xEA5C2B)
                 .lineWidth(1 / 8f)
                 .disableLineNormals();

@@ -18,7 +18,7 @@ public class TubeConnectionException extends RuntimeException {
 
         for (IConnection connection : connections) {
             i++;
-            sb.append("[").append(i).append("] ").append(connection).append( " ");
+            sb.append("[").append(i).append("] ").append(connection).append(" ");
         }
         return sb.toString();
     }

@@ -1,7 +1,7 @@
 package com.pedrorok.hypertube.mixin.core;
 
-import com.pedrorok.hypertube.core.camera.DetachedCameraController;
 import com.pedrorok.hypertube.config.ClientConfig;
+import com.pedrorok.hypertube.core.camera.DetachedCameraController;
 import com.pedrorok.hypertube.core.travel.TravelManager;
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
@@ -30,7 +30,8 @@ public class CameraMixin {
     @Shadow
     private boolean detached;
 
-    @Shadow private Entity entity;
+    @Shadow
+    private Entity entity;
 
     @Unique
     public void createHypertube$setDetachedExternal(boolean newDetached) {
@@ -53,7 +54,7 @@ public class CameraMixin {
             return;
         }
 
-        if (!ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get()){
+        if (!ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get()) {
             options.setCameraType(CameraType.THIRD_PERSON_BACK);
         }
 
