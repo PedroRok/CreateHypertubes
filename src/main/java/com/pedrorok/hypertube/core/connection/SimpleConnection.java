@@ -4,10 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
@@ -17,12 +15,6 @@ public record SimpleConnection(BlockPos pos, Direction direction) implements ICo
             BlockPos.CODEC.fieldOf("pos").forGetter(SimpleConnection::pos),
             Direction.CODEC.fieldOf("direction").forGetter(SimpleConnection::direction)
     ).apply(i, SimpleConnection::new));
-
-    public static final StreamCodec<ByteBuf, SimpleConnection> STREAM_CODEC = StreamCodec.composite(
-            BlockPos.STREAM_CODEC, SimpleConnection::pos,
-            Direction.STREAM_CODEC, SimpleConnection::direction,
-            SimpleConnection::new
-    );
 
     @Override
     @Nullable

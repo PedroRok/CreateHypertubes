@@ -27,6 +27,7 @@ public class NetworkHandler {
                 new ResourceLocation(HypertubeMod.MOD_ID, "connections"), () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
 
         register(SyncPersistentDataPacket.class);
+        register(PlayerTravelDirDataPacket.class);
     }
 
     private static <T extends Packet<T>> void register(Class<T> clazz) {
@@ -42,11 +43,6 @@ public class NetworkHandler {
                     }
                 },
                 Packet::execute
-        );
-        registrar.playToClient(
-                PlayerTravelDirDataPacket.TYPE,
-                PlayerTravelDirDataPacket.STREAM_CODEC,
-                PlayerTravelDirDataPacket::handle
         );
     }
 }

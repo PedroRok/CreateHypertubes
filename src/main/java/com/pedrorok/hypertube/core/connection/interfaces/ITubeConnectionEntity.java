@@ -25,10 +25,10 @@ public interface ITubeConnectionEntity {
     default IConnection getConnection(CompoundTag tag, String key) {
         try {
             return BezierConnection.CODEC.parse(NbtOps.INSTANCE, tag.get(key))
-                    .getOrThrow();
+                    .get().orThrow();
         } catch (Exception ignored) {
             return SimpleConnection.CODEC.parse(NbtOps.INSTANCE, tag.get(key))
-                    .getOrThrow();
+                    .get().orThrow();
         }
     }
 
@@ -42,10 +42,10 @@ public interface ITubeConnectionEntity {
     private void writeConnection(CompoundTag tag, IConnection connection, String key) {
         if (connection instanceof SimpleConnection simpleConnection) {
             tag.put(key, SimpleConnection.CODEC.encodeStart(NbtOps.INSTANCE, simpleConnection)
-                    .getOrThrow());
+                    .get().orThrow());
         } else {
             tag.put(key, BezierConnection.CODEC.encodeStart(NbtOps.INSTANCE, (BezierConnection) connection)
-                    .getOrThrow());
+                    .get().orThrow());
         }
     }
 

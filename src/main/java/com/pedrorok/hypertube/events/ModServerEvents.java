@@ -14,6 +14,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -35,13 +37,13 @@ public class ModServerEvents {
     }
 
     @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.START) return;
-        TravelManager.playerTick(event.player);
-        if (event.player.level().isClientSide) {
+    public static void onPlayerTick(LivingEvent.LivingTickEvent event) {
+        TravelManager.entityTick(event.getEntity());
+        if (event.getEntity().level().isClientSide) {
             return;
         }
-        TubePlacement.tickPlayerServer(event.player);
+        if (!(event.getEntity() instanceof Player player)) return;
+        TubePlacement.tickPlayerServer(player);
     }
 
     @SubscribeEvent

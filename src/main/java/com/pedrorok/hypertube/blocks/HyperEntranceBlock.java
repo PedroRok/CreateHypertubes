@@ -250,7 +250,7 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
         return InteractionResult.SUCCESS;
     }
 
-    protected @NotNull BlockState updateShape(BlockState p_313906_, @NotNull Direction p_313739_, @NotNull BlockState p_313829_, @NotNull LevelAccessor p_313692_, @NotNull BlockPos p_313842_, @NotNull BlockPos p_313843_) {
+    public @NotNull BlockState updateShape(BlockState p_313906_, @NotNull Direction p_313739_, @NotNull BlockState p_313829_, @NotNull LevelAccessor p_313692_, @NotNull BlockPos p_313842_, @NotNull BlockPos p_313843_) {
         if (p_313906_.getValue(WATERLOGGED)) {
             p_313692_.scheduleTick(p_313842_, Fluids.WATER, Fluids.WATER.getTickDelay(p_313692_));
         }
@@ -258,7 +258,7 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
         return super.updateShape(p_313906_, p_313739_, p_313829_, p_313692_, p_313842_, p_313843_);
     }
 
-    protected @NotNull FluidState getFluidState(BlockState p_313789_) {
+    public @NotNull FluidState getFluidState(BlockState p_313789_) {
         return p_313789_.getValue(WATERLOGGED) ? Fluids.WATER.getSource(true) : super.getFluidState(p_313789_);
     }
 }

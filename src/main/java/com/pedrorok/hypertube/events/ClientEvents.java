@@ -14,6 +14,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -46,12 +47,8 @@ public class ClientEvents {
             return;
         }
         TubePlacement.clientTick();
-        DetachedCameraController.cameraTick();
-    }
-
-    @SubscribeEvent
-    public static void renderFrame(RenderPlayerEvent.Pre event) {
         DetachedPlayerDirController.tickPlayer();
+        DetachedCameraController.cameraTick();
     }
 
     @SubscribeEvent

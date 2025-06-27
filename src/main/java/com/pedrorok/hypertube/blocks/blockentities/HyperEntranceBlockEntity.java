@@ -59,17 +59,19 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
     }
 
     // --------- Nbt Methods ---------
+
+
     @Override
-    protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
-        super.read(compound, registries, clientPacket);
+    protected void read(CompoundTag compound, boolean clientPacket) {
+        super.read(compound, clientPacket);
         if (compound.contains("Connection")) {
             connection = getConnection(compound, "Connection");
         }
     }
 
     @Override
-    protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
-        super.write(compound, registries, clientPacket);
+    protected void write(CompoundTag compound, boolean clientPacket) {
+        super.write(compound, clientPacket);
         writeConnection(compound, new Tuple<>(connection, "Connection"));
     }
     // --------- Nbt Methods ---------
@@ -199,7 +201,6 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         );
     }
 
-    @Nullable
     private LivingEntity getInRangeLivingEntities(ServerLevel level, Vec3 centerPos, Direction facing) {
         Vec3 checkPos = centerPos.add(Vec3.atLowerCornerOf(facing.getOpposite().getNormal()));
 
@@ -212,7 +213,6 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
                 centerPos.x, centerPos.y, centerPos.z);
     }
 
-    @Nullable
     private LivingEntity getNearbyLivingEntities(ServerLevel level, Vec3 centerPos) {
         return level.getNearestEntity(
                 level.getEntitiesOfClass(LivingEntity.class,
@@ -262,7 +262,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
     }
 
     @Override
-    public @Nullable IConnection getConnectionInDirection(Direction direction) {
+    public IConnection getConnectionInDirection(Direction direction) {
         SimpleConnection sameConnectionBlockPos = IConnection.getSameConnectionBlockPos(connection, level, worldPosition);
         if (sameConnectionBlockPos != null) {
             Direction thisConn = sameConnectionBlockPos.direction();
@@ -274,7 +274,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
     }
 
     @Override
-    public @Nullable IConnection getThisConnectionFrom(SimpleConnection connection) {
+    public IConnection getThisConnectionFrom(SimpleConnection connection) {
         if (this.connection instanceof BezierConnection bezierConnection) {
             if (connection.isSameConnection(bezierConnection.getFromPos()))
                 return bezierConnection;
@@ -345,5 +345,10 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         if (level != null && !level.isClientSide) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_ALL);
         }
+    }
+
+    @Override
+    public AABB getRenderBoundingBox() {
+        return new AABB(worldPosition).inflate(512);
     }
 }

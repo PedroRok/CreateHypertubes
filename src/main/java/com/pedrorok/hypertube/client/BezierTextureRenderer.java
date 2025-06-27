@@ -8,12 +8,11 @@ import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -43,8 +42,8 @@ public class BezierTextureRenderer {
     private final ResourceLocation textureLine;
 
     public BezierTextureRenderer() {
-        this.textureTube = new ResourceLocation(HypertubeMod.MOD_ID, "textures/block/entity_tube_base.png");
-        this.textureLine = new ResourceLocation(HypertubeMod.MOD_ID,  "textures/block/tube_base_glass_2.png");
+        this.textureTube = new ResourceLocation(HypertubeMod.MOD_ID, "textures/block/tube_base_glass.png");
+        this.textureLine = new ResourceLocation(HypertubeMod.MOD_ID, "textures/block/tube_base_glass_2.png");
     }
 
     public void renderBezierConnection(BlockPos blockPosInitial, BezierConnection connection, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
@@ -217,8 +216,8 @@ public class BezierTextureRenderer {
         float y = (float) pos.y + offset.y;
         float z = (float) pos.z + offset.z;
 
-        float normalMultiplier = invertNormal ? -1.0f : 1.0f;
-        float nx = offset.x * normalMultiplier;
+        float normalMultiplier = invertNormal ? -1.8f : 1.8f;
+        float nx = offset.x  * normalMultiplier;
         float ny = offset.y * normalMultiplier;
         float nz = offset.z * normalMultiplier;
 
@@ -238,18 +237,6 @@ public class BezierTextureRenderer {
             ring.add(getOffset(perpA, perpB, angle, radius));
         }
         return ring;
-    }
-
-    private Vector3f findPerpendicularVector(Vector3f vec) {
-        Vector3f perpendicular;
-        if (Math.abs(vec.y()) > 0.9f) {
-            perpendicular = new Vector3f(1, 0, 0);
-        } else {
-            perpendicular = new Vector3f(0, 1, 0);
-        }
-        Vector3f result = new Vector3f();
-        vec.cross(perpendicular, result);
-        return result.normalize();
     }
 
     private Vector3f getOffset(Vector3f perpA, Vector3f perpB, float angle, float radius) {

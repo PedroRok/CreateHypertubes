@@ -5,9 +5,8 @@ import lombok.Setter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 27/06/2025
@@ -32,7 +31,7 @@ public class DetachedPlayerDirController {
     private float targetYaw = 0;
     private float targetPitch = 0;
 
-    private static final double SMOOTHING_ROTATION = 0.75;
+    private static final double SMOOTHING_ROTATION = 0.80;
 
     @Setter
     private boolean detached = false;

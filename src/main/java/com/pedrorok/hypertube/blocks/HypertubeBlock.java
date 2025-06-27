@@ -36,14 +36,14 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HalfTransparentBlock;
 import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.WaterloggedTransparentBlock;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -61,12 +61,14 @@ import java.util.Set;
  * @author Rok, Pedro Lucas nmm. Created on 21/05/2025
  * @project Create Hypertube
  */
-public class HypertubeBlock extends WaterloggedTransparentBlock implements ITubeConnection, IBE<HypertubeBlockEntity>, IWrenchable {
+public class HypertubeBlock extends HalfTransparentBlock implements ITubeConnection, IBE<HypertubeBlockEntity>, IWrenchable, SimpleWaterloggedBlock {
 
     public static final BooleanProperty CONNECTED = BooleanProperty.create("connected");
     public static final BooleanProperty NORTH_SOUTH = BooleanProperty.create("north_south");
     public static final BooleanProperty EAST_WEST = BooleanProperty.create("east_west");
     public static final BooleanProperty UP_DOWN = BooleanProperty.create("up_down");
+
+    public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
     public static final VoxelShape SHAPE_NORTH_SOUTH = Block.box(0D, 0D, 4D, 16D, 16D, 11D);
     public static final VoxelShape SHAPE_EAST_WEST = Block.box(5D, 0D, 0D, 12D, 16D, 16D);
@@ -263,8 +265,10 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements ITube
 
     private void playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Player player, boolean wrenched) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof ITubeConnectionEntity tube))
-            return super.playerWillDestroy(level, pos, state, player);
+        if (!(blockEntity instanceof ITubeConnectionEntity tube)) {
+            super.playerWillDestroy(level, pos, state, player);
+            return;
+        }
 
         int toDrop = tube.blockBroken();
 
@@ -312,8 +316,9 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements ITube
         level.playSound(null, pos, getSoundType(state, level, pos, placer).getPlaceSound(), SoundSource.BLOCKS,
                 1, level.random.nextFloat() * 0.1f + 0.9f);
 
+        System.out.println(((ITubeConnectionEntity) otherBlockEntity).hasConnectionAvailable());
         if (!otherConnection.hasConnectionAvailable()) {
-            MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.invalid_conn").withColor(0xFF0000), true);
+            MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.invalid_conn").withStyle(ChatFormatting.RED), true);
             return;
         }
 

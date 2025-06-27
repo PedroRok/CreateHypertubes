@@ -2,39 +2,24 @@ package com.pedrorok.hypertube.network.packets;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import com.pedrorok.hypertube.network.Packet;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
-import org.jetbrains.annotations.NotNull;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.network.NetworkEvent;
+
+import java.util.function.Supplier;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 18/06/2025
  * @project Create Hypertube
  */
-public record PlayerTravelDirDataPacket(float yaw, float pitch) implements CustomPacketPayload {
+public record PlayerTravelDirDataPacket(float yaw, float pitch) implements Packet<PlayerTravelDirDataPacket> {
 
-    public static final Type<PlayerTravelDirDataPacket> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "player_travel_dir")
-    );
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, PlayerTravelDirDataPacket> STREAM_CODEC =
-            StreamCodec.of(PlayerTravelDirDataPacket::encode, PlayerTravelDirDataPacket::decode);
-
-    @Override
-    public @NotNull Type<? extends CustomPacketPayload> type() {
-        return TYPE;
-    }
-
-    public static void encode(RegistryFriendlyByteBuf buf, PlayerTravelDirDataPacket packet) {
-        buf.writeFloat(packet.yaw);
-        buf.writeFloat(packet.pitch);
-    }
-
-    public static PlayerTravelDirDataPacket decode(RegistryFriendlyByteBuf buf) {
-        return new PlayerTravelDirDataPacket(
+    public PlayerTravelDirDataPacket(FriendlyByteBuf buf) {
+        this(
                 buf.readFloat(),
                 buf.readFloat()
         );
@@ -47,12 +32,7 @@ public record PlayerTravelDirDataPacket(float yaw, float pitch) implements Custo
         );
     }
 
-    public static void handle(PlayerTravelDirDataPacket packet, IPayloadContext context) {
-        context.enqueueWork(() -> {
-            handleClient(packet);
-        });
-    }
-
+    @OnlyIn(Dist.CLIENT)
     private static void handleClient(PlayerTravelDirDataPacket packet) {
         try {
             DetachedPlayerDirController.get().setDetached(true);
@@ -60,5 +40,19 @@ public record PlayerTravelDirDataPacket(float yaw, float pitch) implements Custo
         } catch (Exception e) {
             HypertubeMod.LOGGER.error("Failed to handle PlayerTravelDirDataPacket", e);
         }
+    }
+
+    @Override
+    public void toBytes(FriendlyByteBuf buf) {
+        buf.writeFloat(yaw);
+        buf.writeFloat(pitch);
+    }
+
+    @Override
+    public void execute(Supplier<NetworkEvent.Context> ctx) {
+        ctx.get().enqueueWork(() -> {
+            handleClient(this);
+        });
+        ctx.get().setPacketHandled(true);
     }
 }

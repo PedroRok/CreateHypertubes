@@ -145,7 +145,7 @@ public class TubeSoundManager {
         float pitch = 0.8F + random.nextFloat() * 0.4F;
         int seed = random.nextInt(1000);
         for (Player oPlayer : entity.level().players()) {
-            ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(ModSounds.HYPERTUBE_SUCTION,
+            ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(ModSounds.HYPERTUBE_SUCTION.getHolder().get(),
                     SoundSource.BLOCKS, pos.x, pos.y, pos.z, 1, pitch, seed));
         }
     }

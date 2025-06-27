@@ -42,9 +42,4 @@ public class HypertubeBlockEntityRenderer implements BlockEntityRenderer<Hypertu
     public boolean shouldRender(@NotNull HypertubeBlockEntity blockEntity, @NotNull Vec3 pos) {
         return true;
     }
-
-    @Override
-    public @NotNull AABB getRenderBoundingBox(@NotNull HypertubeBlockEntity blockEntity) {
-        return AABB.INFINITE;
-    }
 }

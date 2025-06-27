@@ -261,7 +261,8 @@ public class TravelManager {
         if (distanceFromLine > distanceFromLineThreshold) {
             float yaw = (float) Math.toDegrees(Math.atan2(segmentDirection.x, segmentDirection.z));
             float pitch = (float) Math.toDegrees(Math.atan2(segmentDirection.y, Math.sqrt(segmentDirection.x * segmentDirection.x + segmentDirection.z * segmentDirection.z)));
-            entity.teleportTo((ServerLevel) entity.level(), currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, RelativeMovement.ROTATION, -yaw, -pitch);
+            if (entity.level() instanceof ServerLevel)
+                entity.teleportTo((ServerLevel) entity.level(), currentIdealPosition.x, currentIdealPosition.y, currentIdealPosition.z, RelativeMovement.ROTATION, -yaw, -pitch);
         } else if (correctedMovement.length() > 0.5) {
             Vec3 movementDirection = correctedMovement.normalize();
 
@@ -294,7 +295,8 @@ public class TravelManager {
         entity.setYRot(yaw);
         entity.setXRot(pitch);
         if (entity instanceof Player player) {
-            PacketDistributor.sendToPlayer((ServerPlayer) player, new PlayerTravelDirDataPacket(yaw, pitch));
+            NetworkHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player),
+                    new PlayerTravelDirDataPacket(yaw, pitch));
         }
     }
 

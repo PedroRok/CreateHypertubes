@@ -3,7 +3,7 @@ package com.pedrorok.hypertube.core.connection;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
-import com.pedrorok.hypertube.managers.placement.ResponseDTO;
+import com.pedrorok.hypertube.core.placement.ResponseDTO;
 import lombok.Getter;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Pair;
@@ -11,7 +11,6 @@ import net.createmod.catnip.outliner.Outliner;
 import net.createmod.catnip.theme.Color;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -236,7 +235,7 @@ public class BezierConnection implements IConnection {
     @OnlyIn(Dist.CLIENT)
     public static void outlineBlocks(BlockPos pos) {
         Outliner.getInstance().showAABB(pos.asLong(), new AABB(pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1,
-                        pos.getX() , pos.getY(), pos.getZ()))
+                        pos.getX(), pos.getY(), pos.getZ()))
                 .colored(0xEA5C2B)
                 .lineWidth(1 / 8f)
                 .disableLineNormals();

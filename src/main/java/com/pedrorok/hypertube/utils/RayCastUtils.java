@@ -25,7 +25,7 @@ public class RayCastUtils {
             return getFromPlayer(player, null);
         }
         BlockHitResult blockHitResult = (BlockHitResult) hitResult;
-        if (filter != null && (!filter.get() || ignoreFilter)) {
+        if ((filter != null && !filter.get()) || ignoreFilter) {
             return getFromPlayer(player, blockHitResult.getBlockPos().relative(blockHitResult.getDirection()));
         }
         return blockHitResult.getDirection().getOpposite();

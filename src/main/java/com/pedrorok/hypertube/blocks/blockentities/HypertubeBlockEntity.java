@@ -41,16 +41,16 @@ public class HypertubeBlockEntity extends BlockEntity implements ITubeConnection
     }
 
     // --------- Nbt Methods ---------
+
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
-        super.saveAdditional(tag, registries);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         writeConnection(tag, new Tuple<>(connectionOne, "ConnectionTo"), new Tuple<>(connectionTwo, "ConnectionFrom"));
     }
 
     @Override
     public void load(@NotNull CompoundTag tag) {
         super.load(tag);
-
         if (tag.contains("ConnectionTo")) {
             this.connectionOne = getConnection(tag, "ConnectionTo");
         }

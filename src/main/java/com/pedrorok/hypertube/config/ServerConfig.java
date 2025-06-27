@@ -2,7 +2,7 @@ package com.pedrorok.hypertube.config;
 
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import net.minecraft.world.entity.EntityType;
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
@@ -10,14 +10,14 @@ import org.apache.commons.lang3.tuple.Pair;
  * @project Create Hypertube
  */
 public class ServerConfig {
-    public static final ModConfigSpec SPEC;
+    public static final ForgeConfigSpec SPEC;
     private static final ServerConfig INSTANCE;
 
-    public final ModConfigSpec.BooleanValue ALLOW_FISH_TO_TRAVEL;
-    public final ModConfigSpec.BooleanValue ALLOW_VILLAGER_TO_TRAVEL;
+    public final ForgeConfigSpec.BooleanValue ALLOW_FISH_TO_TRAVEL;
+    public final ForgeConfigSpec.BooleanValue ALLOW_VILLAGER_TO_TRAVEL;
 
 
-    private ServerConfig(ModConfigSpec.Builder builder) {
+    private ServerConfig(ForgeConfigSpec.Builder builder) {
         builder.comment("Change these settings to customize the server-side behavior of the mod.")
                 .push("Travel Settings");
 
@@ -33,7 +33,7 @@ public class ServerConfig {
     }
 
     static {
-        Pair<ServerConfig, ModConfigSpec> pair = new ModConfigSpec.Builder().configure(ServerConfig::new);
+        Pair<ServerConfig, ForgeConfigSpec> pair = new ForgeConfigSpec.Builder().configure(ServerConfig::new);
         INSTANCE = pair.getLeft();
         SPEC = pair.getRight();
     }
