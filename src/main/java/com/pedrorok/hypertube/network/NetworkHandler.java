@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube.network;
 
 import com.pedrorok.hypertube.HypertubeMod;
+import com.pedrorok.hypertube.network.packets.PlayerTravelDirDataPacket;
 import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -21,6 +22,11 @@ public class NetworkHandler {
                 SyncPersistentDataPacket.TYPE,
                 SyncPersistentDataPacket.STREAM_CODEC,
                 SyncPersistentDataPacket::handle
+        );
+        registrar.playToClient(
+                PlayerTravelDirDataPacket.TYPE,
+                PlayerTravelDirDataPacket.STREAM_CODEC,
+                PlayerTravelDirDataPacket::handle
         );
     }
 }

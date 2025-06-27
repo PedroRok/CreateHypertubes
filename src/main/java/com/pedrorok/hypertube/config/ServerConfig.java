@@ -44,14 +44,14 @@ public class ServerConfig {
 
     public void init() {
         if (!ALLOW_FISH_TO_TRAVEL.get()) {
-            TravelConstants.ENTITIES_CAN_TRAVEL.remove(EntityType.SALMON);
-            TravelConstants.ENTITIES_CAN_TRAVEL.remove(EntityType.COD);
-            TravelConstants.ENTITIES_CAN_TRAVEL.remove(EntityType.TROPICAL_FISH);
+            TravelConstants.TRAVELLER_ENTITIES.remove(EntityType.SALMON);
+            TravelConstants.TRAVELLER_ENTITIES.remove(EntityType.COD);
+            TravelConstants.TRAVELLER_ENTITIES.remove(EntityType.TROPICAL_FISH);
         }
 
         if (!ALLOW_VILLAGER_TO_TRAVEL.get()) {
-            TravelConstants.ENTITIES_CAN_TRAVEL.remove(EntityType.VILLAGER);
-            TravelConstants.ENTITIES_CAN_TRAVEL.remove(EntityType.WANDERING_TRADER);
+            TravelConstants.TRAVELLER_ENTITIES.remove(EntityType.VILLAGER);
+            TravelConstants.TRAVELLER_ENTITIES.remove(EntityType.WANDERING_TRADER);
         }
     }
 }

@@ -13,14 +13,14 @@ import java.util.function.BiConsumer;
  */
 public record TravellerEntity(BiConsumer<LivingEntity, PoseStack> renderEntityOnTube) {
 
-    public static TravellerEntity ofBiped() {
+    public static TravellerEntity ofBiped(float translateY) {
         BiConsumer<LivingEntity, PoseStack> renderBiped = (entity, poseStack) -> {
             poseStack.pushPose();
             poseStack.translate(0, 0.2, 0);
             poseStack.mulPose(Axis.YP.rotationDegrees(-entity.getYRot()));
             poseStack.mulPose(Axis.XP.rotationDegrees(entity.getXRot() + 90));
             poseStack.mulPose(Axis.YP.rotationDegrees(entity.getYRot()));
-            poseStack.translate(0, -0.5, 0);
+            poseStack.translate(0, translateY, 0);
             poseStack.scale(0.8f, 0.8f, 0.8f);
         };
         return new TravellerEntity(renderBiped);

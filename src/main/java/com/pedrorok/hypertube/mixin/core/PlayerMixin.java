@@ -1,9 +1,15 @@
 package com.pedrorok.hypertube.mixin.core;
 
 import com.pedrorok.hypertube.core.travel.TravelConstants;
+import com.pedrorok.hypertube.network.packets.PlayerTravelDirDataPacket;
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -12,8 +18,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * @author Rok, Pedro Lucas nmm. Created on 19/06/2025
  * @project Create Hypertube
  */
-@Mixin(LivingEntity.class)
-public class LivingEntityMixin {
+@Mixin(Player.class)
+public class PlayerMixin {
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void onTick(CallbackInfo ci) {
@@ -24,12 +30,18 @@ public class LivingEntityMixin {
         Vec3 velocity = new Vec3(entity.getDeltaMovement().x, entity.getDeltaMovement().y, entity.getDeltaMovement().z);
 
         if (!(velocity.lengthSqr() > 0.001D)) return;
-        Vec3 lastMovementDirection = velocity.normalize();
+        if (!(entity instanceof Player player) || !entity.level().isClientSide) return;
 
-        float yaw = (float) Math.toDegrees(Math.atan2(-lastMovementDirection.x, lastMovementDirection.z));
-        float pitch = (float) Math.toDegrees(Math.atan2(-lastMovementDirection.y, Math.sqrt(lastMovementDirection.x * lastMovementDirection.x + lastMovementDirection.z * lastMovementDirection.z)));
+        createHypertube$tickInClient(player);
+    }
 
-        entity.setYRot(yaw);
-        entity.setXRot(pitch);
+    @Unique
+    @OnlyIn(Dist.CLIENT)
+    private void createHypertube$tickInClient(Player player) {
+        if (!Minecraft.getInstance().player.getUUID().equals(player.getUUID())) {
+            return;
+        }
+        player.setYRot(PlayerTravelDirDataPacket.YAW);
+        player.setXRot(PlayerTravelDirDataPacket.PITCH);
     }
 }

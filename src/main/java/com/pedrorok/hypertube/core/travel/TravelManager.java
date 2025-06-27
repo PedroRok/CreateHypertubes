@@ -5,6 +5,7 @@ import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.config.ClientConfig;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.events.PlayerSyncEvents;
+import com.pedrorok.hypertube.network.packets.PlayerTravelDirDataPacket;
 import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
 import com.pedrorok.hypertube.utils.MessageUtils;
 import net.minecraft.client.CameraType;
@@ -206,6 +207,8 @@ public class TravelManager {
         Vec3 segmentDirection = nextPoint.subtract(currentPoint).normalize();
         double segmentLength = currentPoint.distanceTo(nextPoint);
 
+        handleEntityDirection(entity, segmentDirection);
+
         Vec3 toEntityPos = entityPos.subtract(currentPoint);
         double currentProjection = toEntityPos.dot(segmentDirection);
         currentProjection = Math.max(0, Math.min(segmentLength, currentProjection));
@@ -277,6 +280,17 @@ public class TravelManager {
         checkAndCorrectStuck(entity, travelData);
 
         entity.hurtMarked = true;
+    }
+
+    private static void handleEntityDirection(LivingEntity entity, Vec3 direction) {
+        float yaw = (float) Math.toDegrees(Math.atan2(-direction.x, direction.z));
+        float pitch = (float) Math.toDegrees(Math.atan2(-direction.y, Math.sqrt(direction.x * direction.x + direction.z * direction.z)));
+
+        entity.setYRot(yaw);
+        entity.setXRot(pitch);
+        if (entity instanceof Player player) {
+            PacketDistributor.sendToPlayer((ServerPlayer) player, PlayerTravelDirDataPacket.create(entity));
+        }
     }
 
 

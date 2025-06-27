@@ -1,9 +1,13 @@
 package com.pedrorok.hypertube.core.travel;
 
 import net.minecraft.world.entity.EntityType;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 15/06/2025
@@ -28,12 +32,24 @@ public class TravelConstants {
 
     public static final int LATENCY_THRESHOLD = 100; // ms
 
-    public static final Map<EntityType<?>, TravellerEntity> ENTITIES_CAN_TRAVEL = new HashMap<>(Map.of(
-            EntityType.PLAYER, TravellerEntity.ofBiped(),
-            EntityType.VILLAGER, TravellerEntity.ofBiped(),
-            EntityType.WANDERING_TRADER, TravellerEntity.ofBiped(),
-            EntityType.SALMON, TravellerEntity.ofFish(0.9f),
-            EntityType.COD, TravellerEntity.ofFish(1f),
-            EntityType.TROPICAL_FISH, TravellerEntity.ofFish(1f)
+    public static final Set<EntityType<?>> TRAVELLER_ENTITIES = new HashSet<>(Set.of(
+            EntityType.PLAYER,
+            EntityType.VILLAGER,
+            EntityType.WANDERING_TRADER,
+            EntityType.SALMON,
+            EntityType.COD,
+            EntityType.TROPICAL_FISH
     ));
+
+    @OnlyIn(Dist.CLIENT)
+    public static class Client {
+        public static final Map<EntityType<?>, TravellerEntity> ENTITIES_RENDER = Map.of(
+                EntityType.PLAYER, TravellerEntity.ofBiped(-0.5f),
+                EntityType.VILLAGER, TravellerEntity.ofBiped(-0.8f),
+                EntityType.WANDERING_TRADER, TravellerEntity.ofBiped(-0.8f),
+                EntityType.SALMON, TravellerEntity.ofFish(0.9f),
+                EntityType.COD, TravellerEntity.ofFish(1f),
+                EntityType.TROPICAL_FISH, TravellerEntity.ofFish(1f)
+        );
+    }
 }

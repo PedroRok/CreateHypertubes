@@ -72,7 +72,7 @@ public class ClientEvents {
         LivingEntity entity = event.getEntity();
         if (!entity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
         PoseStack poseStack = event.getPoseStack();
-        TravelConstants.ENTITIES_CAN_TRAVEL
+        TravelConstants.Client.ENTITIES_RENDER
                 .get(entity.getType())
                 .renderEntityOnTube()
                 .accept(entity, poseStack);
