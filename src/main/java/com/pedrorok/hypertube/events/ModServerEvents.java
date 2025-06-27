@@ -1,17 +1,21 @@
 package com.pedrorok.hypertube.events;
 
 import com.pedrorok.hypertube.HypertubeMod;
-import com.pedrorok.hypertube.managers.placement.TubePlacement;
-import com.pedrorok.hypertube.managers.travel.TravelConstants;
-import com.pedrorok.hypertube.managers.travel.TravelManager;
+import com.pedrorok.hypertube.config.ServerConfig;
+import com.pedrorok.hypertube.core.placement.TubePlacement;
+import com.pedrorok.hypertube.core.travel.TravelConstants;
+import com.pedrorok.hypertube.core.travel.TravelManager;
 import com.pedrorok.hypertube.utils.TubeUtils;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -28,13 +32,18 @@ import net.minecraftforge.event.level.BlockEvent;
 public class ModServerEvents {
 
     @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.START) return;
-        TravelManager.playerTick(event.player);
-        if (event.player.level().isClientSide) {
+    public static void onServerStart(ServerStartingEvent event) {
+        ServerConfig.get().init();
+    }
+
+    @SubscribeEvent
+    public static void onPlayerTick(LivingEvent.LivingTickEvent event) {
+        TravelManager.entityTick(event.getEntity());
+        if (event.getEntity().level().isClientSide) {
             return;
         }
-        TubePlacement.tickPlayerServer(event.player);
+        if (!(event.getEntity() instanceof Player player)) return;
+        TubePlacement.tickPlayerServer(player);
     }
 
     @SubscribeEvent
@@ -43,14 +52,9 @@ public class ModServerEvents {
         if (!TravelManager.hasHyperTubeData(entity))
             return;
 
-        float scale;
-        if (entity instanceof LivingEntity le) {
-            scale = le.getScale();
-        } else {
-            scale = 1.0F;
-        }
-
-        event.setNewSize(EntityDimensions.fixed(0.5F * scale, 0.5F * scale));
+        event.setNewSize(EntityDimensions.fixed(0.5F, 0.5F));
+        if (entity.level().isClientSide) return;
+        entity.setPose(Pose.CROUCHING);
     }
 
 

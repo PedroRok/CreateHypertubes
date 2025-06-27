@@ -2,6 +2,7 @@ package com.pedrorok.hypertube;
 
 import com.pedrorok.hypertube.config.ClientConfig;
 import com.pedrorok.hypertube.network.NetworkHandler;
+import com.pedrorok.hypertube.config.ServerConfig;
 import com.pedrorok.hypertube.registry.*;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -32,7 +33,8 @@ public class HypertubeMod {
 
         ModLoadingContext.get()
                 .registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC, MOD_ID + "-client.toml");
-
+        ModLoadingContext.get()
+                .registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC, MOD_ID + "-server.toml");
 
         REGISTRATE.registerEventListeners(modEventBus);
 

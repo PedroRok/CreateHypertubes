@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube.network;
 
 import com.pedrorok.hypertube.HypertubeMod;
+import com.pedrorok.hypertube.network.packets.PlayerTravelDirDataPacket;
 import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -26,6 +27,7 @@ public class NetworkHandler {
                 new ResourceLocation(HypertubeMod.MOD_ID, "connections"), () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
 
         register(SyncPersistentDataPacket.class);
+        register(PlayerTravelDirDataPacket.class);
     }
 
     private static <T extends Packet<T>> void register(Class<T> clazz) {

@@ -1,12 +1,13 @@
 package com.pedrorok.hypertube.utils;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Supplier;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 25/04/2025
@@ -14,20 +15,38 @@ import org.jetbrains.annotations.Nullable;
  */
 public class RayCastUtils {
 
-    public static <T extends Block> Direction getDirectionFromHitResult(Player player, @Nullable T filter) {
-        return getDirectionFromHitResult(player, filter, false);
+    public static Direction getDirectionFromHitResult(Player player, @Nullable Supplier<Boolean> filterSupplier) {
+        return getDirectionFromHitResult(player, filterSupplier, false);
     }
 
-    public static <T extends Block> Direction getDirectionFromHitResult(Player player, @Nullable T filter, boolean ignoreFilter) {
+    public static Direction getDirectionFromHitResult(Player player, @Nullable Supplier<Boolean> filter, boolean ignoreFilter) {
         HitResult hitResult = player.pick(5, 0, false);
         if (hitResult.getType() != HitResult.Type.BLOCK) {
-            return player.getDirection().getOpposite();
+            return getFromPlayer(player, null);
         }
         BlockHitResult blockHitResult = (BlockHitResult) hitResult;
-        Level level = player.level();
-        if ((filter != null && !level.getBlockState(blockHitResult.getBlockPos()).is(filter)) || ignoreFilter) {
-            return player.getDirection().getOpposite();
+        if ((filter != null && !filter.get()) || ignoreFilter) {
+            return getFromPlayer(player, blockHitResult.getBlockPos().relative(blockHitResult.getDirection()));
         }
         return blockHitResult.getDirection().getOpposite();
+    }
+
+    private static Direction getFromPlayer(Player player, BlockPos pos) {
+        Direction direction = player.getDirection().getOpposite();
+        boolean usingUpOrDown = false;
+        if (player.getXRot() < -45) {
+            direction = Direction.DOWN;
+            usingUpOrDown = true;
+        } else if (player.getXRot() > 45) {
+            direction = Direction.UP;
+            usingUpOrDown = true;
+        }
+        if (pos != null && usingUpOrDown) {
+            BlockPos relative = pos.relative(direction.getOpposite());
+            if (player.level().getBlockState(relative).isSolid()) {
+                direction = player.getDirection().getOpposite();
+            }
+        }
+        return direction;
     }
 }

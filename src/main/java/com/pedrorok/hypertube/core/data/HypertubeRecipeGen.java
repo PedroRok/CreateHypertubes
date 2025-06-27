@@ -1,4 +1,4 @@
-package com.pedrorok.hypertube.data;
+package com.pedrorok.hypertube.core.data;
 
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.simibubi.create.AllBlocks;
@@ -19,7 +19,6 @@ import java.util.function.Consumer;
  * @project Create Hypertube
  */
 public class HypertubeRecipeGen extends RecipeProvider {
-
 
     public HypertubeRecipeGen(PackOutput p_248933_) {
         super(p_248933_);
@@ -45,6 +44,5 @@ public class HypertubeRecipeGen extends RecipeProvider {
                 .define('G', AllBlocks.COGWHEEL)
                 .unlockedBy("has_brass_sheet", has(AllItems.BRASS_SHEET))
                 .save(consumer);
-        System.out.println("REGISTREI TUDO");
     }
 }

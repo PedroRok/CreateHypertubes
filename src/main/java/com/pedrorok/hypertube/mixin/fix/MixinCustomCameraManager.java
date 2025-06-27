@@ -1,6 +1,6 @@
 package com.pedrorok.hypertube.mixin.fix;
 
-import com.pedrorok.hypertube.managers.travel.TravelManager;
+import com.pedrorok.hypertube.core.travel.TravelManager;
 import io.socol.betterthirdperson.api.CustomCameraManager;
 import io.socol.betterthirdperson.api.adapter.IPlayerAdapter;
 import net.minecraft.client.Minecraft;
