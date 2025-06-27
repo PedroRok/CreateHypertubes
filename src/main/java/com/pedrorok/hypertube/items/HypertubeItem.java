@@ -76,7 +76,6 @@ public class HypertubeItem extends BlockItem {
 
         if (simpleConnection.pos().equals(pos)) {
             player.playSound(SoundEvents.ITEM_FRAME_REMOVE_ITEM, 1.0f, 1.0f);
-            System.out.println("im here");
             return InteractionResult.FAIL;
         }
 

@@ -316,7 +316,6 @@ public class HypertubeBlock extends HalfTransparentBlock implements ITubeConnect
         level.playSound(null, pos, getSoundType(state, level, pos, placer).getPlaceSound(), SoundSource.BLOCKS,
                 1, level.random.nextFloat() * 0.1f + 0.9f);
 
-        System.out.println(((ITubeConnectionEntity) otherBlockEntity).hasConnectionAvailable());
         if (!otherConnection.hasConnectionAvailable()) {
             MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.invalid_conn").withStyle(ChatFormatting.RED), true);
             return;
