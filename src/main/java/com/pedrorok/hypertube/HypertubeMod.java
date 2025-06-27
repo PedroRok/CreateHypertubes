@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube;
 
 import com.pedrorok.hypertube.config.ClientConfig;
+import com.pedrorok.hypertube.config.ServerConfig;
 import com.pedrorok.hypertube.registry.*;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import net.minecraft.resources.ResourceKey;
@@ -29,6 +30,7 @@ public class HypertubeMod {
         modEventBus.addListener(this::commonSetup);
 
         modContainer.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC, MOD_ID + "-client.toml");
+        modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC, MOD_ID + "-server.toml");
 
         REGISTRATE.registerEventListeners(modEventBus);
 

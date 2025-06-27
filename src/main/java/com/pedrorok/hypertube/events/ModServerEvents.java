@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube.events;
 
 import com.pedrorok.hypertube.HypertubeMod;
+import com.pedrorok.hypertube.config.ServerConfig;
 import com.pedrorok.hypertube.core.placement.TubePlacement;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravelManager;
@@ -15,6 +16,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 /**
@@ -23,6 +25,11 @@ import net.neoforged.neoforge.event.tick.EntityTickEvent;
  */
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = HypertubeMod.MOD_ID)
 public class ModServerEvents {
+
+    @SubscribeEvent
+    public static void onServerStart(ServerStartingEvent event) {
+        ServerConfig.get().init();
+    }
 
     @SubscribeEvent
     public static void onEntityTick(EntityTickEvent.Post event) {

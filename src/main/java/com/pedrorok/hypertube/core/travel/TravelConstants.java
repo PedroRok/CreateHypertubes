@@ -2,6 +2,7 @@ package com.pedrorok.hypertube.core.travel;
 
 import net.minecraft.world.entity.EntityType;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -27,12 +28,12 @@ public class TravelConstants {
 
     public static final int LATENCY_THRESHOLD = 100; // ms
 
-    public static final Map<EntityType<?>, TravellerEntity> ENTITIES_CAN_TRAVEL = Map.of(
+    public static final Map<EntityType<?>, TravellerEntity> ENTITIES_CAN_TRAVEL = new HashMap<>(Map.of(
             EntityType.PLAYER, TravellerEntity.ofBiped(),
             EntityType.VILLAGER, TravellerEntity.ofBiped(),
             EntityType.WANDERING_TRADER, TravellerEntity.ofBiped(),
             EntityType.SALMON, TravellerEntity.ofFish(0.9f),
             EntityType.COD, TravellerEntity.ofFish(1f),
             EntityType.TROPICAL_FISH, TravellerEntity.ofFish(1f)
-    );
+    ));
 }
