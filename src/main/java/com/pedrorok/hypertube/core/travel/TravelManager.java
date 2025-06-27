@@ -159,7 +159,7 @@ public class TravelManager {
                 entity.teleportTo((ServerLevel) entity.level(), lastBlockPos.x, lastBlockPos.y, lastBlockPos.z, RelativeMovement.ALL, entity.getYRot(), entity.getXRot());
             }
             entity.teleportRelative(lastDir.x, lastDir.y, lastDir.z);
-            entity.setDeltaMovement(lastDir.scale(travelData.getSpeed() + DEFAULT_MIN_SPEED));
+            entity.setDeltaMovement(lastDir.scale(Math.sqrt(travelData.getSpeed()) + DEFAULT_MIN_SPEED));
         }
         entity.hurtMarked = true;
 
