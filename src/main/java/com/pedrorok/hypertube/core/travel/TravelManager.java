@@ -124,7 +124,6 @@ public class TravelManager {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
         if (!mc.player.is(player)) return;
-
         if (hasHyperTubeData(player)) {
             TubeSoundManager.TravelSound.enableClientPlayerSound(player, 0.8F, 1.0F);
             isTraveling = true;
