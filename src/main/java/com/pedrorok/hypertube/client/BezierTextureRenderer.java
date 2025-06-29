@@ -187,26 +187,19 @@ public class BezierTextureRenderer {
     }
 
     private Vector3f[] computePerpendicularsMaintainingUp(Vector3f tangent, Vector3f upVector) {
-        Vector3f perpA = new Vector3f();
+        Vector3f perpA;
         Vector3f perpB = new Vector3f();
-        float dotWithUp = Math.abs(tangent.dot(upVector));
-        if (dotWithUp > 0.99f) {
-            Vector3f alternativeUp = new Vector3f(1, 0, 0);
-            tangent.cross(alternativeUp, perpA);
-            perpA.normalize();
-            tangent.cross(perpA, perpB);
-            perpB.normalize();
-        } else {
-            Vector3f projectedUp = new Vector3f(upVector);
-            float dotProduct = tangent.dot(upVector);
-            Vector3f tangentComponent = new Vector3f(tangent).mul(dotProduct);
-            projectedUp.sub(tangentComponent);
-            projectedUp.normalize();
 
-            perpA = projectedUp;
-            tangent.cross(perpA, perpB);
-            perpB.normalize();
-        }
+        Vector3f projectedUp = new Vector3f(upVector);
+        float dotProduct = tangent.dot(upVector);
+        Vector3f tangentComponent = new Vector3f(tangent).mul(dotProduct);
+        projectedUp.sub(tangentComponent);
+        projectedUp.normalize();
+
+        perpA = projectedUp;
+        tangent.cross(perpA, perpB);
+        perpB.normalize();
+
         return new Vector3f[]{perpA, perpB};
     }
 
@@ -236,18 +229,6 @@ public class BezierTextureRenderer {
             ring.add(getOffset(perpA, perpB, angle, radius));
         }
         return ring;
-    }
-
-    private Vector3f findPerpendicularVector(Vector3f vec) {
-        Vector3f perpendicular;
-        if (Math.abs(vec.y()) > 0.9f) {
-            perpendicular = new Vector3f(1, 0, 0);
-        } else {
-            perpendicular = new Vector3f(0, 1, 0);
-        }
-        Vector3f result = new Vector3f();
-        vec.cross(perpendicular, result);
-        return result.normalize();
     }
 
     private Vector3f getOffset(Vector3f perpA, Vector3f perpB, float angle, float radius) {
