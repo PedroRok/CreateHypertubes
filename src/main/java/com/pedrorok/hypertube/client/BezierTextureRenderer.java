@@ -38,8 +38,13 @@ public class BezierTextureRenderer {
     private static final int SEGMENTS_AROUND = 4;
     private static final float TILING_UNIT = 1f;
 
+    private static final float UP_ALIGNMENT_THRESHOLD = 0.999f;
+
     private final ResourceLocation textureTube;
     private final ResourceLocation textureLine;
+
+    private Vector3f lastPerpA = null;
+    private Vector3f lastPerpB = null;
 
     public BezierTextureRenderer() {
         this.textureTube = ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "textures/block/tube_base_glass.png");
@@ -62,6 +67,8 @@ public class BezierTextureRenderer {
         }
         int segmentDistance = connection.getTubeSegments();
 
+        lastPerpA = null;
+        lastPerpB = null;
 
         poseStack.pushPose();
         Vec3 blockPos = Vec3.atLowerCornerOf(blockPosInitial);
@@ -69,7 +76,6 @@ public class BezierTextureRenderer {
         Matrix4f pose = poseStack.last().pose();
 
         List<TubeRing> tubeGeometry = calculateAndCacheGeometry(bezierPoints);
-
 
         VertexConsumer builderExterior = bufferSource.getBuffer(RenderType.entityTranslucentCull(textureTube));
         renderComponent(builderExterior, pose, packedLight, packedOverlay, tubeGeometry, SectionType.EXTERIOR, segmentDistance);
@@ -158,7 +164,7 @@ public class BezierTextureRenderer {
             Vec3 currentPoint = points.get(i);
 
             Vector3f tangent = getTangent(points, i, currentPoint);
-            Vector3f[] perpendiculars = computePerpendicularsMaintainingUp(tangent, upVector);
+            Vector3f[] perpendiculars = computeStablePerpendiculars(tangent, upVector);
             Vector3f perpA = perpendiculars[0];
             Vector3f perpB = perpendiculars[1];
 
@@ -186,21 +192,87 @@ public class BezierTextureRenderer {
         return tangent;
     }
 
-    private Vector3f[] computePerpendicularsMaintainingUp(Vector3f tangent, Vector3f upVector) {
-        Vector3f perpA;
+    private Vector3f[] computeStablePerpendiculars(Vector3f tangent, Vector3f upVector) {
+        Vector3f perpA = new Vector3f();
         Vector3f perpB = new Vector3f();
 
-        Vector3f projectedUp = new Vector3f(upVector);
-        float dotProduct = tangent.dot(upVector);
-        Vector3f tangentComponent = new Vector3f(tangent).mul(dotProduct);
-        projectedUp.sub(tangentComponent);
-        projectedUp.normalize();
+        float upAlignment = Math.abs(tangent.dot(upVector));
 
-        perpA = projectedUp;
-        tangent.cross(perpA, perpB);
-        perpB.normalize();
+        if (upAlignment > UP_ALIGNMENT_THRESHOLD) {
+            if (lastPerpA != null && lastPerpB != null) {
+                perpA.set(lastPerpA);
+                perpB.set(lastPerpB);
+
+                float dotA = perpA.dot(tangent);
+                perpA.sub(new Vector3f(tangent).mul(dotA));
+
+                if (perpA.lengthSquared() < 1e-6f) {
+                    perpA = calculateFallbackPerpendicular(tangent);
+                } else {
+                    perpA.normalize();
+                }
+
+            } else {
+                perpA = calculateFallbackPerpendicular(tangent);
+            }
+            tangent.cross(perpA, perpB);
+            perpB.normalize();
+        } else {
+            Vector3f projectedUp = new Vector3f(upVector);
+            float dotProduct = tangent.dot(upVector);
+            Vector3f tangentComponent = new Vector3f(tangent).mul(dotProduct);
+            projectedUp.sub(tangentComponent);
+
+            if (projectedUp.lengthSquared() < 1e-6f) {
+                perpA = calculateFallbackPerpendicular(tangent);
+            } else {
+                projectedUp.normalize();
+                perpA.set(projectedUp);
+            }
+
+            tangent.cross(perpA, perpB);
+            perpB.normalize();
+        }
+
+        if (perpA.lengthSquared() < 1e-6f) {
+            perpA = calculateFallbackPerpendicular(tangent);
+            tangent.cross(perpA, perpB);
+            perpB.normalize();
+        }
+        if (perpB.lengthSquared() < 1e-6f) {
+            tangent.cross(perpA, perpB);
+            perpB.normalize();
+        }
+
+        if (lastPerpA == null) lastPerpA = new Vector3f();
+        if (lastPerpB == null) lastPerpB = new Vector3f();
+        lastPerpA.set(perpA);
+        lastPerpB.set(perpB);
 
         return new Vector3f[]{perpA, perpB};
+    }
+
+    Vector3f[] candidateVectors = {
+            new Vector3f(1, 0, 0),
+            new Vector3f(0, 1, 0),
+            new Vector3f(0, 0, 1),
+            new Vector3f(1, 1, 0),
+            new Vector3f(1, 0, 1)
+    };
+
+    private Vector3f calculateFallbackPerpendicular(Vector3f tangent) {
+        Vector3f perpendicular = new Vector3f();
+
+        for (Vector3f candidate : candidateVectors) {
+            tangent.cross(candidate, perpendicular);
+
+            if (perpendicular.lengthSquared() > 1e-6f) {
+                perpendicular.normalize();
+                return perpendicular;
+            }
+        }
+
+        return new Vector3f(1, 0, 0);
     }
 
     private void addVertex(VertexConsumer builder, Matrix4f pose,
