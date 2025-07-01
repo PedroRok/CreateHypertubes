@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class LocalPlayerMixin {
 
     @Inject(method = "isShiftKeyDown", at = @At("HEAD"), cancellable = true)
-    private void cancelShiftKeyDown(CallbackInfoReturnable<Boolean> cir) {
+    private void createHypertube$cancelShiftKeyDown(CallbackInfoReturnable<Boolean> cir) {
         LocalPlayer player = (LocalPlayer) (Object) this;
         if (!player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
         cir.setReturnValue(false);

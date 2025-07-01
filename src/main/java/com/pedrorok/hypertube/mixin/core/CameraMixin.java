@@ -39,7 +39,7 @@ public class CameraMixin {
     }
 
     @Inject(method = "setup", at = @At("HEAD"), cancellable = true)
-    private void onSetup(BlockGetter p_90576_, Entity renderViewEntity, boolean isFrontView, boolean flipped, float PartialTicks, CallbackInfo ci) {
+    private void createHypertube$onSetup(BlockGetter p_90576_, Entity renderViewEntity, boolean isFrontView, boolean flipped, float PartialTicks, CallbackInfo ci) {
         Options options = Minecraft.getInstance().options;
         Player player = Minecraft.getInstance().player;
         if (renderViewEntity != player) return;
@@ -64,10 +64,10 @@ public class CameraMixin {
         }
         DetachedCameraController.get().tickCamera(renderViewEntity);
 
-        camera.callSetRotation(DetachedCameraController.get().getYaw() * (flipped ? -1 : 1), DetachedCameraController.get().getPitch());
+        camera.createHypertube$callSetRotation(DetachedCameraController.get().getYaw() * (flipped ? -1 : 1), DetachedCameraController.get().getPitch());
 
 
-        camera.callSetPosition(
+        camera.createHypertube$callSetPosition(
                 Mth.lerp(PartialTicks, renderViewEntity.xo, renderViewEntity.getX()),
                 Mth.lerp(PartialTicks, renderViewEntity.yo, renderViewEntity.getY()),
                 Mth.lerp(PartialTicks, renderViewEntity.zo, renderViewEntity.getZ()));
@@ -78,7 +78,7 @@ public class CameraMixin {
         } else {
             f = 1.0F;
         }
-        camera.callMove(-camera.callGetMaxZoom(ClientHooks.getDetachedCameraDistance(cameraObj, flipped, f, 4.0F) * f), 0.0F, 0.0F);
+        camera.createHypertube$callMove(-camera.createHypertube$callGetMaxZoom(ClientHooks.getDetachedCameraDistance(cameraObj, flipped, f, 4.0F) * f), 0.0F, 0.0F);
 
         ci.cancel();
     }

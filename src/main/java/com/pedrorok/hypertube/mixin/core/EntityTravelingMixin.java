@@ -14,14 +14,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class EntityTravelingMixin {
 
     @Inject(method = "getGravity", at = @At("HEAD"), cancellable = true)
-    private void cancelLerpMotion(CallbackInfoReturnable<Double> cir) {
+    private void createHypertube$cancelLerpMotion(CallbackInfoReturnable<Double> cir) {
         if (!(((Entity) (Object) this) instanceof LivingEntity entity)
             || !entity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
         cir.setReturnValue(0.0D);
     }
 
     @Inject(method = "getPose", at = @At("HEAD"), cancellable = true)
-    private void cancelPose(CallbackInfoReturnable<Pose> cir) {
+    private void createHypertube$cancelPose(CallbackInfoReturnable<Pose> cir) {
         if (!(((Entity) (Object) this) instanceof LivingEntity player)
             || !player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
         cir.setReturnValue(Pose.STANDING);

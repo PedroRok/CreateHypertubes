@@ -252,7 +252,7 @@ public class BezierTextureRenderer {
         return new Vector3f[]{perpA, perpB};
     }
 
-    Vector3f[] candidateVectors = {
+    private final Vector3f[] candidateVectors = {
             new Vector3f(1, 0, 0),
             new Vector3f(0, 1, 0),
             new Vector3f(0, 0, 1),

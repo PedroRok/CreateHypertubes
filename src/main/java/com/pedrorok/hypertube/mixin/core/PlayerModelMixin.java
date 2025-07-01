@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class PlayerModelMixin {
 
     @Inject(method = "setupAnim*", at = @At("RETURN"), cancellable = true, order = 1001)
-    private void onSetupAnim(LivingEntity entity, float limbSwing, float limbSwingAmount,
+    private void createHypertube$onSetupAnim(LivingEntity entity, float limbSwing, float limbSwingAmount,
                              float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
         if (!entity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
 
