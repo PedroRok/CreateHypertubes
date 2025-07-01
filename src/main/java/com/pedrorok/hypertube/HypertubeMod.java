@@ -42,6 +42,8 @@ public class HypertubeMod {
         ModCreativeTab.register(modEventBus);
         ModDataComponent.register(modEventBus);
 
+        ModParticles.register(modEventBus);
+
         ModSounds.register(modEventBus);
     }
 

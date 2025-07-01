@@ -1,7 +1,10 @@
 package com.pedrorok.hypertube.events;
 
 import com.pedrorok.hypertube.HypertubeMod;
+import com.pedrorok.hypertube.client.particles.SuctionParticle;
 import com.pedrorok.hypertube.registry.ModBlocks;
+import com.pedrorok.hypertube.registry.ModParticles;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.neoforged.api.distmarker.Dist;
@@ -9,6 +12,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
@@ -28,7 +32,10 @@ public class ModClientEvents {
     }
 
     @SubscribeEvent
-    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        // event.registerBlockEntityRenderer(ModBlockEntities.HYPERTUBE_ENTRANCE.get(), EntranceBlockEntityRenderer::new);
+    public static void registerParticles(RegisterParticleProvidersEvent event) {
+        Minecraft.getInstance().particleEngine.register(
+                ModParticles.SUCTION_PARTICLE.get(),
+                SuctionParticle.Provider::new
+        );
     }
 }
