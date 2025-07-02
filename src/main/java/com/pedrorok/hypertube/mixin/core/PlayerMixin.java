@@ -23,15 +23,12 @@ public class PlayerMixin {
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void onTick(CallbackInfo ci) {
-        LivingEntity entity = (LivingEntity) (Object) this;
+        Player entity = (Player) (Object) this;
 
         if (!entity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
+        if (!entity.level().isClientSide) return;
 
-        Vec3 velocity = new Vec3(entity.getDeltaMovement().x, entity.getDeltaMovement().y, entity.getDeltaMovement().z);
-
-        if (!(velocity.lengthSqr() > 0.001D)) return;
-        if (!(entity instanceof Player player) || !entity.level().isClientSide) return;
-        createHypertube$tickInClient(player);
+        createHypertube$tickInClient(entity);
     }
 
     @Unique
