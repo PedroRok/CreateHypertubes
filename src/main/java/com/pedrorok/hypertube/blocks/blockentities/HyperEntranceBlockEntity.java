@@ -15,6 +15,8 @@ import com.pedrorok.hypertube.registry.ModSounds;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
+import com.simibubi.create.content.kinetics.fan.AirFlowParticleData;
+import com.simibubi.create.content.kinetics.fan.EncasedFanBlockEntity;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.EndRodParticle;
@@ -367,8 +369,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         double spread = 0.5;
 
         Vec3 tangentA = switch (face.getAxis()) {
-            case Y -> new Vec3(1, 0, 0);
-            case Z -> new Vec3(1, 0, 0);
+            case Y, Z -> new Vec3(1, 0, 0);
             default -> new Vec3(0, 1, 0);
         };
         Vec3 tangentB = faceNormal.cross(tangentA).normalize();
@@ -378,6 +379,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
 
         Vec3 start = center.add(faceNormal.scale(1 + level.random.nextFloat())).add(randomOffset);
         Vec3 motion = center.subtract(start).normalize().scale(0.05);
+
 
         level.addParticle(
                 ModParticles.SUCTION_PARTICLE.get(),

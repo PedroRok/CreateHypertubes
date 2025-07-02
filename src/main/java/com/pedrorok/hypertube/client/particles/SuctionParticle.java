@@ -52,8 +52,12 @@ public class SuctionParticle extends TextureSheetParticle {
         if (progress < 0.5)
             this.alpha = progress;
         else
-            this.alpha = 0.5f - progress;
+            this.alpha = 0.5f - (progress-0.5f);
+
+        this.setAlpha(Math.max(0, this.alpha /1.5f));
     }
+
+
 
     @Override
     public ParticleRenderType getRenderType() {
