@@ -10,6 +10,7 @@ import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravelManager;
+import com.pedrorok.hypertube.registry.ModParticles;
 import com.pedrorok.hypertube.registry.ModSounds;
 import com.simibubi.create.content.equipment.goggles.IHaveHoveringInformation;
 import com.simibubi.create.content.kinetics.base.IRotate;
@@ -22,6 +23,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -29,6 +31,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -59,8 +62,6 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
     }
 
     // --------- Nbt Methods ---------
-
-
     @Override
     protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
@@ -192,6 +193,10 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         Vec3 rotatedDirection = new Vec3(x, y, z).normalize();
 
         double distance = player.distanceToSqr(source);
+
+        if (isOpen) {
+            spawnSuctionParticle(level, pos, state.getValue(HyperEntranceBlock.FACING));
+        }
 
         sound.enableClientPlayerSound(
                 player,
@@ -350,5 +355,34 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
     @Override
     public AABB getRenderBoundingBox() {
         return new AABB(worldPosition).inflate(512);
+    }
+
+    public static void spawnSuctionParticle(Level level, BlockPos blockPos, Direction face) {
+        face = face.getOpposite();
+        Vec3 center = Vec3.atCenterOf(blockPos);
+        RandomSource rand = level.getRandom();
+
+        Vec3 faceNormal = Vec3.atLowerCornerOf(face.getNormal());
+
+        double spread = 0.5;
+
+        Vec3 tangentA = switch (face.getAxis()) {
+            case Y, Z -> new Vec3(1, 0, 0);
+            default -> new Vec3(0, 1, 0);
+        };
+        Vec3 tangentB = faceNormal.cross(tangentA).normalize();
+        double offsetA = (rand.nextDouble() - 0.5) * 2 * spread;
+        double offsetB = (rand.nextDouble() - 0.5) * 2 * spread;
+        Vec3 randomOffset = tangentA.scale(offsetA).add(tangentB.scale(offsetB));
+
+        Vec3 start = center.add(faceNormal.scale(1 + level.random.nextFloat())).add(randomOffset);
+        Vec3 motion = center.subtract(start).normalize().scale(0.05);
+
+
+        level.addParticle(
+                ModParticles.SUCTION_PARTICLE.get(),
+                start.x, start.y, start.z,
+                motion.x, motion.y, motion.z
+        );
     }
 }

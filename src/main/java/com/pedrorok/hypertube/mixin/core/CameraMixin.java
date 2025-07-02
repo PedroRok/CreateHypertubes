@@ -46,8 +46,9 @@ public class CameraMixin {
         if (dontHaveTravelData || (
                 options.getCameraType().isFirstPerson() && ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get())) {
             DetachedCameraController.get().setDetached(false);
-            if (dontHaveTravelData)
+            if (!TravelManager.hasHyperTubeData(renderViewEntity)){
                 DetachedPlayerDirController.get().setDetached(false);
+            }
             return;
         }
 
