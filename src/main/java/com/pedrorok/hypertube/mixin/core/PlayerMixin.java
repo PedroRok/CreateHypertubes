@@ -31,7 +31,6 @@ public class PlayerMixin {
 
         if (!(velocity.lengthSqr() > 0.001D)) return;
         if (!(entity instanceof Player player) || !entity.level().isClientSide) return;
-
         createHypertube$tickInClient(player);
     }
 
