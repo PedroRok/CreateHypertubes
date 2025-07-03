@@ -43,10 +43,13 @@ public class CameraMixin {
         Options options = Minecraft.getInstance().options;
         Player player = Minecraft.getInstance().player;
         if (renderViewEntity != player) return;
-        if (!TravelManager.hasHyperTubeData(renderViewEntity) || (
+        boolean hasHypertubeData = !TravelManager.hasHyperTubeData(renderViewEntity);
+        if (hasHypertubeData || (
                 options.getCameraType().isFirstPerson() && ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get())) {
             DetachedCameraController.get().setDetached(false);
-            DetachedPlayerDirController.get().setDetached(false);
+            if (hasHypertubeData) {
+                DetachedPlayerDirController.get().setDetached(false);
+            }
             return;
         }
 
