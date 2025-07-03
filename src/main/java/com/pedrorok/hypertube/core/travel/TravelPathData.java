@@ -8,7 +8,6 @@ import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import lombok.Getter;
-import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -26,34 +25,17 @@ import java.util.UUID;
  * @author Rok, Pedro Lucas nmm. Created on 25/04/2025
  * @project Create Hypertube
  */
-public class TravelData {
+public class TravelPathData {
 
     @Getter
-    private final List<Vec3> travelPoints;
+    private final List<Vec3> travelPoints; //
     private final List<UUID> bezierConnections;
     private final List<BlockPos> blockConnections;
-    @Getter
-    private final float speed;
-    @Getter
-    private int travelIndex;
 
-    @Setter
-    @Getter
-    private Vec3 lastDir;
-
-    @Getter
-    @Setter
-    private boolean isFinished = false;
-
-    public TravelData(float speed) {
+    public TravelPathData(BlockPos firstPipe, Level level, BlockPos entrancePos) {
         this.travelPoints = new ArrayList<>();
         this.bezierConnections = new ArrayList<>();
         this.blockConnections = new ArrayList<>();
-        this.speed = speed;
-        this.lastDir = Vec3.ZERO;
-    }
-
-    public void init(BlockPos firstPipe, Level level, BlockPos entrancePos) {
         travelPoints.add(entrancePos.getCenter());
         blockConnections.add(entrancePos);
         travelPoints.add(firstPipe.getCenter());
@@ -142,20 +124,6 @@ public class TravelData {
             connected = true;
         }
         return connected;
-    }
-
-    public Vec3 getTravelPoint() {
-        if (travelIndex >= travelPoints.size()) return null;
-        return travelPoints.get(travelIndex);
-    }
-
-    public void getNextTravelPoint() {
-        if (travelIndex >= travelPoints.size()) return;
-        travelIndex++;
-    }
-
-    public boolean hasNextTravelPoint() {
-        return travelIndex + 1 < travelPoints.size();
     }
 
     public BlockPos getLastBlockPos() {

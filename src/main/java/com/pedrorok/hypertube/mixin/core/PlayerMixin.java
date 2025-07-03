@@ -28,9 +28,6 @@ public class PlayerMixin {
 
         if (!entity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
 
-        Vec3 velocity = new Vec3(entity.getDeltaMovement().x, entity.getDeltaMovement().y, entity.getDeltaMovement().z);
-
-        if (!(velocity.lengthSqr() > 0.001D)) return;
         if (!(entity instanceof Player player) || !entity.level().isClientSide) return;
         createHypertube$tickInClient(player);
     }

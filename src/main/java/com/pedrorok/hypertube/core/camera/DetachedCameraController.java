@@ -86,10 +86,10 @@ public class DetachedCameraController {
     }
 
     private Vec3 getRelativeCameraPos(Entity renderViewEntity) {
-        Vec3 deltaMovement = renderViewEntity.getDeltaMovement();
+        Vec3 dir = DetachedPlayerDirController.get().getDirection();
         return renderViewEntity
                 .position()
-                .subtract(deltaMovement.multiply(8, 8, 8))
+                .subtract(dir.multiply(8, 8, 8))
                 .add(0, 3, 0);
     }
 
