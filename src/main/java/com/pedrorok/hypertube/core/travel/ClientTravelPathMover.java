@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.core.travel;
 
+import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
 import com.pedrorok.hypertube.network.packets.MovePathPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
@@ -48,7 +49,7 @@ public class ClientTravelPathMover {
 
             if (data.isDone()) {
                 it.remove();
-                return;
+                continue;
             }
 
             Vec3 currentPos = entity.position();
@@ -58,7 +59,7 @@ public class ClientTravelPathMover {
             if (distance < data.blocksPerTick) {
                 entity.setPos(target.x, target.y, target.z);
                 data.advanceToNextPoint();
-                return;
+                continue;
             }
 
             Vec3 direction = target.subtract(currentPos).normalize().scale(data.blocksPerTick);
