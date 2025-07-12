@@ -8,11 +8,11 @@
     "EntityTravelingMixin",
     "IPlayerExtensionMixin",
     "PlayerMixin",
-    "PlayerModelMixin",
     "PlayerMovementMixin"
   ],
   "client": [
     "CameraAccessorMixin",
+    "PlayerModelMixin",
     "CameraMixin",
     "LocalPlayerMixin"
   ],
