@@ -83,7 +83,6 @@ public class TravelPathMover {
     private static void handleEntityDirection(LivingEntity entity, Vec3 direction) {
         float yaw = (float) Math.toDegrees(Math.atan2(-direction.x, direction.z));
         float pitch = (float) Math.toDegrees(Math.atan2(-direction.y, Math.sqrt(direction.x * direction.x + direction.z * direction.z)));
-        System.out.println(direction);
         entity.setYRot(yaw);
         entity.setXRot(pitch);
         if (entity instanceof Player player) {

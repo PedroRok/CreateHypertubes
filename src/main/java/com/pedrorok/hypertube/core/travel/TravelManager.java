@@ -12,6 +12,7 @@ import com.pedrorok.hypertube.utils.MessageUtils;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -153,18 +154,19 @@ public class TravelManager {
         entity.getPersistentData().putBoolean(TRAVEL_TAG, false);
         entity.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
         entity.getPersistentData().putLong(LAST_TRAVEL_BLOCKPOS, pathMover.getLastBlockPos().asLong());
-        entity.getPersistentData().putFloat(LAST_TRAVEL_SPEED, pathMover.getTravelSpeed());
+        entity.getPersistentData().putFloat(LAST_TRAVEL_SPEED, pathMover.getTravelSpeed() / 500);
         entity.getPersistentData().putBoolean(IMMUNITY_TAG, true);
 
         syncPersistentData(entity);
 
         Vec3 lastDir = pathMover.getLastDir();
-        Vec3 lastBlockPos = pathMover.getLastBlockPos().getCenter();
+        BlockPos oneLast = pathMover.getLastBlockPos().offset(new Vec3i((int) lastDir.x, (int) lastDir.y, (int) lastDir.z));
+        Vec3 lastBlockPos = oneLast.getCenter();
         if (!forced) {
             if (entity.level() instanceof ServerLevel) {
                 entity.teleportTo((ServerLevel) entity.level(), lastBlockPos.x, lastBlockPos.y, lastBlockPos.z, RelativeMovement.ALL, entity.getYRot(), entity.getXRot());
             }
-            entity.setDeltaMovement(lastDir.scale(pathMover.getTravelSpeed() + DEFAULT_MIN_SPEED));
+            entity.setDeltaMovement(lastDir.scale(pathMover.getTravelSpeed() / 10));
         }
         entity.hurtMarked = true;
 
