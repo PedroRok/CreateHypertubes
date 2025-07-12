@@ -10,6 +10,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderFrameEvent;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,8 +31,8 @@ public class ClientTravelPathMover {
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Pre event) {
-
         Minecraft mc = Minecraft.getInstance();
+        if (mc.isPaused()) return;
         Level level = mc.level;
         if (level == null) return;
 
@@ -52,19 +53,28 @@ public class ClientTravelPathMover {
                 continue;
             }
 
-            Vec3 currentPos = entity.position();
-            Vec3 target = data.getCurrentTarget().subtract(0,0.25,0);
+            data.updateLogicalPosition();
+        }
+    }
 
-            double distance = currentPos.distanceTo(target);
-            if (distance < data.blocksPerTick) {
-                entity.setPos(target.x, target.y, target.z);
-                data.advanceToNextPoint();
-                continue;
-            }
+    @SubscribeEvent
+    public static void onRenderTick(RenderFrameEvent.Pre event) {
+        Minecraft mc = Minecraft.getInstance();
+        Level level = mc.level;
+        if (level == null) return;
 
-            Vec3 direction = target.subtract(currentPos).normalize().scale(data.blocksPerTick);
-            Vec3 newPos = currentPos.add(direction);
-            entity.setPos(newPos.x, newPos.y, newPos.z);
+        float partialTicks = event.getPartialTick().getGameTimeDeltaPartialTick(false);
+
+        for (var entry : ACTIVE_PATHS.entrySet()) {
+            int id = entry.getKey();
+            PathData data = entry.getValue();
+
+            Entity entity = level.getEntity(id);
+            if (entity == null || !entity.isAlive()) continue;
+
+            Vec3 renderPos = data.getRenderPosition(partialTicks);
+
+            entity.setPos(renderPos.x, renderPos.y, renderPos.z);
         }
     }
 
@@ -73,9 +83,17 @@ public class ClientTravelPathMover {
         private final double blocksPerTick;
         private int currentIndex = 0;
 
+        private Vec3 currentLogicalPos;
+        private Vec3 previousLogicalPos;
+
         public PathData(List<Vec3> points, double blocksPerSecond) {
             this.points = points;
             this.blocksPerTick = blocksPerSecond / 20.0;
+
+            if (!points.isEmpty()) {
+                this.currentLogicalPos = points.get(0).subtract(0, 0.25, 0);
+                this.previousLogicalPos = this.currentLogicalPos;
+            }
         }
 
         public boolean isDone() {
@@ -83,11 +101,31 @@ public class ClientTravelPathMover {
         }
 
         public Vec3 getCurrentTarget() {
-            return points.get(currentIndex);
+            if (currentIndex < points.size()) {
+                return points.get(currentIndex).subtract(0, 0.25, 0);
+            }
+            return currentLogicalPos;
         }
 
-        public void advanceToNextPoint() {
-            currentIndex++;
+        public void updateLogicalPosition() {
+            if (isDone()) return;
+
+            Vec3 target = getCurrentTarget();
+            double distanceToTarget = currentLogicalPos.distanceTo(target);
+
+            if (distanceToTarget < blocksPerTick) {
+                previousLogicalPos = currentLogicalPos;
+                currentLogicalPos = target;
+                currentIndex++;
+            } else {
+                previousLogicalPos = currentLogicalPos;
+                Vec3 direction = target.subtract(currentLogicalPos).normalize().scale(blocksPerTick);
+                currentLogicalPos = currentLogicalPos.add(direction);
+            }
+        }
+
+        public Vec3 getRenderPosition(float partialTicks) {
+            return previousLogicalPos.lerp(currentLogicalPos, partialTicks);
         }
     }
 }
