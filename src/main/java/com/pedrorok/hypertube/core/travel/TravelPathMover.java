@@ -1,13 +1,9 @@
 package com.pedrorok.hypertube.core.travel;
 
-import com.pedrorok.hypertube.network.packets.PlayerTravelDirDataPacket;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -40,14 +36,14 @@ public class TravelPathMover {
         this.lastBlockPos = lastBlockPos;
 
         this.currentStart = entityPos;
-        this.currentEnd = pathPoints.getFirst().subtract(0,0.25,0);
+        this.currentEnd = pathPoints.getFirst().subtract(0, 0.25, 0);
         this.totalDistance = currentStart.distanceTo(currentEnd);
         this.traveled = 0;
 
         this.onFinishCallback = onFinishCallback;
     }
 
-    public void tickPlayer(LivingEntity entity) {
+    public void tickEntity(LivingEntity entity) {
         if (entity.isSpectator() || !entity.isAlive()) {
             isFinished = true;
             onFinishCallback.accept(entity, true);
@@ -62,7 +58,7 @@ public class TravelPathMover {
                 return;
             }
             currentStart = entity.position();
-            currentEnd = pathPoints.get(currentSegment).subtract(0,0.25,0);
+            currentEnd = pathPoints.get(currentSegment).subtract(0, 0.25, 0);
             totalDistance = currentStart.distanceTo(currentEnd);
             traveled = 0;
             lastDirection = currentEnd.subtract(currentStart);
@@ -85,9 +81,6 @@ public class TravelPathMover {
         float pitch = (float) Math.toDegrees(Math.atan2(-direction.y, Math.sqrt(direction.x * direction.x + direction.z * direction.z)));
         entity.setYRot(yaw);
         entity.setXRot(pitch);
-        if (entity instanceof Player player) {
-            PacketDistributor.sendToPlayer((ServerPlayer) player, new PlayerTravelDirDataPacket(yaw, pitch));
-        }
     }
 
     public Vec3 getLastDir() {
@@ -98,6 +91,6 @@ public class TravelPathMover {
         if (currentSegment + offset >= pathPoints.size()) {
             return null;
         }
-        return pathPoints.get(currentSegment + offset).subtract(0,0.25,0);
+        return pathPoints.get(currentSegment + offset).subtract(0, 0.25, 0);
     }
 }

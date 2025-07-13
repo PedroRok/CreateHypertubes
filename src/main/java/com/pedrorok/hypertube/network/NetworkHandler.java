@@ -29,11 +29,11 @@ public class NetworkHandler {
                 SyncPersistentDataPacket.STREAM_CODEC,
                 SyncPersistentDataPacket::handle
         );
-        registrar.playToClient(
-                PlayerTravelDirDataPacket.TYPE,
-                PlayerTravelDirDataPacket.STREAM_CODEC,
-                PlayerTravelDirDataPacket::handle
-        );
+        //registrar.playToClient(
+        //        PlayerTravelDirDataPacket.TYPE,
+        //        PlayerTravelDirDataPacket.STREAM_CODEC,
+        //        PlayerTravelDirDataPacket::handle
+        //);
         registrar.playToClient(
                 MovePathPacket.TYPE,
                 MovePathPacket.STREAM_CODEC,

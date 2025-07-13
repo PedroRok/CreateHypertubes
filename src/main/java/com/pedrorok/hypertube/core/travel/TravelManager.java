@@ -183,7 +183,7 @@ public class TravelManager {
         }
         TravelPathMover travelPathData = travelDataMap.get(entity.getUUID());
         entity.resetFallDistance();
-        travelPathData.tickPlayer(entity);
+        travelPathData.tickEntity(entity);
     }
 
     public static boolean hasHyperTubeData(Entity player) {

@@ -2,6 +2,7 @@ package com.pedrorok.hypertube.core.travel;
 
 import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
 import com.pedrorok.hypertube.network.packets.MovePathPacket;
+import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -26,7 +27,8 @@ public class ClientTravelPathMover {
     private static final Map<Integer, PathData> ACTIVE_PATHS = new HashMap<>();
 
     public static void startMoving(MovePathPacket packet) {
-        ACTIVE_PATHS.put(packet.entityId(), new PathData(packet.pathPoints(), packet.blocksPerSecond()));
+        boolean isPlayer = Minecraft.getInstance().player.getId() == packet.entityId();
+        ACTIVE_PATHS.put(packet.entityId(), new PathData(packet.pathPoints(), packet.blocksPerSecond(), isPlayer));
     }
 
     @SubscribeEvent
@@ -54,6 +56,8 @@ public class ClientTravelPathMover {
             }
 
             data.updateLogicalPosition();
+            if (data.isClientPlayer())
+                handleEntityDirection(data.getCurrentDirection());
         }
     }
 
@@ -78,6 +82,13 @@ public class ClientTravelPathMover {
         }
     }
 
+    private static void handleEntityDirection(Vec3 direction) {
+        float yaw = (float) Math.toDegrees(Math.atan2(-direction.x, direction.z));
+        float pitch = (float) Math.toDegrees(Math.atan2(-direction.y, Math.sqrt(direction.x * direction.x + direction.z * direction.z)));
+        DetachedPlayerDirController.get().setDetached(true);
+        DetachedPlayerDirController.get().updateRotation(yaw, pitch);
+    }
+
     private static class PathData {
         private final List<Vec3> points;
         private final double blocksPerTick;
@@ -86,9 +97,13 @@ public class ClientTravelPathMover {
         private Vec3 currentLogicalPos;
         private Vec3 previousLogicalPos;
 
-        public PathData(List<Vec3> points, double blocksPerSecond) {
+        @Getter
+        private boolean clientPlayer;
+
+        public PathData(List<Vec3> points, double blocksPerSecond, boolean clientPlayer) {
             this.points = points;
             this.blocksPerTick = blocksPerSecond / 20.0;
+            this.clientPlayer = clientPlayer;
 
             if (!points.isEmpty()) {
                 this.currentLogicalPos = points.get(0).subtract(0, 0.25, 0);
@@ -122,6 +137,13 @@ public class ClientTravelPathMover {
                 Vec3 direction = target.subtract(currentLogicalPos).normalize().scale(blocksPerTick);
                 currentLogicalPos = currentLogicalPos.add(direction);
             }
+        }
+
+        public Vec3 getCurrentDirection() {
+            if (currentLogicalPos.equals(previousLogicalPos)) {
+                return Vec3.ZERO;
+            }
+            return currentLogicalPos.subtract(previousLogicalPos).normalize();
         }
 
         public Vec3 getRenderPosition(float partialTicks) {
