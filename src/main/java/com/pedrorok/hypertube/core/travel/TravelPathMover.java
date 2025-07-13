@@ -18,7 +18,7 @@ public class TravelPathMover {
     private final float travelSpeed;
     private final BiConsumer<LivingEntity, Boolean> onFinishCallback;
     @Getter
-    private final BlockPos lastBlockPos;
+    private final BlockPos lastPos;
 
     private int currentSegment = 0;
     private Vec3 currentStart;
@@ -30,10 +30,10 @@ public class TravelPathMover {
 
     private Vec3 lastDirection = Vec3.ZERO;
 
-    public TravelPathMover(Vec3 entityPos, List<Vec3> points, float travelSpeed, BlockPos lastBlockPos, BiConsumer<LivingEntity, Boolean> onFinishCallback) {
+    public TravelPathMover(Vec3 entityPos, List<Vec3> points, float travelSpeed, BlockPos lastPos, BiConsumer<LivingEntity, Boolean> onFinishCallback) {
         this.pathPoints = points;
         this.travelSpeed = travelSpeed / 20f;
-        this.lastBlockPos = lastBlockPos;
+        this.lastPos = lastPos;
 
         this.currentStart = entityPos;
         this.currentEnd = pathPoints.getFirst().subtract(0, 0.25, 0);
@@ -67,7 +67,7 @@ public class TravelPathMover {
         Vec3 direction = currentEnd.subtract(currentStart).normalize().scale(travelSpeed);
         Vec3 newPos = entity.position().add(direction);
 
-        entity.setPos(newPos.x, newPos.y, newPos.z);
+        entity.moveTo(newPos.x, newPos.y, newPos.z);
         traveled += travelSpeed;
 
         Vec3 previewPoint = getPreviewPoint(2);

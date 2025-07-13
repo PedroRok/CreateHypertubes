@@ -1,6 +1,5 @@
 package com.pedrorok.hypertube.core.travel;
 
-import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
@@ -66,7 +65,7 @@ public class TravelPathData {
 
         if (addCurvedTravelPoint(pos, level)) return;
         Block block = blockState.getBlock();
-        if (!(block instanceof HypertubeBlock pipeBlock)) return;
+        if (!(block instanceof ITubeConnection pipeBlock)) return;
         List<Direction> connectedFaces = pipeBlock.getConnectedFaces(blockState);
         for (Direction direction : connectedFaces) {
             BlockPos nextPipe = pos.relative(direction);

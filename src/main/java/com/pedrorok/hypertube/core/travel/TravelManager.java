@@ -22,6 +22,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -61,8 +62,6 @@ public class TravelManager {
                 }
                 MessageUtils.sendActionMessage(player, Component.empty(), true);
             }
-        } else {
-            speed = speed * 0.5f;
         }
 
         long lastTravelTime = playerPersistData.getLong(LAST_TRAVEL_TIME);
@@ -148,25 +147,31 @@ public class TravelManager {
     }
 
     private static void finishTravel(LivingEntity entity, boolean forced) {
-        if (!(entity instanceof Player) && entity.level().isClientSide) return;
+        Level level = entity.level();
+        if (level.isClientSide) return;
+        boolean isPlayer = entity instanceof ServerPlayer;
         TravelPathMover pathMover = travelDataMap.get(entity.getUUID());
         travelDataMap.remove(entity.getUUID());
         entity.getPersistentData().putBoolean(TRAVEL_TAG, false);
         entity.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
-        entity.getPersistentData().putLong(LAST_TRAVEL_BLOCKPOS, pathMover.getLastBlockPos().asLong());
-        entity.getPersistentData().putFloat(LAST_TRAVEL_SPEED, pathMover.getTravelSpeed() / 500);
+        entity.getPersistentData().putLong(LAST_TRAVEL_BLOCKPOS, pathMover.getLastPos().asLong());
+        entity.getPersistentData().putFloat(LAST_TRAVEL_SPEED, pathMover.getTravelSpeed() / 10);
         entity.getPersistentData().putBoolean(IMMUNITY_TAG, true);
 
         syncPersistentData(entity);
 
         Vec3 lastDir = pathMover.getLastDir();
-        BlockPos oneLast = pathMover.getLastBlockPos().offset(new Vec3i((int) lastDir.x, (int) lastDir.y, (int) lastDir.z));
+        BlockPos oneLast = pathMover.getLastPos().offset(new Vec3i((int) lastDir.x, (int) lastDir.y, (int) lastDir.z));
         Vec3 lastBlockPos = oneLast.getCenter();
+        BlockState blockState = level.getBlockState(BlockPos.containing(lastBlockPos));
+        if (blockState.getBlock() instanceof HyperEntranceBlock) {
+            lastBlockPos = oneLast.relative(blockState.getValue(HyperEntranceBlock.FACING)).getCenter();
+        }
         if (!forced) {
-            if (entity.level() instanceof ServerLevel) {
-                entity.teleportTo((ServerLevel) entity.level(), lastBlockPos.x, lastBlockPos.y, lastBlockPos.z, RelativeMovement.ALL, entity.getYRot(), entity.getXRot());
+            if (level instanceof ServerLevel) {
+                entity.teleportTo((ServerLevel) level, lastBlockPos.x, lastBlockPos.y, lastBlockPos.z, RelativeMovement.ALL, entity.getYRot(), entity.getXRot());
             }
-            entity.setDeltaMovement(lastDir.scale(pathMover.getTravelSpeed() / 10));
+            entity.setDeltaMovement(lastDir.scale(Math.min(pathMover.getTravelSpeed() / 10f, isPlayer ? 0.8 : 0.1)).scale(isPlayer ? 1.0 : 0.5));
         }
         entity.hurtMarked = true;
 

@@ -78,7 +78,7 @@ public class ClientTravelPathMover {
 
             Vec3 renderPos = data.getRenderPosition(partialTicks);
 
-            entity.setPos(renderPos.x, renderPos.y, renderPos.z);
+            entity.moveTo(renderPos.x, renderPos.y, renderPos.z);
         }
     }
 
