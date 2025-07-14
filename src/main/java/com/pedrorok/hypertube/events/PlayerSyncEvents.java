@@ -49,10 +49,6 @@ public class PlayerSyncEvents {
 
     public static void syncPlayerStateToAll(LivingEntity sourcePlayer, boolean force) {
         if (!TravelManager.hasHyperTubeData(sourcePlayer) && !force) return;
-        for (ServerPlayer otherPlayer : sourcePlayer.getServer().getPlayerList().getPlayers()) {
-            if (otherPlayer == sourcePlayer) continue;
-            PacketDistributor.sendToPlayer(otherPlayer, SyncPersistentDataPacket.create(sourcePlayer));
-        }
-
+        PacketDistributor.sendToPlayersTrackingEntity(sourcePlayer, SyncPersistentDataPacket.create(sourcePlayer));
     }
 }

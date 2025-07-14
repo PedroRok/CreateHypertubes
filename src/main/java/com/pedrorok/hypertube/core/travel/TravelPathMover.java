@@ -3,6 +3,7 @@ package com.pedrorok.hypertube.core.travel;
 import com.pedrorok.hypertube.network.packets.EntityTravelDirDataPacket;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;

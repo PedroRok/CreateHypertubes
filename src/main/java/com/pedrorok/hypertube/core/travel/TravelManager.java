@@ -5,7 +5,6 @@ import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.config.ClientConfig;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.events.PlayerSyncEvents;
-import com.pedrorok.hypertube.network.NetworkHandler;
 import com.pedrorok.hypertube.network.packets.MovePathPacket;
 import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
 import com.pedrorok.hypertube.utils.MessageUtils;
@@ -43,8 +42,8 @@ public class TravelManager {
     private static final Map<UUID, TravelPathMover> travelDataMap = new HashMap<>();
 
     public static void tryStartTravel(LivingEntity entity, BlockPos pos, BlockState state, float speed) {
-        CompoundTag playerPersistData = entity.getPersistentData();
-        if (playerPersistData.getBoolean(TRAVEL_TAG)) return;
+        CompoundTag entityPersistentData = entity.getPersistentData();
+        if (entityPersistentData.getBoolean(TRAVEL_TAG)) return;
 
         boolean isPlayer = entity instanceof ServerPlayer;
         ServerPlayer player = isPlayer ? (ServerPlayer) entity : null;
@@ -63,10 +62,10 @@ public class TravelManager {
             }
         }
 
-        long lastTravelTime = playerPersistData.getLong(LAST_TRAVEL_TIME);
+        long lastTravelTime = entityPersistentData.getLong(LAST_TRAVEL_TIME);
 
-        if (playerPersistData.contains(LAST_TRAVEL_BLOCKPOS)) {
-            BlockPos lastTravelPos = BlockPos.of(playerPersistData.getLong(LAST_TRAVEL_BLOCKPOS));
+        if (entityPersistentData.contains(LAST_TRAVEL_BLOCKPOS)) {
+            BlockPos lastTravelPos = BlockPos.of(entityPersistentData.getLong(LAST_TRAVEL_BLOCKPOS));
             if (lastTravelPos.equals(pos)
                 && lastTravelTime > System.currentTimeMillis()) {
                 return;
@@ -74,7 +73,7 @@ public class TravelManager {
         }
 
         if (lastTravelTime - DEFAULT_AFTER_TUBE_CAMERA > System.currentTimeMillis()) {
-            speed += playerPersistData.getFloat(LAST_TRAVEL_SPEED);
+            speed += entityPersistentData.getFloat(LAST_TRAVEL_SPEED);
         }
 
         BlockPos relative = pos.relative(state.getValue(HyperEntranceBlock.FACING));
@@ -85,7 +84,7 @@ public class TravelManager {
             MessageUtils.sendActionMessage(player, Component.translatable("hypertube.travel.too_short").withColor(0xff0000), true);
             return;
         }
-        playerPersistData.putBoolean(TRAVEL_TAG, true);
+        entityPersistentData.putBoolean(TRAVEL_TAG, true);
 
         float finalSpeed = speed * 500;
         TravelPathMover pathMover = new TravelPathMover(
@@ -97,10 +96,12 @@ public class TravelManager {
         travelDataMap.put(entity.getUUID(), pathMover);
 
         MovePathPacket movePathPacket = new MovePathPacket(entity.getId(), travelPathData.getTravelPoints(), finalSpeed);
-        NetworkHandler.sendToTracking(movePathPacket, (ServerLevel) entity.level(), entity);
+        PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, movePathPacket);
+        //NetworkHandler.sendToTracking(movePathPacket, (ServerLevel) entity.level(), entity);
         Vec3 center = pos.getCenter();
         TubeSoundManager.playTubeSuctionSound(entity, center);
 
+        System.out.println(entity.level().isClientSide);
         syncPersistentData(entity);
 
         HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", entity.getName().getString(), relative, pathMover.getTravelSpeed());
@@ -112,11 +113,13 @@ public class TravelManager {
             clientTick(player);
             return;
         }
+        if (entity.level().isClientSide) return;
         handleServer(entity);
     }
 
     private static void handleCommon(LivingEntity entity) {
         if (hasHyperTubeData(entity)) {
+            System.out.println("Entity " + entity.getName().getString() + " is traveling");
             entity.refreshDimensions();
         }
     }
@@ -194,8 +197,8 @@ public class TravelManager {
         travelPathData.tickEntity(entity);
     }
 
-    public static boolean hasHyperTubeData(Entity player) {
-        return player.getPersistentData().getBoolean(TRAVEL_TAG);
+    public static boolean hasHyperTubeData(Entity entity) {
+        return entity.getPersistentData().getBoolean(TRAVEL_TAG);
     }
 
 
