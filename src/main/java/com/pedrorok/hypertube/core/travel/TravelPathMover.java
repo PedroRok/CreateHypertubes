@@ -1,9 +1,11 @@
 package com.pedrorok.hypertube.core.travel;
 
+import com.pedrorok.hypertube.network.packets.EntityTravelDirDataPacket;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -79,6 +81,8 @@ public class TravelPathMover {
         float pitch = (float) Math.toDegrees(Math.atan2(-direction.y, Math.sqrt(direction.x * direction.x + direction.z * direction.z)));
         entity.setYRot(yaw);
         entity.setXRot(pitch);
+        if (entity.level().isClientSide) return;
+        PacketDistributor.sendToPlayersTrackingEntity(entity, EntityTravelDirDataPacket.create(entity));
     }
 
     public Vec3 getLastDir() {

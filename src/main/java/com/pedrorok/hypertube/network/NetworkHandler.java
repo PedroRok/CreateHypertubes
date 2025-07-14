@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube.network;
 
 import com.pedrorok.hypertube.HypertubeMod;
+import com.pedrorok.hypertube.network.packets.EntityTravelDirDataPacket;
 import com.pedrorok.hypertube.network.packets.FinishPathPacket;
 import com.pedrorok.hypertube.network.packets.MovePathPacket;
 import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
@@ -29,11 +30,11 @@ public class NetworkHandler {
                 SyncPersistentDataPacket.STREAM_CODEC,
                 SyncPersistentDataPacket::handle
         );
-        //registrar.playToClient(
-        //        PlayerTravelDirDataPacket.TYPE,
-        //        PlayerTravelDirDataPacket.STREAM_CODEC,
-        //        PlayerTravelDirDataPacket::handle
-        //);
+        registrar.playToClient(
+                EntityTravelDirDataPacket.TYPE,
+                EntityTravelDirDataPacket.STREAM_CODEC,
+                EntityTravelDirDataPacket::handle
+        );
         registrar.playToServer(FinishPathPacket.TYPE,
                 FinishPathPacket.STREAM_CODEC,
                 FinishPathPacket::handle

@@ -36,6 +36,7 @@ public class PlayerMixin {
     @OnlyIn(Dist.CLIENT)
     private void createHypertube$tickInClient(Player player) {
         if (!Minecraft.getInstance().player.getUUID().equals(player.getUUID())) {
+            player.setXRot(0);
             return;
         }
         player.setYRot(DetachedPlayerDirController.get().getYaw());
