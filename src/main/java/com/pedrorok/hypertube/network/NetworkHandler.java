@@ -1,9 +1,9 @@
 package com.pedrorok.hypertube.network;
 
 import com.pedrorok.hypertube.HypertubeMod;
-import com.pedrorok.hypertube.network.packets.PlayerTravelDirDataPacket;
-import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
+import com.pedrorok.hypertube.network.packets.FinishPathPacket;
 import com.pedrorok.hypertube.network.packets.MovePathPacket;
+import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -34,6 +34,10 @@ public class NetworkHandler {
         //        PlayerTravelDirDataPacket.STREAM_CODEC,
         //        PlayerTravelDirDataPacket::handle
         //);
+        registrar.playToServer(FinishPathPacket.TYPE,
+                FinishPathPacket.STREAM_CODEC,
+                FinishPathPacket::handle
+        );
         registrar.playToClient(
                 MovePathPacket.TYPE,
                 MovePathPacket.STREAM_CODEC,

@@ -26,7 +26,7 @@ public class TravelPathMover {
     private double totalDistance;
     private double traveled;
 
-    public boolean isFinished = false;
+    private boolean finished = false;
 
     private Vec3 lastDirection = Vec3.ZERO;
 
@@ -45,15 +45,13 @@ public class TravelPathMover {
 
     public void tickEntity(LivingEntity entity) {
         if (entity.isSpectator() || !entity.isAlive()) {
-            isFinished = true;
             onFinishCallback.accept(entity, true);
             return;
         }
 
         if (traveled >= totalDistance) {
             currentSegment++;
-            if (currentSegment >= pathPoints.size()) {
-                isFinished = true;
+            if (currentSegment >= pathPoints.size() || finished) {
                 onFinishCallback.accept(entity, false);
                 return;
             }
@@ -61,7 +59,7 @@ public class TravelPathMover {
             currentEnd = pathPoints.get(currentSegment).subtract(0, 0.25, 0);
             totalDistance = currentStart.distanceTo(currentEnd);
             traveled = 0;
-            lastDirection = currentEnd.subtract(currentStart);
+            lastDirection = currentEnd.subtract(pathPoints.get(currentSegment-1)).normalize();
         }
 
         Vec3 direction = currentEnd.subtract(currentStart).normalize().scale(travelSpeed);
@@ -92,5 +90,9 @@ public class TravelPathMover {
             return null;
         }
         return pathPoints.get(currentSegment + offset).subtract(0, 0.25, 0);
+    }
+
+    public void setClientFinish() {
+        finished = true;
     }
 }

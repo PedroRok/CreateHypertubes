@@ -12,7 +12,6 @@ import com.pedrorok.hypertube.utils.MessageUtils;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -149,7 +148,6 @@ public class TravelManager {
     private static void finishTravel(LivingEntity entity, boolean forced) {
         Level level = entity.level();
         if (level.isClientSide) return;
-        boolean isPlayer = entity instanceof ServerPlayer;
         TravelPathMover pathMover = travelDataMap.get(entity.getUUID());
         travelDataMap.remove(entity.getUUID());
         entity.getPersistentData().putBoolean(TRAVEL_TAG, false);
@@ -161,23 +159,28 @@ public class TravelManager {
         syncPersistentData(entity);
 
         Vec3 lastDir = pathMover.getLastDir();
-        BlockPos oneLast = pathMover.getLastPos().offset(new Vec3i((int) lastDir.x, (int) lastDir.y, (int) lastDir.z));
-        Vec3 lastBlockPos = oneLast.getCenter();
+        Vec3 lastBlockPos = pathMover.getLastPos().getCenter();
         BlockState blockState = level.getBlockState(BlockPos.containing(lastBlockPos));
         if (blockState.getBlock() instanceof HyperEntranceBlock) {
-            lastBlockPos = oneLast.relative(blockState.getValue(HyperEntranceBlock.FACING)).getCenter();
+            lastBlockPos = pathMover.getLastPos().relative(blockState.getValue(HyperEntranceBlock.FACING).getOpposite()).getCenter();
         }
         if (!forced) {
             if (level instanceof ServerLevel) {
                 entity.teleportTo((ServerLevel) level, lastBlockPos.x, lastBlockPos.y, lastBlockPos.z, RelativeMovement.ALL, entity.getYRot(), entity.getXRot());
             }
-            entity.setDeltaMovement(lastDir.scale(Math.min(pathMover.getTravelSpeed() / 10f, isPlayer ? 0.8 : 0.1)).scale(isPlayer ? 1.0 : 0.5));
+            entity.setDeltaMovement(lastDir.scale(Math.min(pathMover.getTravelSpeed(), 1f)));
         }
         entity.hurtMarked = true;
 
         entity.setPose(Pose.SWIMMING);
 
         TubeSoundManager.playTubeSuctionSound(entity, entity.position());
+    }
+
+    public static void finishTravel(UUID entityUuid) {
+        TravelPathMover pathMover = travelDataMap.get(entityUuid);
+        if (pathMover == null) return;
+        pathMover.setClientFinish();
     }
 
     private static void handleServer(LivingEntity entity) {

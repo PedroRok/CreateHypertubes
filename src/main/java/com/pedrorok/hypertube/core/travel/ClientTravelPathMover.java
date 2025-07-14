@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube.core.travel;
 
 import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
+import com.pedrorok.hypertube.network.packets.FinishPathPacket;
 import com.pedrorok.hypertube.network.packets.MovePathPacket;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
@@ -12,6 +13,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -51,6 +53,7 @@ public class ClientTravelPathMover {
             }
 
             if (data.isDone()) {
+                PacketDistributor.sendToServer(new FinishPathPacket(entity.getUUID()));
                 it.remove();
                 continue;
             }

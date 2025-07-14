@@ -8,13 +8,14 @@
     "EntityTravelingMixin",
     "IPlayerExtensionMixin",
     "PlayerMixin",
-    "PlayerMovementMixin"
+    "PlayerMovementMixin",
+    "ServerGamePacketListenerImplMixin"
   ],
   "client": [
     "CameraAccessorMixin",
-    "PlayerModelMixin",
     "CameraMixin",
-    "LocalPlayerMixin"
+    "LocalPlayerMixin",
+    "PlayerModelMixin"
   ],
   "injectors": {
     "defaultRequire": 1
