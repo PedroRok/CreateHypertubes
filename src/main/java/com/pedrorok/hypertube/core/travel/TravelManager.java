@@ -48,20 +48,6 @@ public class TravelManager {
         boolean isPlayer = entity instanceof ServerPlayer;
         ServerPlayer player = isPlayer ? (ServerPlayer) entity : null;
 
-        if (isPlayer) {
-            if (player.connection.latency() > LATENCY_THRESHOLD) {
-                if (!entity.isShiftKeyDown()) {
-                    MessageUtils.sendActionMessage(player, Component.translatable("hypertube.travel.latency")
-                            .append(" (")
-                            .append(Component.translatable("block.hypertube.hyper_entrance.sneak_to_enter"))
-                            .append(")")
-                            .withColor(0xff0000), true);
-                    return;
-                }
-                MessageUtils.sendActionMessage(player, Component.empty(), true);
-            }
-        }
-
         long lastTravelTime = entityPersistentData.getLong(LAST_TRAVEL_TIME);
 
         if (entityPersistentData.contains(LAST_TRAVEL_BLOCKPOS)) {
@@ -104,7 +90,7 @@ public class TravelManager {
         System.out.println(entity.level().isClientSide);
         syncPersistentData(entity);
 
-        HypertubeMod.LOGGER.debug("Player start travel: {} to {} and speed {}", entity.getName().getString(), relative, pathMover.getTravelSpeed());
+        HypertubeMod.LOGGER.debug("Travel started: {} to {} and speed {}", entity.getName().getString(), relative, pathMover.getTravelSpeed());
     }
 
     public static void entityTick(LivingEntity entity) {
@@ -119,7 +105,6 @@ public class TravelManager {
 
     private static void handleCommon(LivingEntity entity) {
         if (hasHyperTubeData(entity)) {
-            System.out.println("Entity " + entity.getName().getString() + " is traveling");
             entity.refreshDimensions();
         }
     }

@@ -124,16 +124,13 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
             }
             return;
         }
-        Boolean isLocked = getBlockState().getValue(HyperEntranceBlock.LOCKED);
 
+        boolean isLocked = !getBlockState().getValue(HyperEntranceBlock.LOCKED);
         LivingEntity nearbyEntity = getNearbyLivingEntities((ServerLevel) level, pos.getCenter());
-        boolean isPlayer = nearbyEntity instanceof ServerPlayer;
-        ServerPlayer nearbyPlayer = isPlayer ? (ServerPlayer) nearbyEntity : null;
-        boolean canOpen = nearbyEntity != null
-                          && (!isLocked
-                              || nearbyEntity.isShiftKeyDown()
-                              || (isPlayer && nearbyPlayer.connection.latency() > TravelConstants.LATENCY_THRESHOLD)
-                              || nearbyEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG));
+
+        boolean canOpen = nearbyEntity != null &&
+                          (isLocked || nearbyEntity.isShiftKeyDown()
+                           || nearbyEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG));
 
         if (!canOpen) {
             if (isOpen) {
@@ -142,20 +139,23 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
             }
             return;
         }
+
         if (!isOpen) {
             level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, true), 3);
             playOpenCloseSound(true);
         }
+
         LivingEntity inRangeEntity = getInRangeLivingEntities((ServerLevel) level,
                 pos.getCenter(),
                 state.getValue(HyperEntranceBlock.FACING));
         if (inRangeEntity == null) return;
 
-        boolean isPlayerInRange = inRangeEntity instanceof ServerPlayer;
-        ServerPlayer player = isPlayerInRange ? (ServerPlayer) inRangeEntity : null;
-        if (!isLocked
-            && (inRangeEntity.isShiftKeyDown() && (isPlayerInRange && player.connection.latency() <= TravelConstants.LATENCY_THRESHOLD)))
+        if (!isLocked &&
+            !inRangeEntity.isShiftKeyDown() &&
+            !inRangeEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) {
             return;
+        }
+
         TravelManager.tryStartTravel(inRangeEntity, pos, state, actualSpeed / 512);
     }
 
