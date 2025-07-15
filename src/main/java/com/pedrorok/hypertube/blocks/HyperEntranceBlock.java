@@ -38,6 +38,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 /**
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
@@ -165,6 +167,11 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
         BlockState state = world.getBlockState(pos);
         return facing.getOpposite() == state.getValue(FACING)
                && state.getBlock() instanceof HyperEntranceBlock;
+    }
+
+    @Override
+    public List<Direction> getConnectedFaces(BlockState state) {
+        return List.of(state.getValue(FACING).getOpposite());
     }
 
     public VoxelShape getShape(BlockState state, @Nullable CollisionContext ctx) {

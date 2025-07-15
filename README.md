@@ -13,6 +13,6 @@
 
 ### Welcome to Create: Hypertubes!
 
-Ever wanted to build a transportation network in Minecraft like in _Satisfactory_? Create: Hypertubes is an addon for the Create mod inspired in _Satisfactory Hypertubes_, allowing you to construct intricate and seamless tube systems for moving players with ease. Hypertubes offers a new way to travel in your Minecraft world.
+Ever wanted to build a transportation network in Minecraft similar to ones in _Satisfactory_? Create: Hypertubes is an addon for the Create mod, inspired by _Satisfactory Hypertubes_, allowing you to construct intricate and seamless tube systems for moving players and entities with ease. Hypertubes offer a new way to travel in your Minecraft world.
 
-With an intuitive building system, you can design elegant curves and long, straightaways, creating a cool travel and logistics network.
+With an intuitive building system, you can design elegant and fun hypertubes with many curves to travel through, or build long, efficient straightaway tubes to power your logistics network! The options are limitless.

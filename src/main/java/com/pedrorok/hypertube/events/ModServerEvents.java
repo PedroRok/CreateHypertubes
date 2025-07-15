@@ -37,17 +37,19 @@ public class ModServerEvents {
     }
 
     @SubscribeEvent
-    public static void onPlayerTick(LivingEvent.LivingTickEvent event) {
-        TravelManager.entityTick(event.getEntity());
+    public static void onEntityTick(LivingEvent.LivingTickEvent event) {
+        if (!(event.getEntity() instanceof LivingEntity living)) return;
+        if (!TravelConstants.TRAVELLER_ENTITIES.contains(living.getType())) return;
+        TravelManager.entityTick(living);
         if (event.getEntity().level().isClientSide) {
             return;
         }
-        if (!(event.getEntity() instanceof Player player)) return;
+        if (!(living instanceof Player player)) return;
         TubePlacement.tickPlayerServer(player);
     }
 
     @SubscribeEvent
-    public static void playerHitboxChangesWhenInHypertube(EntityEvent.Size event) {
+    public static void entityHitboxChangesWhenInHypertube(EntityEvent.Size event) {
         Entity entity = event.getEntity();
         if (!TravelManager.hasHyperTubeData(entity))
             return;
@@ -86,7 +88,13 @@ public class ModServerEvents {
 
     @SubscribeEvent
     public static void onEntityHurt(LivingDamageEvent event) {
+        if (event.getEntity().level.isClientSide) return;
         LivingEntity entity = event.getEntity();
+        if (TravelManager.hasHyperTubeData(entity)) {
+            event.setAmount(0);
+            event.setCanceled(true);
+            return;
+        }
 
         if (!entity.getPersistentData().getBoolean(TravelConstants.IMMUNITY_TAG)) return;
         entity.getPersistentData().putBoolean(TravelConstants.IMMUNITY_TAG, false);

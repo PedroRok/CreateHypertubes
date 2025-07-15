@@ -42,10 +42,11 @@ public class CameraMixin {
         Options options = Minecraft.getInstance().options;
         Player player = Minecraft.getInstance().player;
         if (renderViewEntity != player) return;
-        if (!TravelManager.hasHyperTubeData(renderViewEntity) || (
+        boolean hasHypertubeData = !TravelManager.hasHyperTubeData(renderViewEntity);
+        if (hasHypertubeData || (
                 options.getCameraType().isFirstPerson() && ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get())) {
             DetachedCameraController.get().setDetached(false);
-            if (!TravelManager.hasHyperTubeData(renderViewEntity)){
+            if (hasHypertubeData) {
                 DetachedPlayerDirController.get().setDetached(false);
             }
             return;
@@ -65,9 +66,10 @@ public class CameraMixin {
         }
         DetachedCameraController.get().tickCamera(renderViewEntity);
 
-        camera.callSetRotation(DetachedCameraController.get().getYaw() * (flipped ? -1 : 1), DetachedCameraController.get().getPitch());
+        camera.createHypertube$callSetRotation(DetachedCameraController.get().getYaw() * (flipped ? -1 : 1), DetachedCameraController.get().getPitch());
 
-        camera.callSetPosition(
+
+        camera.createHypertube$callSetPosition(
                 Mth.lerp(PartialTicks, renderViewEntity.xo, renderViewEntity.getX()),
                 Mth.lerp(PartialTicks, renderViewEntity.yo, renderViewEntity.getY()),
                 Mth.lerp(PartialTicks, renderViewEntity.zo, renderViewEntity.getZ()));
@@ -78,7 +80,7 @@ public class CameraMixin {
         } else {
             f = 1.0F;
         }
-        camera.callMove(-camera.callGetMaxZoom(4.0F), 0.0F, 0.0F);
+        camera.createHypertube$callMove(-camera.callGetMaxZoom(4.0F), 0.0F, 0.0F);
 
         ci.cancel();
     }
