@@ -1,10 +1,11 @@
 package com.pedrorok.hypertube.core.travel;
 
 import com.pedrorok.hypertube.network.packets.EntityTravelDirDataPacket;
+import com.pedrorok.hypertube.network.packets.SyncEntityPosPacket;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -71,9 +72,9 @@ public class TravelPathMover {
         entity.moveTo(newPos.x, newPos.y, newPos.z);
         traveled += travelSpeed;
 
-        Vec3 previewPoint = getPreviewPoint(2);
-        if (previewPoint == null) return;
-        handleEntityDirection(entity, previewPoint.subtract(currentStart));
+        handleEntityDirection(entity, direction);
+        if (entity instanceof Player) return;
+        PacketDistributor.sendToPlayersTrackingEntity(entity, SyncEntityPosPacket.create(entity, currentSegment));
     }
 
 
@@ -88,13 +89,6 @@ public class TravelPathMover {
 
     public Vec3 getLastDir() {
         return lastDirection;
-    }
-
-    public Vec3 getPreviewPoint(int offset) {
-        if (currentSegment + offset >= pathPoints.size()) {
-            return null;
-        }
-        return pathPoints.get(currentSegment + offset).subtract(0, 0.25, 0);
     }
 
     public void setClientFinish() {

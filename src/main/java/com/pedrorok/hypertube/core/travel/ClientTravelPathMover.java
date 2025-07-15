@@ -92,10 +92,24 @@ public class ClientTravelPathMover {
         DetachedPlayerDirController.get().updateRotation(yaw, pitch);
     }
 
+    public static void updateSegment(int entityId, int segment) {
+        PathData data = ACTIVE_PATHS.get(entityId);
+        if (data != null) {
+            if (data.lastUpdateTick > 0) {
+                data.lastUpdateTick--;
+                return;
+            }
+            data.lastUpdateTick = 5;
+            data.currentIndex = segment;
+            data.updateLogicalPosition();
+        }
+    }
+
     private static class PathData {
         private final List<Vec3> points;
         private final double blocksPerTick;
         private int currentIndex = 0;
+        private int lastUpdateTick = 0;
 
         private Vec3 currentLogicalPos;
         private Vec3 previousLogicalPos;

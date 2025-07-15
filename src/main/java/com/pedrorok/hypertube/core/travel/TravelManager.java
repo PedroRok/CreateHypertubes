@@ -83,11 +83,9 @@ public class TravelManager {
 
         MovePathPacket movePathPacket = new MovePathPacket(entity.getId(), travelPathData.getTravelPoints(), finalSpeed);
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, movePathPacket);
-        //NetworkHandler.sendToTracking(movePathPacket, (ServerLevel) entity.level(), entity);
         Vec3 center = pos.getCenter();
         TubeSoundManager.playTubeSuctionSound(entity, center);
 
-        System.out.println(entity.level().isClientSide);
         syncPersistentData(entity);
 
         HypertubeMod.LOGGER.debug("Travel started: {} to {} and speed {}", entity.getName().getString(), relative, pathMover.getTravelSpeed());
