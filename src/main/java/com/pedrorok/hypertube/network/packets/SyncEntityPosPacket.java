@@ -1,28 +1,27 @@
 package com.pedrorok.hypertube.network.packets;
 
-import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.core.travel.ClientTravelPathMover;
+import com.pedrorok.hypertube.network.Packet;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
-import org.jetbrains.annotations.NotNull;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.network.NetworkEvent;
+
+import java.util.function.Supplier;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 15/07/2025
  * @project Create Hypertube
  */
-public record SyncEntityPosPacket(int entityId, int segment) implements CustomPacketPayload {
+public record SyncEntityPosPacket(int entityId, int segment) implements Packet<SyncEntityPosPacket> {
 
-    public static final Type<SyncEntityPosPacket> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "sync_entity_pos")
-    );
-
-    public static final StreamCodec<RegistryFriendlyByteBuf, SyncEntityPosPacket> STREAM_CODEC =
-            StreamCodec.of(SyncEntityPosPacket::encode, SyncEntityPosPacket::decode);
+    public SyncEntityPosPacket(FriendlyByteBuf buf) {
+        this(
+                buf.readInt(),
+                buf.readInt()
+        );
+    }
 
     public static SyncEntityPosPacket create(Entity entity, int segment) {
         return new SyncEntityPosPacket(
@@ -31,26 +30,23 @@ public record SyncEntityPosPacket(int entityId, int segment) implements CustomPa
         );
     }
 
-    public static void encode(FriendlyByteBuf buf, SyncEntityPosPacket packet) {
-        buf.writeInt(packet.entityId);
-        buf.writeInt(packet.segment);
-    }
-
-    public static SyncEntityPosPacket decode(FriendlyByteBuf buf) {
-        int id = buf.readInt();
-        int segment = buf.readInt();
-        return new SyncEntityPosPacket(id, segment);
-    }
-
-
-    public static void handle(SyncEntityPosPacket packet, IPayloadContext ctx) {
-        ctx.enqueueWork(() -> {
-            ClientTravelPathMover.updateSegment(packet.entityId, packet.segment);
-        });
+    @Override
+    public void toBytes(FriendlyByteBuf buf) {
+        buf.writeInt(entityId);
+        buf.writeInt(segment);
     }
 
     @Override
-    public @NotNull Type<? extends CustomPacketPayload> type() {
-        return TYPE;
+    public void execute(Supplier<NetworkEvent.Context> ctx) {
+        ctx.get().enqueueWork(() -> {
+            handleClient(this);
+        });
+        ctx.get().setPacketHandled(true);
     }
+
+    @OnlyIn(Dist.CLIENT)
+    private static void handleClient(SyncEntityPosPacket packet) {
+        ClientTravelPathMover.updateSegment(packet.entityId, packet.segment);
+    }
+
 }

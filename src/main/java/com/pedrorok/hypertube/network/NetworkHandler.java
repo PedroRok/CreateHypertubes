@@ -1,8 +1,7 @@
 package com.pedrorok.hypertube.network;
 
 import com.pedrorok.hypertube.HypertubeMod;
-import com.pedrorok.hypertube.network.packets.PlayerTravelDirDataPacket;
-import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
+import com.pedrorok.hypertube.network.packets.*;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.ModList;

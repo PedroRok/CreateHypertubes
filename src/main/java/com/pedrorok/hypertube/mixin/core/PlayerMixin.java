@@ -27,8 +27,8 @@ public class PlayerMixin {
 
         if (!entity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
 
-        if (!(entity instanceof Player player) || !entity.level().isClientSide) return;
-        createHypertube$tickInClient(player);
+        if (!entity.level().isClientSide) return;
+        createHypertube$tickInClient(entity);
     }
 
     @Unique

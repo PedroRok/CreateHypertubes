@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube.core.travel;
 
 import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
+import com.pedrorok.hypertube.network.NetworkHandler;
 import com.pedrorok.hypertube.network.packets.FinishPathPacket;
 import com.pedrorok.hypertube.network.packets.MovePathPacket;
 import lombok.Getter;
@@ -8,12 +9,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RenderFrameEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.PacketDistributor;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -24,7 +24,7 @@ import java.util.Map;
  * @author Rok, Pedro Lucas nmm. Created on 03/07/2025
  * @project Create Hypertube
  */
-@EventBusSubscriber(value = Dist.CLIENT)
+@Mod.EventBusSubscriber(value = Dist.CLIENT)
 public class ClientTravelPathMover {
     private static final Map<Integer, PathData> ACTIVE_PATHS = new HashMap<>();
 
@@ -34,7 +34,7 @@ public class ClientTravelPathMover {
     }
 
     @SubscribeEvent
-    public static void onClientTick(ClientTickEvent.Pre event) {
+    public static void onClientTick(TickEvent.ClientTickEvent event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.isPaused()) return;
         Level level = mc.level;
@@ -53,8 +53,8 @@ public class ClientTravelPathMover {
             }
 
             if (data.isDone()) {
-                PacketDistributor.sendToServer(new FinishPathPacket(entity.getUUID()));
                 it.remove();
+                NetworkHandler.INSTANCE.send(PacketDistributor.SERVER.noArg(), new FinishPathPacket(entity.getUUID()));
                 continue;
             }
 
@@ -65,16 +65,17 @@ public class ClientTravelPathMover {
     }
 
     @SubscribeEvent
-    public static void onRenderTick(RenderFrameEvent.Pre event) {
+    public static void onRenderTick(TickEvent.RenderTickEvent event) {
         Minecraft mc = Minecraft.getInstance();
         Level level = mc.level;
         if (level == null) return;
 
-        float partialTicks = event.getPartialTick().getGameTimeDeltaPartialTick(false);
+        float partialTicks = event.renderTickTime;
 
         for (var entry : ACTIVE_PATHS.entrySet()) {
             int id = entry.getKey();
             PathData data = entry.getValue();
+            if (data.isDone()) return;
 
             Entity entity = level.getEntity(id);
             if (entity == null || !entity.isAlive()) continue;
@@ -99,9 +100,9 @@ public class ClientTravelPathMover {
                 data.lastUpdateTick--;
                 return;
             }
-            data.lastUpdateTick = 5;
-            data.currentIndex = segment;
-            data.updateLogicalPosition();
+            //data.lastUpdateTick = 5;
+            //data.currentIndex = segment;
+            //data.updateLogicalPosition();
         }
     }
 

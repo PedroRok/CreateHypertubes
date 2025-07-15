@@ -66,10 +66,10 @@ public class CameraMixin {
         }
         DetachedCameraController.get().tickCamera(renderViewEntity);
 
-        camera.createHypertube$callSetRotation(DetachedCameraController.get().getYaw() * (flipped ? -1 : 1), DetachedCameraController.get().getPitch());
+        camera.callSetRotation(DetachedCameraController.get().getYaw() * (flipped ? -1 : 1), DetachedCameraController.get().getPitch());
 
 
-        camera.createHypertube$callSetPosition(
+        camera.callSetPosition(
                 Mth.lerp(PartialTicks, renderViewEntity.xo, renderViewEntity.getX()),
                 Mth.lerp(PartialTicks, renderViewEntity.yo, renderViewEntity.getY()),
                 Mth.lerp(PartialTicks, renderViewEntity.zo, renderViewEntity.getZ()));
@@ -80,7 +80,7 @@ public class CameraMixin {
         } else {
             f = 1.0F;
         }
-        camera.createHypertube$callMove(-camera.callGetMaxZoom(4.0F), 0.0F, 0.0F);
+        camera.callMove(-camera.callGetMaxZoom(4.0F), 0.0F, 0.0F);
 
         ci.cancel();
     }

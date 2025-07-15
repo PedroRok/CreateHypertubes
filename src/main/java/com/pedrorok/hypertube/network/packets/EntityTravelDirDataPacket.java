@@ -1,45 +1,31 @@
 package com.pedrorok.hypertube.network.packets;
 
-import com.pedrorok.hypertube.HypertubeMod;
+import com.pedrorok.hypertube.network.Packet;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
-import org.jetbrains.annotations.NotNull;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.network.NetworkEvent;
+
+import java.util.function.Supplier;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 18/06/2025
  * @project Create Hypertube
  */
-public record EntityTravelDirDataPacket(int entityId, float yaw, float pitch) implements CustomPacketPayload {
-
-    public static final Type<EntityTravelDirDataPacket> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "player_travel_dir")
-    );
-
-    public static final StreamCodec<RegistryFriendlyByteBuf, EntityTravelDirDataPacket> STREAM_CODEC =
-            StreamCodec.of(EntityTravelDirDataPacket::encode, EntityTravelDirDataPacket::decode);
+public record EntityTravelDirDataPacket(int entityId, float yaw,
+                                        float pitch) implements Packet<EntityTravelDirDataPacket> {
 
     @Override
-    public @NotNull Type<? extends CustomPacketPayload> type() {
-        return TYPE;
+    public void toBytes(FriendlyByteBuf buf) {
+        buf.writeInt(entityId);
+        buf.writeFloat(yaw);
+        buf.writeFloat(pitch);
     }
 
-    public static void encode(RegistryFriendlyByteBuf buf, EntityTravelDirDataPacket packet) {
-        buf.writeInt(packet.entityId);
-        buf.writeFloat(packet.yaw);
-        buf.writeFloat(packet.pitch);
-    }
-
-    public static EntityTravelDirDataPacket decode(RegistryFriendlyByteBuf buf) {
-        return new EntityTravelDirDataPacket(
-                buf.readInt(),
-                buf.readFloat(),
-                buf.readFloat()
-        );
+    public EntityTravelDirDataPacket(FriendlyByteBuf buf) {
+        this(buf.readInt(), buf.readFloat(), buf.readFloat());
     }
 
     public static EntityTravelDirDataPacket create(Entity entity) {
@@ -50,12 +36,15 @@ public record EntityTravelDirDataPacket(int entityId, float yaw, float pitch) im
         );
     }
 
-    public static void handle(EntityTravelDirDataPacket packet, IPayloadContext context) {
-        context.enqueueWork(() -> {
-            handleClient(packet);
+    @Override
+    public void execute(Supplier<NetworkEvent.Context> ctx) {
+        ctx.get().enqueueWork(() -> {
+            handleClient(this);
         });
+        ctx.get().setPacketHandled(true);
     }
 
+    @OnlyIn(Dist.CLIENT)
     private static void handleClient(EntityTravelDirDataPacket packet) {
         if (Minecraft.getInstance().player.getId() == packet.entityId) return;
         Entity entity = Minecraft.getInstance().level.getEntity(packet.entityId);

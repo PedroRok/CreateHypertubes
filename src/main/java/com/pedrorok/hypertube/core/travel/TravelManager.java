@@ -6,7 +6,6 @@ import com.pedrorok.hypertube.config.ClientConfig;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.events.PlayerSyncEvents;
 import com.pedrorok.hypertube.network.NetworkHandler;
-import com.pedrorok.hypertube.network.packets.PlayerTravelDirDataPacket;
 import com.pedrorok.hypertube.network.packets.MovePathPacket;
 import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
 import com.pedrorok.hypertube.utils.MessageUtils;
@@ -31,7 +30,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.PacketDistributor;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -71,14 +69,14 @@ public class TravelManager {
 
         if (travelPathData.getTravelPoints().size() < 3) {
             if (!isPlayer) return;
-            MessageUtils.sendActionMessage(player, Component.translatable("hypertube.travel.too_short").withColor(0xff0000), true);
+            MessageUtils.sendActionMessage(player, Component.translatable("hypertube.travel.too_short").withStyle(ChatFormatting.RED), true);
             return;
         }
         entityPersistentData.putBoolean(TRAVEL_TAG, true);
 
         float finalSpeed = speed * 500;
         TravelPathMover pathMover = new TravelPathMover(
-                entity.position(),
+                entity,
                 travelPathData.getTravelPoints(),
                 finalSpeed,
                 travelPathData.getLastBlockPos(),
@@ -86,7 +84,9 @@ public class TravelManager {
         travelDataMap.put(entity.getUUID(), pathMover);
 
         MovePathPacket movePathPacket = new MovePathPacket(entity.getId(), travelPathData.getTravelPoints(), finalSpeed);
-        PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, movePathPacket);
+        NetworkHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
+                movePathPacket);
+
         Vec3 center = pos.getCenter();
         TubeSoundManager.playTubeSuctionSound(entity, center);
 
@@ -137,7 +137,7 @@ public class TravelManager {
 
     private static void finishTravel(LivingEntity entity, boolean forced) {
         Level level = entity.level();
-        if (level.isClientSide) return;
+        //if (level.isClientSide) return;
         TravelPathMover pathMover = travelDataMap.get(entity.getUUID());
         travelDataMap.remove(entity.getUUID());
         entity.getPersistentData().putBoolean(TRAVEL_TAG, false);
@@ -150,13 +150,10 @@ public class TravelManager {
 
         Vec3 lastDir = pathMover.getLastDir();
         Vec3 lastBlockPos = pathMover.getLastPos().getCenter();
-        BlockState blockState = level.getBlockState(BlockPos.containing(lastBlockPos));
-        if (blockState.getBlock() instanceof HyperEntranceBlock) {
-            lastBlockPos = pathMover.getLastPos().relative(blockState.getValue(HyperEntranceBlock.FACING).getOpposite()).getCenter();
-        }
         if (!forced) {
             if (level instanceof ServerLevel) {
-                entity.teleportTo((ServerLevel) level, lastBlockPos.x, lastBlockPos.y, lastBlockPos.z, RelativeMovement.ALL, entity.getYRot(), entity.getXRot());
+                System.out.println(lastBlockPos);
+                entity.teleportTo(lastBlockPos.x, lastBlockPos.y, lastBlockPos.z);
             }
             entity.setDeltaMovement(lastDir.scale(Math.min(pathMover.getTravelSpeed(), 1f)));
         }

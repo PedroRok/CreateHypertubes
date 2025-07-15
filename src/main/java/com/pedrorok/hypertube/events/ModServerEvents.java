@@ -38,10 +38,10 @@ public class ModServerEvents {
 
     @SubscribeEvent
     public static void onEntityTick(LivingEvent.LivingTickEvent event) {
-        if (!(event.getEntity() instanceof LivingEntity living)) return;
+        LivingEntity living = event.getEntity();
         if (!TravelConstants.TRAVELLER_ENTITIES.contains(living.getType())) return;
         TravelManager.entityTick(living);
-        if (event.getEntity().level().isClientSide) {
+        if (living.level().isClientSide) {
             return;
         }
         if (!(living instanceof Player player)) return;
@@ -88,7 +88,7 @@ public class ModServerEvents {
 
     @SubscribeEvent
     public static void onEntityHurt(LivingDamageEvent event) {
-        if (event.getEntity().level.isClientSide) return;
+        if (event.getEntity().level().isClientSide) return;
         LivingEntity entity = event.getEntity();
         if (TravelManager.hasHyperTubeData(entity)) {
             event.setAmount(0);

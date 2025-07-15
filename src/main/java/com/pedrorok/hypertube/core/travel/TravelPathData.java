@@ -27,7 +27,7 @@ import java.util.UUID;
 public class TravelPathData {
 
     @Getter
-    private final List<Vec3> travelPoints; //
+    private final List<Vec3> travelPoints;
     private final List<UUID> bezierConnections;
     private final List<BlockPos> blockConnections;
 

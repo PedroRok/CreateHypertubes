@@ -38,6 +38,9 @@ public record SyncPersistentDataPacket(int entityId, CompoundTag readData) imple
     private static void handleClient(SyncPersistentDataPacket packet) {
         try {
             Entity entityByID = Minecraft.getInstance().level.getEntity(packet.entityId);
+            if (entityByID == null) {
+                return;
+            }
             CompoundTag data = entityByID.getPersistentData();
             new HashSet<>(data.getAllKeys()).forEach(data::remove);
             data.merge(packet.readData);
