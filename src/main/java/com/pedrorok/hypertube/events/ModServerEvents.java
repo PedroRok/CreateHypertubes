@@ -89,6 +89,11 @@ public class ModServerEvents {
     public static void onEntityHurt(LivingDamageEvent.Pre event) {
         if (event.getEntity().level().isClientSide) return;
         LivingEntity entity = event.getEntity();
+        if (TravelManager.hasHyperTubeData(entity)) {
+            event.setNewDamage(0);
+            entity.hurtMarked = false;
+            return;
+        }
 
         if (!entity.getPersistentData().getBoolean(TravelConstants.IMMUNITY_TAG)) return;
         entity.getPersistentData().putBoolean(TravelConstants.IMMUNITY_TAG, false);
