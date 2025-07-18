@@ -47,7 +47,7 @@ public class ClientTravelPathMover {
             PathData data = entry.getValue();
 
             Entity entity = level.getEntity(id);
-            if (entity == null || !entity.isAlive()) {
+            if (entity == null || !entity.isAlive() || entity.isSpectator()) {
                 it.remove();
                 continue;
             }
@@ -77,7 +77,7 @@ public class ClientTravelPathMover {
             PathData data = entry.getValue();
 
             Entity entity = level.getEntity(id);
-            if (entity == null || !entity.isAlive()) continue;
+            if (entity == null || !entity.isAlive() || entity.isSpectator()) continue;
 
             Vec3 renderPos = data.getRenderPosition(partialTicks);
 
