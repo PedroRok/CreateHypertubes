@@ -27,6 +27,9 @@ import net.neoforged.neoforge.client.event.RenderLivingEvent;
 @EventBusSubscriber(Dist.CLIENT)
 public class ClientEvents {
 
+    private static long lastTickTime = 0;
+    private static final long TICK_INTERVAL_NS = 1_000_000_000L / 60;
+
     @SubscribeEvent
     public static void onTickPre(ClientTickEvent.Pre event) {
         onTick(true);
@@ -50,7 +53,11 @@ public class ClientEvents {
 
     @SubscribeEvent
     public static void renderFrame(RenderFrameEvent.Pre event) {
-        DetachedPlayerDirController.tickPlayer();
+        long currentTime = System.nanoTime();
+        if (currentTime - lastTickTime >= TICK_INTERVAL_NS) {
+            DetachedPlayerDirController.tickPlayer();
+            lastTickTime = currentTime;
+        }
     }
 
     @SubscribeEvent

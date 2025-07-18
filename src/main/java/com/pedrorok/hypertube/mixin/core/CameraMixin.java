@@ -75,9 +75,7 @@ public class CameraMixin {
             this.createHypertube$setDetachedExternal(true);
         }
         long currentTime = System.nanoTime();
-        System.out.println("------");
         if (currentTime - createHypertube$lastTickTime >= createHypertube$TICK_INTERVAL_NS) {
-            System.out.println("IM HERE");
             DetachedCameraController.get().tickCamera(renderViewEntity);
             createHypertube$lastTickTime = currentTime;
         }
