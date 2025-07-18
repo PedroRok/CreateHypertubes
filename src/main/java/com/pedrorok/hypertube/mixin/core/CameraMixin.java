@@ -33,6 +33,15 @@ public class CameraMixin {
 
     @Shadow private Entity entity;
 
+    @Shadow private float partialTickTime;
+
+    // FPS CONTROL
+    @Unique
+    private long createHypertube$lastTickTime = 0;
+    @Unique
+    private static final long createHypertube$TICK_INTERVAL_NS = 1_000_000_000L / 60;
+
+
     @Unique
     public void createHypertube$setDetachedExternal(boolean newDetached) {
         this.detached = newDetached;
@@ -65,7 +74,13 @@ public class CameraMixin {
             DetachedCameraController.get().setDetached(true);
             this.createHypertube$setDetachedExternal(true);
         }
-        DetachedCameraController.get().tickCamera(renderViewEntity);
+        long currentTime = System.nanoTime();
+        System.out.println("------");
+        if (currentTime - createHypertube$lastTickTime >= createHypertube$TICK_INTERVAL_NS) {
+            System.out.println("IM HERE");
+            DetachedCameraController.get().tickCamera(renderViewEntity);
+            createHypertube$lastTickTime = currentTime;
+        }
 
         camera.createHypertube$callSetRotation(DetachedCameraController.get().getYaw() * (flipped ? -1 : 1), DetachedCameraController.get().getPitch());
 
