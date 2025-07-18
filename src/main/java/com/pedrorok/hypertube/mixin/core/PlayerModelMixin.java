@@ -3,6 +3,7 @@ package com.pedrorok.hypertube.mixin.core;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -78,6 +79,11 @@ public abstract class PlayerModelMixin {
             playerModel.jacket.xRot = 0;
             playerModel.jacket.yRot = 0;
             playerModel.jacket.zRot = 0;
+
+
+            PlayerModelAccessor accessor = (PlayerModelAccessor) playerModel;
+            ModelPart cloak = accessor.createHypertube$getCloak();
+            cloak.visible = false;
         }
         ci.cancel();
     }

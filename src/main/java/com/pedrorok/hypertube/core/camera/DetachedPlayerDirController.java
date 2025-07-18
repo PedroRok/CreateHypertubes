@@ -32,7 +32,7 @@ public class DetachedPlayerDirController {
     private float targetYaw = 0;
     private float targetPitch = 0;
 
-    private static final double SMOOTHING_ROTATION = 0.75;
+    private static final double SMOOTHING_ROTATION = 0.9;
 
     @Setter
     private boolean detached = false;

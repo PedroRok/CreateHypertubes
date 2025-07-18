@@ -74,7 +74,12 @@ public class TravelManager {
         }
         entityPersistentData.putBoolean(TRAVEL_TAG, true);
 
-        float finalSpeed = speed * 500;
+        float finalSpeed = (speed * TravelConstants.DEFAULT_SPEED_MULTIPLIER);
+
+        if (!(entity instanceof Player)) {
+            //finalSpeed = finalSpeed * TravelConstants.ENTITY_SPEED_MULTIPLIER;
+        }
+
         TravelPathMover pathMover = new TravelPathMover(
                 entity,
                 travelPathData.getTravelPoints(),
@@ -143,7 +148,8 @@ public class TravelManager {
         entity.getPersistentData().putBoolean(TRAVEL_TAG, false);
         entity.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
         entity.getPersistentData().putLong(LAST_TRAVEL_BLOCKPOS, pathMover.getLastPos().asLong());
-        entity.getPersistentData().putFloat(LAST_TRAVEL_SPEED, pathMover.getTravelSpeed() / 10);
+        float finalSpeed = pathMover.getTravelSpeed();
+        entity.getPersistentData().putFloat(LAST_TRAVEL_SPEED, finalSpeed);
         entity.getPersistentData().putBoolean(IMMUNITY_TAG, true);
 
         syncPersistentData(entity);
@@ -155,7 +161,7 @@ public class TravelManager {
                 System.out.println(lastBlockPos);
                 entity.teleportTo(lastBlockPos.x, lastBlockPos.y, lastBlockPos.z);
             }
-            entity.setDeltaMovement(lastDir.scale(Math.min(pathMover.getTravelSpeed(), 1f)));
+            entity.setDeltaMovement(lastDir.scale(Math.max(finalSpeed, 1f)));
         }
         entity.hurtMarked = true;
 

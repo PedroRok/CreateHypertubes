@@ -15,7 +15,7 @@ import java.util.function.Supplier;
  * @project Create Hypertube
  */
 public record MovePathPacket(int entityId, List<Vec3> pathPoints,
-                             double blocksPerSecond) implements Packet<MovePathPacket> {
+                             double travelSpeed) implements Packet<MovePathPacket> {
 
     @Override
     public void toBytes(FriendlyByteBuf buf) {
@@ -26,7 +26,7 @@ public record MovePathPacket(int entityId, List<Vec3> pathPoints,
             buf.writeDouble(vec.y);
             buf.writeDouble(vec.z);
         }
-        buf.writeDouble(blocksPerSecond);
+        buf.writeDouble(travelSpeed);
     }
 
     public MovePathPacket(FriendlyByteBuf buf) {

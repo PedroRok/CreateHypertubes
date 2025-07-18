@@ -47,8 +47,16 @@ public class ClientEvents {
             return;
         }
         TubePlacement.clientTick();
-        DetachedPlayerDirController.tickPlayer();
-        DetachedCameraController.cameraTick();
+        DetachedCameraController.tickCamera();
+    }
+
+    @SubscribeEvent
+    public static void renderFrame(RenderFrameEvent.Pre event) {
+        long currentTime = System.nanoTime();
+        if (currentTime - lastTickTime >= TICK_INTERVAL_NS) {
+            DetachedPlayerDirController.tickPlayer();
+            lastTickTime = currentTime;
+        }
     }
 
     @SubscribeEvent

@@ -39,7 +39,7 @@ public class TravelPathMover {
     public TravelPathMover(LivingEntity entity, List<Vec3> points, float travelSpeed, BlockPos lastPos, BiConsumer<LivingEntity, Boolean> onFinishCallback) {
         this.entity = entity;
         this.pathPoints = points;
-        this.travelSpeed = travelSpeed / 20f;
+        this.travelSpeed = travelSpeed;
         this.lastPos = lastPos;
 
         this.currentStart = entity.position();
@@ -63,7 +63,7 @@ public class TravelPathMover {
                 onFinishCallback.accept(entity, false);
                 return;
             }
-            currentStart = entity.position();
+            currentStart = currentEnd;
             currentEnd = pathPoints.get(currentSegment).subtract(0, 0.25, 0);
             totalDistance = currentStart.distanceTo(currentEnd);
             traveled = 0;

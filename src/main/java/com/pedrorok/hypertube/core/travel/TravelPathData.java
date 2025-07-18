@@ -72,7 +72,7 @@ public class TravelPathData {
             if (blockConnections.contains(nextPipe)) continue;
             if (!(level.getBlockState(nextPipe).getBlock() instanceof ITubeConnection connection)) continue;
             if (!connection.canTravelConnect(level, nextPipe, direction)
-                && (level.getBlockEntity(nextPipe) instanceof HypertubeBlockEntity tubeEntity && !tubeEntity.isConnected()))
+                && (level.getBlockEntity(nextPipe) instanceof ITubeConnectionEntity tubeEntity && !tubeEntity.isConnected()))
                 continue;
             travelPoints.add(nextPipe.getCenter());
             blockConnections.add(nextPipe);
@@ -115,10 +115,11 @@ public class TravelPathData {
             final BlockPos toPosFinal = inverse ? fromPos : toPos;
             final BlockPos fromPosFinal = inverse ? toPos : fromPos;
 
-            if (!blockConnections.contains(toPosFinal))
-                blockConnections.add(toPosFinal);
             if (!blockConnections.contains(fromPosFinal))
                 blockConnections.add(fromPosFinal);
+            if (!blockConnections.contains(toPosFinal))
+                blockConnections.add(toPosFinal);
+
             addTravelPoint(toPosFinal, level);
             connected = true;
         }
