@@ -59,7 +59,7 @@ public class TravelPathMover {
                 onFinishCallback.accept(entity, false);
                 return;
             }
-            currentStart = entity.position();
+            currentStart = currentEnd;
             currentEnd = pathPoints.get(currentSegment).subtract(0, 0.25, 0);
             totalDistance = currentStart.distanceTo(currentEnd);
             traveled = 0;

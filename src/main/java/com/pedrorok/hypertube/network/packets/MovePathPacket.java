@@ -19,7 +19,7 @@ import java.util.List;
  * @project Create Hypertube
  */
 public record MovePathPacket(int entityId, List<Vec3> pathPoints,
-                             double blocksPerSecond) implements CustomPacketPayload {
+                             double travelSpeed) implements CustomPacketPayload {
 
     public static final Type<MovePathPacket> TYPE = new Type<>(
             ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "entity_travel_path")
@@ -37,7 +37,7 @@ public record MovePathPacket(int entityId, List<Vec3> pathPoints,
             buf.writeDouble(vec.y);
             buf.writeDouble(vec.z);
         }
-        buf.writeDouble(packet.blocksPerSecond);
+        buf.writeDouble(packet.travelSpeed);
     }
 
     public static MovePathPacket decode(FriendlyByteBuf buf) {

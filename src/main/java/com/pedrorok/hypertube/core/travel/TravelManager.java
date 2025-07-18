@@ -72,10 +72,10 @@ public class TravelManager {
         }
         entityPersistentData.putBoolean(TRAVEL_TAG, true);
 
-        float finalSpeed = (speed * TravelConstants.DEFAULT_SPEED_MULTIPLIER) / 20;
+        float finalSpeed = (speed * TravelConstants.DEFAULT_SPEED_MULTIPLIER);
 
         if (!(entity instanceof Player)) {
-            finalSpeed = finalSpeed * TravelConstants.ENTITY_SPEED_MULTIPLIER;
+            //finalSpeed = finalSpeed * TravelConstants.ENTITY_SPEED_MULTIPLIER;
         }
 
         TravelPathMover pathMover = new TravelPathMover(
@@ -144,7 +144,7 @@ public class TravelManager {
         entity.getPersistentData().putBoolean(TRAVEL_TAG, false);
         entity.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
         entity.getPersistentData().putLong(LAST_TRAVEL_BLOCKPOS, pathMover.getLastPos().asLong());
-        float finalSpeed = pathMover.getTravelSpeed() / 10;
+        float finalSpeed = pathMover.getTravelSpeed();
         entity.getPersistentData().putFloat(LAST_TRAVEL_SPEED, finalSpeed);
         entity.getPersistentData().putBoolean(IMMUNITY_TAG, true);
 

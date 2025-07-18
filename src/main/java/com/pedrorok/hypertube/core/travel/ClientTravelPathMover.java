@@ -30,7 +30,7 @@ public class ClientTravelPathMover {
 
     public static void startMoving(MovePathPacket packet) {
         boolean isPlayer = Minecraft.getInstance().player.getId() == packet.entityId();
-        ACTIVE_PATHS.put(packet.entityId(), new PathData(packet.pathPoints(), packet.blocksPerSecond(), isPlayer));
+        ACTIVE_PATHS.put(packet.entityId(), new PathData(packet.pathPoints(), packet.travelSpeed(), isPlayer));
     }
 
     @SubscribeEvent
@@ -108,7 +108,7 @@ public class ClientTravelPathMover {
 
     private static class PathData {
         private final List<Vec3> points;
-        private final double blocksPerTick;
+        private final double travelSpeed;
         private int currentIndex = 0;
         private int lastUpdateTick = 0;
 
@@ -120,7 +120,7 @@ public class ClientTravelPathMover {
 
         public PathData(List<Vec3> points, double blocksPerSecond, boolean clientPlayer) {
             this.points = points;
-            this.blocksPerTick = blocksPerSecond;
+            this.travelSpeed = blocksPerSecond;
             this.clientPlayer = clientPlayer;
 
             if (!points.isEmpty()) {
@@ -145,14 +145,17 @@ public class ClientTravelPathMover {
 
             Vec3 target = getCurrentTarget();
             double distanceToTarget = currentLogicalPos.distanceTo(target);
-
-            if (distanceToTarget < blocksPerTick) {
-                previousLogicalPos = currentLogicalPos;
+            boolean doHalfStep = true;
+            previousLogicalPos = currentLogicalPos;
+            if (distanceToTarget < travelSpeed) {
                 currentLogicalPos = target;
-                currentIndex++;
-            } else {
-                previousLogicalPos = currentLogicalPos;
-                Vec3 direction = target.subtract(currentLogicalPos).normalize().scale(blocksPerTick);
+                currentIndex = (int) (currentIndex + Math.max(1,travelSpeed));
+                if (travelSpeed <= 1) {
+                    doHalfStep = false;
+                }
+            }
+            if (doHalfStep) {
+                Vec3 direction = target.subtract(currentLogicalPos).normalize().scale(travelSpeed);
                 currentLogicalPos = currentLogicalPos.add(direction);
             }
         }
