@@ -27,9 +27,8 @@ public class TravelConstants {
     public static final int DEFAULT_TRAVEL_TIME = 2000;
     public static final int DEFAULT_AFTER_TUBE_CAMERA = 1500; // 0.5 seconds (subtracting default travel time)
 
-    public static final double DEFAULT_MIN_SPEED = 0.5;
-
-    public static final int LATENCY_THRESHOLD = 100; // ms
+    public static final float DEFAULT_SPEED_MULTIPLIER = 500;
+    public static final float ENTITY_SPEED_MULTIPLIER = 0.8f;
 
     public static final Set<EntityType<?>> TRAVELLER_ENTITIES = new HashSet<>(Set.of(
             EntityType.PLAYER,

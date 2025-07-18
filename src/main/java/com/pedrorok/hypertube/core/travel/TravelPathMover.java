@@ -36,7 +36,7 @@ public class TravelPathMover {
 
     public TravelPathMover(Vec3 entityPos, List<Vec3> points, float travelSpeed, BlockPos lastPos, BiConsumer<LivingEntity, Boolean> onFinishCallback) {
         this.pathPoints = points;
-        this.travelSpeed = travelSpeed / 20f;
+        this.travelSpeed = travelSpeed;
         this.lastPos = lastPos;
 
         this.currentStart = entityPos;

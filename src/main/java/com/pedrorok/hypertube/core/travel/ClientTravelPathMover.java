@@ -59,6 +59,7 @@ public class ClientTravelPathMover {
             }
 
             data.updateLogicalPosition();
+            entity.setDeltaMovement(data.getCurrentDirection());
             if (data.isClientPlayer())
                 handleEntityDirection(data.getCurrentDirection());
         }
@@ -119,7 +120,7 @@ public class ClientTravelPathMover {
 
         public PathData(List<Vec3> points, double blocksPerSecond, boolean clientPlayer) {
             this.points = points;
-            this.blocksPerTick = blocksPerSecond / 20.0;
+            this.blocksPerTick = blocksPerSecond;
             this.clientPlayer = clientPlayer;
 
             if (!points.isEmpty()) {
