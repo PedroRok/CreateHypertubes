@@ -3,8 +3,10 @@ package com.pedrorok.hypertube.mixin.core;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -15,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(value = HumanoidModel.class, priority = 1001)
 public abstract class PlayerModelMixin {
+
 
     @Inject(method = "setupAnim*", at = @At("RETURN"), cancellable = true, order = 1001)
     private void createHypertube$onSetupAnim(LivingEntity entity, float limbSwing, float limbSwingAmount,
@@ -79,6 +82,11 @@ public abstract class PlayerModelMixin {
             playerModel.jacket.xRot = 0;
             playerModel.jacket.yRot = 0;
             playerModel.jacket.zRot = 0;
+
+
+            PlayerModelAccessor accessor = (PlayerModelAccessor) playerModel;
+            ModelPart cloak = accessor.createHypertube$getCloak();
+            cloak.visible = false;
         }
         ci.cancel();
     }

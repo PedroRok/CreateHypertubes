@@ -15,6 +15,7 @@
     "CameraAccessorMixin",
     "CameraMixin",
     "LocalPlayerMixin",
+    "PlayerModelAccessor",
     "PlayerModelMixin"
   ],
   "injectors": {
