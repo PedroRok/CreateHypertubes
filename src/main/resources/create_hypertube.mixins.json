@@ -7,13 +7,15 @@
   "mixins": [
     "EntityTravelingMixin",
     "PlayerMixin",
-    "PlayerModelMixin",
-    "PlayerMovementMixin"
+    "PlayerMovementMixin",
+    "ServerGamePacketListenerImplMixin"
   ],
   "client": [
     "CameraAccessorMixin",
     "CameraMixin",
-    "LocalPlayerMixin"
+    "LocalPlayerMixin",
+    "PlayerModelAccessor",
+    "PlayerModelMixin"
   ],
   "injectors": {
     "defaultRequire": 1

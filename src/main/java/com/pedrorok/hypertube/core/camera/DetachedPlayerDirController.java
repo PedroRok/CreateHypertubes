@@ -5,6 +5,7 @@ import lombok.Setter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -31,7 +32,7 @@ public class DetachedPlayerDirController {
     private float targetYaw = 0;
     private float targetPitch = 0;
 
-    private static final double SMOOTHING_ROTATION = 0.80;
+    private static final double SMOOTHING_ROTATION = 0.9;
 
     @Setter
     private boolean detached = false;
@@ -49,6 +50,7 @@ public class DetachedPlayerDirController {
     public void tickPlayerDirection() {
         if (!detached) return;
         LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null) return;
         this.yaw = lerpAngle(this.yaw, this.targetYaw, (float) SMOOTHING_ROTATION);
         this.pitch = (float) Mth.lerp(SMOOTHING_ROTATION, this.pitch, this.targetPitch);
         player.setYRot(this.yaw);
@@ -62,5 +64,14 @@ public class DetachedPlayerDirController {
 
     public static void tickPlayer() {
         get().tickPlayerDirection();
+    }
+
+
+    public Vec3 getDirection() {
+        return new Vec3(
+                -Mth.sin((float) Math.toRadians(yaw)) * Mth.cos((float) Math.toRadians(pitch)),
+                -Mth.sin((float) Math.toRadians(pitch)),
+                Mth.cos((float) Math.toRadians(yaw)) * Mth.cos((float) Math.toRadians(pitch))
+        );
     }
 }

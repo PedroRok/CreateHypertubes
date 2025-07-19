@@ -32,6 +32,13 @@ public class CameraMixin {
 
     @Shadow private Entity entity;
 
+    // FPS CONTROL
+    @Unique
+    private long createHypertube$lastTickTime = 0;
+    @Unique
+    private static final long createHypertube$TICK_INTERVAL_NS = 1_000_000_000L / 60;
+
+
     @Unique
     public void createHypertube$setDetachedExternal(boolean newDetached) {
         this.detached = newDetached;
@@ -42,11 +49,11 @@ public class CameraMixin {
         Options options = Minecraft.getInstance().options;
         Player player = Minecraft.getInstance().player;
         if (renderViewEntity != player) return;
-        boolean dontHaveTravelData = !TravelManager.hasHyperTubeData(renderViewEntity);
-        if (dontHaveTravelData || (
+        boolean hasHypertubeData = !TravelManager.hasHyperTubeData(renderViewEntity);
+        if (hasHypertubeData || (
                 options.getCameraType().isFirstPerson() && ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get())) {
             DetachedCameraController.get().setDetached(false);
-            if (!TravelManager.hasHyperTubeData(renderViewEntity)){
+            if (hasHypertubeData) {
                 DetachedPlayerDirController.get().setDetached(false);
             }
             return;
@@ -64,21 +71,20 @@ public class CameraMixin {
             DetachedCameraController.get().setDetached(true);
             this.createHypertube$setDetachedExternal(true);
         }
-        DetachedCameraController.get().tickCamera(renderViewEntity);
+        long currentTime = System.nanoTime();
+        if (currentTime - createHypertube$lastTickTime >= createHypertube$TICK_INTERVAL_NS) {
+            DetachedCameraController.get().tickCamera(renderViewEntity);
+            createHypertube$lastTickTime = currentTime;
+        }
 
         camera.callSetRotation(DetachedCameraController.get().getYaw() * (flipped ? -1 : 1), DetachedCameraController.get().getPitch());
+
 
         camera.callSetPosition(
                 Mth.lerp(PartialTicks, renderViewEntity.xo, renderViewEntity.getX()),
                 Mth.lerp(PartialTicks, renderViewEntity.yo, renderViewEntity.getY()),
                 Mth.lerp(PartialTicks, renderViewEntity.zo, renderViewEntity.getZ()));
 
-        float f;
-        if (renderViewEntity instanceof LivingEntity livingentity) {
-            f = livingentity.getScale();
-        } else {
-            f = 1.0F;
-        }
         camera.callMove(-camera.callGetMaxZoom(4.0F), 0.0F, 0.0F);
 
         ci.cancel();

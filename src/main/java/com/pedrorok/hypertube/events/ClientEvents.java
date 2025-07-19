@@ -45,8 +45,12 @@ public class ClientEvents {
             return;
         }
         TubePlacement.clientTick();
-        DetachedPlayerDirController.tickPlayer();
         DetachedCameraController.cameraTick();
+    }
+
+    @SubscribeEvent
+    public static void onRenderTick(TickEvent.RenderTickEvent event) {
+        DetachedPlayerDirController.tickPlayer();
     }
 
     @SubscribeEvent
@@ -84,8 +88,6 @@ public class ClientEvents {
     public static void onRenderEntityPost(RenderLivingEvent.Post event) {
         LivingEntity entity = event.getEntity();
         if (!entity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
-
         event.getPoseStack().popPose();
-
     }
 }

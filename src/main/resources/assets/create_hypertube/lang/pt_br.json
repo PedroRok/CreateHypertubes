@@ -21,5 +21,6 @@
   "tooltip.create_hypertube.entrance_blocked": "Entrada bloqueada",
   "block.hypertube.hyper_entrance.manual_lock": "Modo de Entrada Manual",
   "block.hypertube.hyper_entrance.sneak_to_enter": "Agache para Entrar",
-  "block.hypertube.hyper_entrance.automatic_lock": "Modo de Entrada Automática"
+  "block.hypertube.hyper_entrance.automatic_lock": "Modo de Entrada Automática",
+  "hypertube.travel.too_short": "Tubo muito curto para viajar"
 }
