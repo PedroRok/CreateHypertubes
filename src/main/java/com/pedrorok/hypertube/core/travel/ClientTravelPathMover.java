@@ -149,7 +149,7 @@ public class ClientTravelPathMover {
             previousLogicalPos = currentLogicalPos;
             if (distanceToTarget < travelSpeed) {
                 currentLogicalPos = target;
-                currentIndex = (int) (currentIndex + Math.max(1,travelSpeed));
+                currentIndex = (int) (currentIndex + Math.max(1, travelSpeed));
                 if (travelSpeed <= 1) {
                     doHalfStep = false;
                 }

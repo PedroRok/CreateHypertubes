@@ -35,7 +35,7 @@ public record TravellerEntity(BiConsumer<LivingEntity, PoseStack> renderEntityOn
             poseStack.mulPose(Axis.ZP.rotationDegrees(entity.getXRot()));
             poseStack.mulPose(Axis.XP.rotationDegrees(-90));
             poseStack.mulPose(Axis.YP.rotationDegrees(entity.getYRot() - 90));
-            poseStack.translate(0, -0.1,0);
+            poseStack.translate(0, -0.1, 0);
             poseStack.scale(size, size, size);
         };
         return new TravellerEntity(renderAnimal);

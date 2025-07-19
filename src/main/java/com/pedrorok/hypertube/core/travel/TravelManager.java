@@ -74,10 +74,6 @@ public class TravelManager {
 
         float finalSpeed = (speed * TravelConstants.DEFAULT_SPEED_MULTIPLIER);
 
-        if (!(entity instanceof Player)) {
-            //finalSpeed = finalSpeed * TravelConstants.ENTITY_SPEED_MULTIPLIER;
-        }
-
         TravelPathMover pathMover = new TravelPathMover(
                 entity.position(),
                 travelPathData.getTravelPoints(),

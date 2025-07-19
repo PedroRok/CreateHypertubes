@@ -72,6 +72,8 @@ public class TravelPathMover {
         entity.moveTo(newPos.x, newPos.y, newPos.z);
         traveled += travelSpeed;
 
+        entity.resetFallDistance();
+
         handleEntityDirection(entity, direction);
         if (entity instanceof Player) return;
         PacketDistributor.sendToPlayersTrackingEntity(entity, SyncEntityPosPacket.create(entity, currentSegment));
