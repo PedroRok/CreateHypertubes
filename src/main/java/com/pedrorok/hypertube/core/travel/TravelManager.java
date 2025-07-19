@@ -76,10 +76,6 @@ public class TravelManager {
 
         float finalSpeed = (speed * TravelConstants.DEFAULT_SPEED_MULTIPLIER);
 
-        if (!(entity instanceof Player)) {
-            //finalSpeed = finalSpeed * TravelConstants.ENTITY_SPEED_MULTIPLIER;
-        }
-
         TravelPathMover pathMover = new TravelPathMover(
                 entity,
                 travelPathData.getTravelPoints(),
@@ -158,7 +154,6 @@ public class TravelManager {
         Vec3 lastBlockPos = pathMover.getLastPos().getCenter();
         if (!forced) {
             if (level instanceof ServerLevel) {
-                System.out.println(lastBlockPos);
                 entity.teleportTo(lastBlockPos.x, lastBlockPos.y, lastBlockPos.z);
             }
             entity.setDeltaMovement(lastDir.scale(Math.max(finalSpeed, 1f)));

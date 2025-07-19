@@ -15,7 +15,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
-import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -47,16 +46,12 @@ public class ClientEvents {
             return;
         }
         TubePlacement.clientTick();
-        DetachedCameraController.tickCamera();
+        DetachedCameraController.cameraTick();
     }
 
     @SubscribeEvent
-    public static void renderFrame(RenderFrameEvent.Pre event) {
-        long currentTime = System.nanoTime();
-        if (currentTime - lastTickTime >= TICK_INTERVAL_NS) {
-            DetachedPlayerDirController.tickPlayer();
-            lastTickTime = currentTime;
-        }
+    public static void onRenderTick(TickEvent.RenderTickEvent event) {
+        DetachedPlayerDirController.tickPlayer();
     }
 
     @SubscribeEvent

@@ -19,7 +19,6 @@ public class TravelConstants {
 
     public static final String LAST_TRAVEL_BLOCKPOS = "last_travel_blockpos";
     public static final String LAST_TRAVEL_SPEED = "last_travel_speed";
-    public static final String LAST_POSITION = "last_travel_position";
 
     public static final String IMMUNITY_TAG = "hypertube_immunity";
 
@@ -27,7 +26,6 @@ public class TravelConstants {
     public static final int DEFAULT_AFTER_TUBE_CAMERA = 1500; // 0.5 seconds (subtracting default travel time)
 
     public static final float DEFAULT_SPEED_MULTIPLIER = 1;
-    public static final float ENTITY_SPEED_MULTIPLIER = 0.8f;
 
     public static final Set<EntityType<?>> TRAVELLER_ENTITIES = new HashSet<>(Set.of(
             EntityType.PLAYER,

@@ -7,6 +7,7 @@ import com.pedrorok.hypertube.network.packets.MovePathPacket;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -60,8 +61,11 @@ public class ClientTravelPathMover {
 
             data.updateLogicalPosition();
             entity.setDeltaMovement(data.getCurrentDirection());
+
             if (data.isClientPlayer())
                 handleEntityDirection(data.getCurrentDirection());
+            else
+                data.handleEntityDirection((LivingEntity) entity, data.getCurrentDirection());
         }
     }
 
@@ -101,9 +105,6 @@ public class ClientTravelPathMover {
                 data.lastUpdateTick--;
                 return;
             }
-            //data.lastUpdateTick = 5;
-            //data.currentIndex = segment;
-            //data.updateLogicalPosition();
         }
     }
 
@@ -150,7 +151,7 @@ public class ClientTravelPathMover {
             previousLogicalPos = currentLogicalPos;
             if (distanceToTarget < travelSpeed) {
                 currentLogicalPos = target;
-                currentIndex = (int) (currentIndex + Math.max(1,travelSpeed));
+                currentIndex = (int) (currentIndex + Math.max(1, travelSpeed));
                 if (travelSpeed <= 1) {
                     doHalfStep = false;
                 }
@@ -170,6 +171,14 @@ public class ClientTravelPathMover {
 
         public Vec3 getRenderPosition(float partialTicks) {
             return previousLogicalPos.lerp(currentLogicalPos, partialTicks);
+        }
+
+
+        private void handleEntityDirection(LivingEntity entity, Vec3 direction) {
+            float yaw = (float) Math.toDegrees(Math.atan2(-direction.x, direction.z));
+            float pitch = (float) Math.toDegrees(Math.atan2(-direction.y, Math.sqrt(direction.x * direction.x + direction.z * direction.z)));
+            entity.setYRot(yaw);
+            entity.setXRot(pitch);
         }
     }
 }

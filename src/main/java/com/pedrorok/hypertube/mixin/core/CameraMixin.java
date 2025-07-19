@@ -32,8 +32,6 @@ public class CameraMixin {
 
     @Shadow private Entity entity;
 
-    @Shadow private float partialTickTime;
-
     // FPS CONTROL
     @Unique
     private long createHypertube$lastTickTime = 0;
@@ -87,12 +85,6 @@ public class CameraMixin {
                 Mth.lerp(PartialTicks, renderViewEntity.yo, renderViewEntity.getY()),
                 Mth.lerp(PartialTicks, renderViewEntity.zo, renderViewEntity.getZ()));
 
-        float f;
-        if (renderViewEntity instanceof LivingEntity livingentity) {
-            f = livingentity.getScale();
-        } else {
-            f = 1.0F;
-        }
         camera.callMove(-camera.callGetMaxZoom(4.0F), 0.0F, 0.0F);
 
         ci.cancel();

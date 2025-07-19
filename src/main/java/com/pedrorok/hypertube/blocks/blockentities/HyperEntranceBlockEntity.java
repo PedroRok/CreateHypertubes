@@ -155,7 +155,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
             return;
         }
 
-        TravelManager.tryStartTravel(inRangeEntity, pos, state, 0.4333f + (actualSpeed / 240f));
+        TravelManager.tryStartTravel(inRangeEntity, pos, state,0.22f + (actualSpeed / 200f)); // from 0.3 to 1.5
     }
 
 

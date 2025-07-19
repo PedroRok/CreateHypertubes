@@ -26,7 +26,6 @@ public class NetworkHandler {
                 new ResourceLocation(HypertubeMod.MOD_ID, "connections"), () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
 
         register(SyncPersistentDataPacket.class);
-        register(EntityTravelDirDataPacket.class);
         register(FinishPathPacket.class);
         register(MovePathPacket.class);
         register(SyncEntityPosPacket.class);

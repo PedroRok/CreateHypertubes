@@ -1,13 +1,11 @@
 package com.pedrorok.hypertube.core.travel;
 
 import com.pedrorok.hypertube.network.NetworkHandler;
-import com.pedrorok.hypertube.network.packets.EntityTravelDirDataPacket;
 import com.pedrorok.hypertube.network.packets.SyncEntityPosPacket;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.PacketDistributor;
 
@@ -32,7 +30,7 @@ public class TravelPathMover {
     private double totalDistance;
     private double traveled;
 
-    private Vec3 lastDirection = Vec3.ZERO;
+    private final Vec3 lastDirection;
 
     private final LivingEntity entity;
 
@@ -75,21 +73,10 @@ public class TravelPathMover {
         entity.moveTo(newPos.x, newPos.y, newPos.z);
         traveled += travelSpeed;
 
-        handleEntityDirection(entity, direction);
         if (entity instanceof Player) return;
         NetworkHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(() -> entity),
                 SyncEntityPosPacket.create(entity, currentSegment)
         );
-    }
-
-
-    private static void handleEntityDirection(LivingEntity entity, Vec3 direction) {
-        float yaw = (float) Math.toDegrees(Math.atan2(-direction.x, direction.z));
-        float pitch = (float) Math.toDegrees(Math.atan2(-direction.y, Math.sqrt(direction.x * direction.x + direction.z * direction.z)));
-        entity.setYRot(yaw);
-        entity.setXRot(pitch);
-        if (entity.level().isClientSide) return;
-        NetworkHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(() -> entity), EntityTravelDirDataPacket.create(entity));
     }
 
     public Vec3 getLastDir() {
