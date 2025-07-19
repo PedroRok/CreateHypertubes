@@ -78,7 +78,7 @@ public class TubeUtils {
     private static final float CHECK_DISTANCE_THRESHOLD = 0.4f;
 
     public static ResponseDTO checkBlockCollision(@NotNull Level level, @NotNull BezierConnection bezierConnection) {
-        List<Vec3> positions = new ArrayList<>(bezierConnection.getBezierPoints());
+        List<Vec3> positions = new ArrayList<>(bezierConnection.getBezierPoints().reversed());
         positions.removeLast();
         positions.removeFirst();
 
