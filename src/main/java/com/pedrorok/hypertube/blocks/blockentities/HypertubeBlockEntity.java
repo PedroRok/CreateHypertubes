@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -223,6 +224,20 @@ public class HypertubeBlockEntity extends BlockEntity implements ITubeConnection
             toDrop += blockBroken(level, connectionTwo, worldPosition);
         }
         return toDrop;
+    }
+
+    @Override
+    public Vec3 getExitDirection() {
+        if (connectionOne != null && connectionTwo != null) {
+            return null;
+        }
+        if (connectionTwo != null) {
+            return Vec3.atLowerCornerOf(IConnection.getSameConnectionBlockPos(connectionTwo, level, getBlockPos()).direction().getOpposite().getNormal());
+        }
+        if (connectionOne != null) {
+            return Vec3.atLowerCornerOf(IConnection.getSameConnectionBlockPos(connectionOne, level, getBlockPos()).direction().getOpposite().getNormal());
+        }
+        return null;
     }
 
     public void sync() {

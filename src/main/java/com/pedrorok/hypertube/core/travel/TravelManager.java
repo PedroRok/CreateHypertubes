@@ -78,6 +78,7 @@ public class TravelManager {
                 entity.position(),
                 travelPathData.getTravelPoints(),
                 finalSpeed,
+                travelPathData.getEndDirection(entity.level()),
                 travelPathData.getLastBlockPos(),
                 TravelManager::finishTravel);
         travelDataMap.put(entity.getUUID(), pathMover);

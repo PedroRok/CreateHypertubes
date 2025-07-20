@@ -129,4 +129,13 @@ public class TravelPathData {
         if (blockConnections.isEmpty()) return null;
         return blockConnections.getLast();
     }
+
+    public Vec3 getEndDirection(Level level) {
+        if (blockConnections.isEmpty()) return null;
+        BlockEntity blockEntity = level.getBlockEntity(blockConnections.getLast());
+        if (blockEntity instanceof ITubeConnectionEntity connection) {
+            return connection.getExitDirection();
+        }
+        return null;
+    }
 }
