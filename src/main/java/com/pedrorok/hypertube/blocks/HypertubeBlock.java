@@ -2,6 +2,7 @@ package com.pedrorok.hypertube.blocks;
 
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
+import com.pedrorok.hypertube.core.connection.ConnDTO;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
@@ -296,12 +297,12 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements ITube
             return;
         }
 
-        SimpleConnection connectionFrom = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
+        ConnDTO connectionFrom = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
         if (connectionFrom == null) return;
 
         Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, () -> state.getBlock() instanceof ITubeConnection, true);
         SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
-        BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
+        BezierConnection bezierConnection = BezierConnection.of(connectionFrom.toSimpleConnection(pos), connectionTo);
 
         if (!TubeUtils.checkPlayerPlacingBlockValidation(player, bezierConnection, level)) {
             level.playSound(placer, pos, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS,
@@ -320,7 +321,7 @@ public class HypertubeBlock extends WaterloggedTransparentBlock implements ITube
         }
 
         otherConnection.setConnection(bezierConnection, bezierConnection.getFromPos().direction());
-        thisConnection.setConnection(connectionFrom, finalDirection);
+        thisConnection.setConnection(connectionFrom.toSimpleConnection(pos), finalDirection);
 
         MessageUtils.sendActionMessage(player, Component.empty(), true);
         if (!(level.getBlockState(pos).getBlock() instanceof HypertubeBlock hypertubeBlock)) return;

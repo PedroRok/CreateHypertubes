@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
+import com.pedrorok.hypertube.core.connection.ConnDTO;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
@@ -80,10 +81,10 @@ public class TubePlacement {
             pos = pos.relative(bhr.getDirection());
         }
 
-        SimpleConnection connectionFrom = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
+        ConnDTO connectionFromDTO = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
 
         animation.setValue(0.8);
-        if (connectionFrom == null) {
+        if (connectionFromDTO == null) {
             animation.setValue(0);
             return;
         }
@@ -91,7 +92,7 @@ public class TubePlacement {
         Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, () -> hypertubeHitResult);
 
         SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
-        BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
+        BezierConnection bezierConnection = BezierConnection.of(connectionFromDTO.toSimpleConnection(pos), connectionTo);
 
         // Exception & visual
         ResponseDTO response = bezierConnection.getValidation();
@@ -178,9 +179,9 @@ public class TubePlacement {
         Level level = player.level();
         if (!(itemInHand.getItem() instanceof HypertubeItem)) return;
         if (!itemInHand.hasFoil()) return;
-        SimpleConnection connection = itemInHand.get(ModDataComponent.TUBE_CONNECTING_FROM);
-        if (connection == null) return;
-        if (!(level.getBlockEntity(new BlockPos(connection.pos())) instanceof ITubeConnectionEntity)) {
+        ConnDTO connectionDTO = itemInHand.get(ModDataComponent.TUBE_CONNECTING_FROM);
+        if (connectionDTO == null) return;
+        if (!(level.getBlockEntity(new BlockPos(connectionDTO.pos())) instanceof ITubeConnectionEntity)) {
             HypertubeItem.clearConnection(itemInHand);
             MessageUtils.sendActionMessage(player,
                     Component.translatable("placement.create_hypertube.conn_cleared_invalid_block").withColor(0xFF0000)
@@ -193,17 +194,16 @@ public class TubePlacement {
         ItemStack mainHandItem = Minecraft.getInstance().player.getMainHandItem();
         if (!mainHandItem.is(ModBlocks.HYPERTUBE.asItem())) return;
         if (!mainHandItem.hasFoil()) return;
-        SimpleConnection connection = mainHandItem.get(ModDataComponent.TUBE_CONNECTING_FROM);
-        if (connection == null) return;
+        ConnDTO connectionDTO = mainHandItem.get(ModDataComponent.TUBE_CONNECTING_FROM);
+        if (connectionDTO == null) return;
 
         Minecraft mc = Minecraft.getInstance();
-        BlockState blockState = mc.level.getBlockState(connection.pos());
-        if (!(blockState.getBlock() instanceof HypertubeBlock)) return;
-        HypertubeBlock block = (HypertubeBlock) blockState.getBlock();
+        BlockState blockState = mc.level.getBlockState(connectionDTO.pos());
+        if (!(blockState.getBlock() instanceof HypertubeBlock block)) return;
 
         VertexConsumer vb = buffer.getBuffer(RenderType.lines());
         ms.pushPose();
-        ms.translate(connection.pos().getX() - camera.x, connection.pos().getY() - camera.y, connection.pos().getZ() - camera.z);
+        ms.translate(connectionDTO.pos().getX() - camera.x, connectionDTO.pos().getY() - camera.y, connectionDTO.pos().getZ() - camera.z);
         TrackBlockOutline.renderShape(block.getShape(blockState), ms, vb, canPlace);
         ms.popPose();
     }

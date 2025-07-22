@@ -52,7 +52,7 @@ public class BezierTextureRenderer {
         if (connection == null || !connection.getValidation().valid()) {
             return;
         }
-        List<Vec3> bezierPoints = connection.getBezierPoints();
+        List<Vec3> bezierPoints = connection.getBezierPoints(false);
         if (bezierPoints.size() < 2) {
             return;
         }

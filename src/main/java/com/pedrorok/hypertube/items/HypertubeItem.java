@@ -1,6 +1,6 @@
 package com.pedrorok.hypertube.items;
 
-import com.pedrorok.hypertube.core.connection.SimpleConnection;
+import com.pedrorok.hypertube.core.connection.ConnDTO;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import com.pedrorok.hypertube.core.placement.ResponseDTO;
@@ -67,14 +67,14 @@ public class HypertubeItem extends BlockItem {
             return super.useOn(pContext);
         }
 
-        SimpleConnection simpleConnection = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
+        ConnDTO connDTO = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
         if (player.isShiftKeyDown()) {
             MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.conn_cleared").withColor(0xFFFF00));
             clearConnection(stack);
             return InteractionResult.SUCCESS;
         }
 
-        if (simpleConnection.pos().equals(pos)) {
+        if (connDTO.pos().equals(pos)) {
             player.playSound(SoundEvents.ITEM_FRAME_REMOVE_ITEM, 1.0f, 1.0f);
             return InteractionResult.FAIL;
         }
@@ -85,7 +85,7 @@ public class HypertubeItem extends BlockItem {
         if (isHypertubeClicked) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof ITubeConnectionEntity tube) {
-                success = TubePlacement.handleHypertubeClicked(tube, player, simpleConnection, pos, direction, level, stack);
+                success = TubePlacement.handleHypertubeClicked(tube, player, connDTO.toSimpleConnection(pos), pos, direction, level, stack);
             }
             SoundType soundtype = state.getSoundType();
             if (success) {
@@ -111,7 +111,7 @@ public class HypertubeItem extends BlockItem {
             return ResponseDTO.get(false, "placement.create_hypertube.cant_conn_to_face");
         }
 
-        heldItem.set(ModDataComponent.TUBE_CONNECTING_FROM, new SimpleConnection(pos, direction));
+        heldItem.set(ModDataComponent.TUBE_CONNECTING_FROM, new ConnDTO(pos, direction));
         heldItem.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
         return ResponseDTO.get(true);
     }

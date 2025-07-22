@@ -3,6 +3,7 @@ package com.pedrorok.hypertube.core.connection;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.ISimpleConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
@@ -12,7 +13,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
 
-public record SimpleConnection(BlockPos pos, Direction direction) implements IConnection {
+public record SimpleConnection(BlockPos pos, Direction direction) implements IConnection, ISimpleConnection<BlockPos> {
     public static final Codec<SimpleConnection> CODEC = RecordCodecBuilder.create(i -> i.group(
             BlockPos.CODEC.fieldOf("pos").forGetter(SimpleConnection::pos),
             Direction.CODEC.fieldOf("direction").forGetter(SimpleConnection::direction)
@@ -60,10 +61,6 @@ public record SimpleConnection(BlockPos pos, Direction direction) implements ICo
         if (thisEntranceConnection != null) {
             thisEntranceConnection.updateTubeSegments(level);
         }
-    }
-
-    public BlockPos pos() {
-        return pos;
     }
 
     public Direction direction() {

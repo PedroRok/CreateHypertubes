@@ -100,7 +100,7 @@ public class TravelPathData {
             }
             if (bezierConnections.contains(bezier.getUuid())) continue;
 
-            List<Vec3> bezierPoints = new ArrayList<>(bezier.getBezierPoints());
+            List<Vec3> bezierPoints = new ArrayList<>(bezier.getBezierPoints(false));
             if (inverse) {
                 Collections.reverse(bezierPoints);
             }
