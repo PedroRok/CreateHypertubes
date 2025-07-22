@@ -77,7 +77,11 @@ public class TravelPathMover {
         entity.resetFallDistance();
 
         handleEntityDirection(entity, direction);
-        if (entity instanceof Player) return;
+        if (entity instanceof Player player) {
+            if (player.isFallFlying())
+                player.stopFallFlying();
+            return;
+        }
         PacketDistributor.sendToPlayersTrackingEntity(entity, SyncEntityPosPacket.create(entity, currentSegment));
     }
 
