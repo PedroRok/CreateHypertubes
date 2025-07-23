@@ -30,8 +30,6 @@ public class TravelPathMover {
     private double totalDistance;
     private double traveled;
 
-    private final Vec3 lastDirection;
-
     private final LivingEntity entity;
     private Vec3 lastDirection;
 
@@ -49,7 +47,7 @@ public class TravelPathMover {
         this.onFinishCallback = onFinishCallback;
         this.lastDirection = lastDirection;
         if (lastDirection != null) return;
-        this.lastDirection = pathPoints.getLast().subtract(pathPoints.get(pathPoints.size() - 2)).normalize();
+        this.lastDirection = pathPoints.get(pathPoints.size() - 1).subtract(pathPoints.get(pathPoints.size() - 2)).normalize();
     }
 
     public void tickEntity(LivingEntity entity) {

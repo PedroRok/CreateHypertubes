@@ -132,7 +132,7 @@ public class TravelPathData {
 
     public Vec3 getEndDirection(Level level) {
         if (blockConnections.isEmpty()) return null;
-        BlockEntity blockEntity = level.getBlockEntity(blockConnections.getLast());
+        BlockEntity blockEntity = level.getBlockEntity(blockConnections.get(blockConnections.size() - 1));
         if (blockEntity instanceof ITubeConnectionEntity connection) {
             return connection.getExitDirection();
         }
