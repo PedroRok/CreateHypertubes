@@ -30,11 +30,10 @@ public class TravelPathMover {
     private double totalDistance;
     private double traveled;
 
-    private final Vec3 lastDirection;
-
     private final LivingEntity entity;
+    private Vec3 lastDirection;
 
-    public TravelPathMover(LivingEntity entity, List<Vec3> points, float travelSpeed, BlockPos lastPos, BiConsumer<LivingEntity, Boolean> onFinishCallback) {
+    public TravelPathMover(LivingEntity entity, List<Vec3> points, float travelSpeed, Vec3 lastDirection, BlockPos lastPos, BiConsumer<LivingEntity, Boolean> onFinishCallback) {
         this.entity = entity;
         this.pathPoints = points;
         this.travelSpeed = travelSpeed;
@@ -44,9 +43,11 @@ public class TravelPathMover {
         this.currentEnd = pathPoints.get(0).subtract(0, 0.25, 0);
         this.totalDistance = currentStart.distanceTo(currentEnd);
         this.traveled = 0;
-        this.lastDirection = pathPoints.get(pathPoints.size() - 1).subtract(pathPoints.get(pathPoints.size() - 2)).normalize();
 
         this.onFinishCallback = onFinishCallback;
+        this.lastDirection = lastDirection;
+        if (lastDirection != null) return;
+        this.lastDirection = pathPoints.get(pathPoints.size() - 1).subtract(pathPoints.get(pathPoints.size() - 2)).normalize();
     }
 
     public void tickEntity(LivingEntity entity) {
@@ -73,7 +74,13 @@ public class TravelPathMover {
         entity.moveTo(newPos.x, newPos.y, newPos.z);
         traveled += travelSpeed;
 
-        if (entity instanceof Player) return;
+        entity.resetFallDistance();
+
+        if (entity instanceof Player player) {
+            if (player.isFallFlying())
+                player.stopFallFlying();
+            return;
+        }
         NetworkHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(() -> entity),
                 SyncEntityPosPacket.create(entity, currentSegment)
         );

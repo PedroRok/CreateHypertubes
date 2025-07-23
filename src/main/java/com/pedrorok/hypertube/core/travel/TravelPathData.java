@@ -1,6 +1,5 @@
 package com.pedrorok.hypertube.core.travel;
 
-import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
@@ -129,5 +128,14 @@ public class TravelPathData {
     public BlockPos getLastBlockPos() {
         if (blockConnections.isEmpty()) return null;
         return blockConnections.get(blockConnections.size() - 1);
+    }
+
+    public Vec3 getEndDirection(Level level) {
+        if (blockConnections.isEmpty()) return null;
+        BlockEntity blockEntity = level.getBlockEntity(blockConnections.get(blockConnections.size() - 1));
+        if (blockEntity instanceof ITubeConnectionEntity connection) {
+            return connection.getExitDirection();
+        }
+        return null;
     }
 }

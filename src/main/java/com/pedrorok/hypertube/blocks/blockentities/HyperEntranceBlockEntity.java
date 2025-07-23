@@ -384,4 +384,13 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
                 motion.x, motion.y, motion.z
         );
     }
+
+    @Override
+    public Vec3 getExitDirection() {
+        if (getBlockState().hasProperty(HyperEntranceBlock.FACING)) {
+            Direction facing = getBlockState().getValue(HyperEntranceBlock.FACING).getOpposite();
+            return Vec3.atLowerCornerOf(facing.getNormal());
+        }
+        return null;
+    }
 }

@@ -80,6 +80,7 @@ public class TravelManager {
                 entity,
                 travelPathData.getTravelPoints(),
                 finalSpeed,
+                travelPathData.getEndDirection(entity.level()),
                 travelPathData.getLastBlockPos(),
                 TravelManager::finishTravel);
         travelDataMap.put(entity.getUUID(), pathMover);
@@ -163,6 +164,9 @@ public class TravelManager {
         entity.setPose(Pose.SWIMMING);
 
         TubeSoundManager.playTubeSuctionSound(entity, entity.position());
+
+        if (!(entity instanceof Player player)) return;
+        player.startFallFlying();
     }
 
     public static void finishTravel(UUID entityUuid) {
