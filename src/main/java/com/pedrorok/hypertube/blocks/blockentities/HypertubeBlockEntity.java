@@ -10,7 +10,6 @@ import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -20,6 +19,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,7 +41,6 @@ public class HypertubeBlockEntity extends BlockEntity implements ITubeConnection
     }
 
     // --------- Nbt Methods ---------
-
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
@@ -227,6 +226,20 @@ public class HypertubeBlockEntity extends BlockEntity implements ITubeConnection
             toDrop += blockBroken(level, connectionTwo, worldPosition);
         }
         return toDrop;
+    }
+
+    @Override
+    public Vec3 getExitDirection() {
+        if (connectionOne != null && connectionTwo != null) {
+            return null;
+        }
+        if (connectionTwo != null) {
+            return Vec3.atLowerCornerOf(IConnection.getSameConnectionBlockPos(connectionTwo, level, getBlockPos()).direction().getOpposite().getNormal());
+        }
+        if (connectionOne != null) {
+            return Vec3.atLowerCornerOf(IConnection.getSameConnectionBlockPos(connectionOne, level, getBlockPos()).direction().getOpposite().getNormal());
+        }
+        return null;
     }
 
     public void sync() {
