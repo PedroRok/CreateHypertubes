@@ -5,6 +5,7 @@ import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
+import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravelPathMover;
 import com.pedrorok.hypertube.network.packets.SpeedChangePacket;
@@ -25,6 +26,7 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
@@ -59,12 +61,10 @@ import java.util.List;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperAcceleratorBlock extends KineticBlock implements EntityBlock, ICogWheel, ITubeConnection, SimpleWaterloggedBlock, ITubeActionPoint {
+public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICogWheel, ITubeConnection, SimpleWaterloggedBlock, ITubeActionPoint {
 
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
-
-    public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
     public HyperAcceleratorBlock(Properties properties) {
         super(properties);
@@ -114,13 +114,13 @@ public class HyperAcceleratorBlock extends KineticBlock implements EntityBlock, 
     }
 
     @Override
-    public boolean hasShaftTowards(LevelReader world, BlockPos pos, BlockState state, Direction face) {
-        return false;
+    public Direction.Axis getRotationAxis(BlockState state) {
+        return state.getValue(FACING).getAxis();
     }
 
     @Override
-    public Direction.Axis getRotationAxis(BlockState state) {
-        return state.getValue(FACING).getAxis();
+    public Item getItem() {
+        return ModBlocks.HYPERTUBE_ENTRANCE.asItem();
     }
 
     @Nullable
@@ -148,45 +148,8 @@ public class HyperAcceleratorBlock extends KineticBlock implements EntityBlock, 
 
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        // TODO: Implement the wrenched behavior
         return InteractionResult.SUCCESS;
-    }
-
-    protected @NotNull BlockState updateShape(BlockState p_313906_, @NotNull Direction p_313739_, @NotNull BlockState p_313829_, @NotNull LevelAccessor p_313692_, @NotNull BlockPos p_313842_, @NotNull BlockPos p_313843_) {
-        if (p_313906_.getValue(WATERLOGGED)) {
-            p_313692_.scheduleTick(p_313842_, Fluids.WATER, Fluids.WATER.getTickDelay(p_313692_));
-        }
-        return super.updateShape(p_313906_, p_313739_, p_313829_, p_313692_, p_313842_, p_313843_);
-    }
-
-    protected @NotNull FluidState getFluidState(BlockState p_313789_) {
-        return p_313789_.getValue(WATERLOGGED) ? Fluids.WATER.getSource(true) : super.getFluidState(p_313789_);
-    }
-
-    @Override
-    public @NotNull BlockState playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState
-            state, @NotNull Player player) {
-        return playerWillDestroy(level, pos, state, player, false);
-    }
-
-    private BlockState playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState
-            state, @NotNull Player player, boolean wrenched) {
-        BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof ITubeConnectionEntity tube))
-            return super.playerWillDestroy(level, pos, state, player);
-
-        int toDrop = tube.blockBroken();
-
-        if (!player.isCreative()) {
-            if (toDrop != 0 || wrenched) {
-                ItemStack stack = new ItemStack(ModBlocks.HYPERTUBE.get(), toDrop + (wrenched ? 1 : 0));
-                if (wrenched)
-                    player.getInventory().placeItemBackInInventory(stack);
-                else
-                    Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
-            }
-        }
-
-        return super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override
@@ -201,6 +164,7 @@ public class HyperAcceleratorBlock extends KineticBlock implements EntityBlock, 
     }
 
     // ------- Collision Shapes -------
+    @Override
     public VoxelShape getShape(BlockState state, @Nullable CollisionContext ctx) {
         if (ctx instanceof EntityCollisionContext ecc
             && ecc.getEntity() != null
@@ -209,36 +173,6 @@ public class HyperAcceleratorBlock extends KineticBlock implements EntityBlock, 
         }
         return Shapes.block();
     }
-
-    @Override
-    public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-        return getShape(state, context);
-    }
-
-    @Override
-    public @NotNull VoxelShape getCollisionShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-        return getShape(state, context);
-    }
-
-    @Override
-    public @NotNull VoxelShape getBlockSupportShape(@NotNull BlockState state, @NotNull BlockGetter reader, @NotNull BlockPos pos) {
-        return getShape(state);
-    }
-
-    @Override
-    public @NotNull VoxelShape getInteractionShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos) {
-        return getShape(state);
-    }
-
-    @Override
-    public @NotNull RenderShape getRenderShape(@NotNull BlockState state) {
-        return RenderShape.MODEL;
-    }
-
-    public VoxelShape getShape(BlockState state) {
-        return getShape(state, null);
-    }
-    // ------- Collision Shapes -------
 
     @Override
     public boolean isSmallCog() {

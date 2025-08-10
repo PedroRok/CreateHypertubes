@@ -4,6 +4,7 @@ import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
+import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.utils.MessageUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
@@ -14,6 +15,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
@@ -43,14 +45,13 @@ import java.util.List;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICogWheel, ITubeConnection, SimpleWaterloggedBlock {
+public class HyperEntranceBlock extends TubeBlock implements EntityBlock, ICogWheel, SimpleWaterloggedBlock {
 
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
     public static final BooleanProperty LOCKED = BlockStateProperties.LOCKED;
 
     public static final BooleanProperty IN_FRONT = BooleanProperty.create("has_block_in_front");
-    public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
     private static final VoxelShape SHAPE_NORTH = Block.box(0D, 0D, 0D, 16D, 16D, 23D);
     private static final VoxelShape SHAPE_SOUTH = Block.box(0D, 0D, -7D, 16D, 16D, 16D);
@@ -141,13 +142,13 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
     }
 
     @Override
-    public boolean hasShaftTowards(LevelReader world, BlockPos pos, BlockState state, Direction face) {
-        return false;
+    public Direction.Axis getRotationAxis(BlockState state) {
+        return state.getValue(FACING).getAxis();
     }
 
     @Override
-    public Direction.Axis getRotationAxis(BlockState state) {
-        return state.getValue(FACING).getAxis();
+    public Item getItem() {
+        return ModBlocks.HYPERTUBE_ENTRANCE.asItem();
     }
 
     @Nullable
@@ -191,40 +192,9 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
     }
 
     @Override
-    public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-        return getShape(state, context);
-    }
-
-    @Override
-    public @NotNull VoxelShape getCollisionShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-        return getShape(state, context);
-    }
-
-    @Override
-    public @NotNull VoxelShape getBlockSupportShape(@NotNull BlockState state, @NotNull BlockGetter reader, @NotNull BlockPos pos) {
-        return getShape(state);
-    }
-
-    @Override
-    public @NotNull VoxelShape getInteractionShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos) {
-        return getShape(state);
-    }
-
-    @Override
-    public @NotNull RenderShape getRenderShape(@NotNull BlockState state) {
-        return RenderShape.MODEL;
-    }
-
-    public VoxelShape getShape(BlockState state) {
-        return getShape(state, null);
-    }
-    // ------- Collision Shapes -------
-
-    @Override
     public boolean isSmallCog() {
         return true;
     }
-
 
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
@@ -256,17 +226,5 @@ public class HyperEntranceBlock extends KineticBlock implements EntityBlock, ICo
         }
         IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
         return InteractionResult.SUCCESS;
-    }
-
-    protected @NotNull BlockState updateShape(BlockState p_313906_, @NotNull Direction p_313739_, @NotNull BlockState p_313829_, @NotNull LevelAccessor p_313692_, @NotNull BlockPos p_313842_, @NotNull BlockPos p_313843_) {
-        if (p_313906_.getValue(WATERLOGGED)) {
-            p_313692_.scheduleTick(p_313842_, Fluids.WATER, Fluids.WATER.getTickDelay(p_313692_));
-        }
-
-        return super.updateShape(p_313906_, p_313739_, p_313829_, p_313692_, p_313842_, p_313843_);
-    }
-
-    protected @NotNull FluidState getFluidState(BlockState p_313789_) {
-        return p_313789_.getValue(WATERLOGGED) ? Fluids.WATER.getSource(true) : super.getFluidState(p_313789_);
     }
 }

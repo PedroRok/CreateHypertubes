@@ -38,7 +38,6 @@ public class ClientTravelPathMover {
         PathData data = ACTIVE_PATHS.get(packet.entityId());
         if (data != null) {
             data.travelSpeed = packet.newSpeed();
-            System.out.println(packet.newSpeed());
         }
     }
 
