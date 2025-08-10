@@ -46,5 +46,9 @@ public class NetworkHandler {
                 SpeedChangePacket.STREAM_CODEC,
                 SpeedChangePacket::handle
         );
+        registrar.playToServer(ActionPointReachPacket.TYPE,
+                ActionPointReachPacket.STREAM_CODEC,
+                ActionPointReachPacket::handle
+        );
     }
 }

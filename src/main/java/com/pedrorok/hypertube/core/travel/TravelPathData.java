@@ -28,13 +28,13 @@ public class TravelPathData {
     private final List<UUID> bezierConnections;
     private final List<BlockPos> blockConnections;
     @Getter
-    private final Map<Integer, BlockPos> actionPoints;
+    private final Set<BlockPos> actionPoints;
 
     public TravelPathData(BlockPos firstPipe, Level level, BlockPos entrancePos) {
         this.travelPoints = new ArrayList<>();
         this.bezierConnections = new ArrayList<>();
         this.blockConnections = new ArrayList<>();
-        this.actionPoints = new HashMap<>();
+        this.actionPoints = new HashSet<>();
         travelPoints.add(entrancePos.getCenter());
         blockConnections.add(entrancePos);
         travelPoints.add(firstPipe.getCenter());
@@ -77,7 +77,7 @@ public class TravelPathData {
             travelPoints.add(nextPipe.getCenter());
             blockConnections.add(nextPipe);
             if (level.getBlockState(nextPipe).getBlock() instanceof ITubeActionPoint) {
-                actionPoints.put(travelPoints.size() - 1, nextPipe);
+                actionPoints.add(nextPipe);
             }
             addTravelPoint(nextPipe, level);
             break;
@@ -88,9 +88,8 @@ public class TravelPathData {
     private boolean addCurvedTravelPoint(BlockPos pos, Level level) {
         if (!(level.getBlockEntity(pos) instanceof ITubeConnectionEntity hypertubeBlockEntity)) return false;
         boolean connected = false;
-        int startIndex = travelPoints.size();
         for (IConnection connection : hypertubeBlockEntity.getConnections()) {
-            BezierConnection bezier = null;
+            BezierConnection bezier;
             boolean inverse = false;
             if (connection instanceof SimpleConnection simple) {
                 BlockEntity blockEntity = level.getBlockEntity(simple.pos());
@@ -122,13 +121,13 @@ public class TravelPathData {
             if (!blockConnections.contains(fromPosFinal)) {
                 blockConnections.add(fromPosFinal);
                 if (level.getBlockState(fromPosFinal).getBlock() instanceof ITubeActionPoint) {
-                    actionPoints.put(startIndex - 3, fromPosFinal);
+                    actionPoints.add(fromPosFinal);
                 }
             }
             if (!blockConnections.contains(toPosFinal)) {
                 blockConnections.add(toPosFinal);
                 if (level.getBlockState(toPosFinal).getBlock() instanceof ITubeActionPoint) {
-                    actionPoints.put(travelPoints.size() - 3, toPosFinal);
+                    actionPoints.add(toPosFinal);
                 }
             }
 

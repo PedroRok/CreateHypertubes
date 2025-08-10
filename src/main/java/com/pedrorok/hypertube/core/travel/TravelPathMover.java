@@ -12,8 +12,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 
 /**
@@ -22,7 +23,8 @@ import java.util.function.BiConsumer;
  */
 public class TravelPathMover {
     private final List<Vec3> pathPoints;
-    private final Map<Integer, BlockPos> actionPoints;
+    private final Set<BlockPos> actionPoints;
+    private final Set<BlockPos> activeActionPoints;
     @Getter
     @Setter
     private float travelSpeed;
@@ -40,9 +42,10 @@ public class TravelPathMover {
 
     private Vec3 lastDirection;
 
-    public TravelPathMover(Vec3 entityPos, List<Vec3> points, Map<Integer, BlockPos> actionPoints, float travelSpeed, Vec3 lastDirection, BlockPos lastPos, BiConsumer<LivingEntity, Boolean> onFinishCallback) {
+    public TravelPathMover(Vec3 entityPos, List<Vec3> points, Set<BlockPos> actionPoints, float travelSpeed, Vec3 lastDirection, BlockPos lastPos, BiConsumer<LivingEntity, Boolean> onFinishCallback) {
         this.pathPoints = points;
         this.actionPoints = actionPoints;
+        this.activeActionPoints = new HashSet<>();
         this.travelSpeed = travelSpeed;
         this.lastPos = lastPos;
 
@@ -73,12 +76,21 @@ public class TravelPathMover {
             currentEnd = pathPoints.get(currentSegment).subtract(0, 0.25, 0);
             totalDistance = currentStart.distanceTo(currentEnd);
             traveled = 0;
-            if (actionPoints.get(currentSegment-1) != null) {
-                BlockPos actionPos = actionPoints.get(currentSegment - 1);
+            if (actionPoints.contains(entity.getOnPos())) {
+                BlockPos actionPos = entity.getOnPos();
                 Block block = entity.level().getBlockState(actionPos).getBlock();
                 if (block instanceof ITubeActionPoint travelAction) {
                     travelAction.handleTravelPath(entity, this, actionPos);
                 }
+            }
+        }
+
+        if (!activeActionPoints.isEmpty()) {
+            BlockPos actionPos = activeActionPoints.iterator().next();
+            activeActionPoints.remove(actionPos);
+            Block block = entity.level().getBlockState(actionPos).getBlock();
+            if (block instanceof ITubeActionPoint travelAction) {
+                travelAction.handleTravelPath(entity, this, actionPos);
             }
         }
 
@@ -97,6 +109,11 @@ public class TravelPathMover {
             return;
         }
         PacketDistributor.sendToPlayersTrackingEntity(entity, SyncEntityPosPacket.create(entity, currentSegment));
+    }
+
+    public void handleActionPoint(BlockPos actionPos) {
+        activeActionPoints.add(actionPos);
+        actionPoints.remove(actionPos);
     }
 
 

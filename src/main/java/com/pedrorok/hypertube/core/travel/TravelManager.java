@@ -84,7 +84,7 @@ public class TravelManager {
                 TravelManager::finishTravel);
         travelDataMap.put(entity.getUUID(), pathMover);
 
-        MovePathPacket movePathPacket = new MovePathPacket(entity.getId(), travelPathData.getTravelPoints(), finalSpeed);
+        MovePathPacket movePathPacket = new MovePathPacket(entity.getId(), travelPathData.getTravelPoints(), travelPathData.getActionPoints(), finalSpeed);
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, movePathPacket);
         Vec3 center = pos.getCenter();
         TubeSoundManager.playTubeSuctionSound(entity, center);
@@ -174,6 +174,12 @@ public class TravelManager {
         TravelPathMover pathMover = travelDataMap.get(entityUuid);
         if (pathMover == null) return;
         pathMover.setClientFinish();
+    }
+
+    public static void actionPointReach(UUID entityUuid, BlockPos blockPos) {
+        TravelPathMover pathMover = travelDataMap.get(entityUuid);
+        if (pathMover == null) return;
+        pathMover.handleActionPoint(blockPos);
     }
 
     private static void handleServer(LivingEntity entity) {

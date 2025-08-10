@@ -7,6 +7,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
 
@@ -56,6 +58,7 @@ public record EntityTravelDirDataPacket(int entityId, float yaw, float pitch) im
         });
     }
 
+    @OnlyIn(value = Dist.CLIENT)
     private static void handleClient(EntityTravelDirDataPacket packet) {
         if (Minecraft.getInstance().player.getId() == packet.entityId) return;
         Entity entity = Minecraft.getInstance().level.getEntity(packet.entityId);

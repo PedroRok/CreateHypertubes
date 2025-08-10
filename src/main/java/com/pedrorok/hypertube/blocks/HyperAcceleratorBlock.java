@@ -9,6 +9,7 @@ import com.pedrorok.hypertube.core.travel.TravelPathMover;
 import com.pedrorok.hypertube.network.packets.SpeedChangePacket;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
+import com.pedrorok.hypertube.registry.ModSounds;
 import com.pedrorok.hypertube.utils.TubeUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;
 import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
@@ -107,7 +108,7 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
 
     @Override
     public Item getItem() {
-        return ModBlocks.HYPERTUBE_ENTRANCE.asItem();
+        return ModBlocks.HYPER_ACCELERATOR.asItem();
     }
 
     @Nullable
@@ -143,7 +144,7 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
     public void handleTravelPath(LivingEntity entity, TravelPathMover mover, BlockPos pos) {
         Level level = entity.level();
         HyperAcceleratorBlockEntity tube = (HyperAcceleratorBlockEntity) level.getBlockEntity(pos);
-        if (tube == null) return;
+        if (tube == null || mover == null) return;
         float speed = TubeUtils.calculateTravelSpeed(Math.abs(tube.getSpeed())) / 2;
         float newSpeed = mover.getTravelSpeed() + speed;
         mover.setTravelSpeed(newSpeed);

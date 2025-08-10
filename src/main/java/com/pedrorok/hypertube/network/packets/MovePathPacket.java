@@ -2,6 +2,7 @@ package com.pedrorok.hypertube.network.packets;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.core.travel.ClientTravelPathMover;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -12,13 +13,15 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 03/07/2025
  * @project Create Hypertube
  */
-public record MovePathPacket(int entityId, List<Vec3> pathPoints,
+public record MovePathPacket(int entityId, List<Vec3> pathPoints, Set<BlockPos> actionPoints,
                              double travelSpeed) implements CustomPacketPayload {
 
     public static final Type<MovePathPacket> TYPE = new Type<>(
@@ -37,6 +40,10 @@ public record MovePathPacket(int entityId, List<Vec3> pathPoints,
             buf.writeDouble(vec.y);
             buf.writeDouble(vec.z);
         }
+        buf.writeInt(packet.actionPoints.size());
+        for (BlockPos blockPos : packet.actionPoints) {
+            buf.writeBlockPos(blockPos);
+        }
         buf.writeDouble(packet.travelSpeed);
     }
 
@@ -50,8 +57,13 @@ public record MovePathPacket(int entityId, List<Vec3> pathPoints,
             double z = buf.readDouble();
             points.add(new Vec3(x, y, z));
         }
+        size = buf.readInt();
+        Set<BlockPos> actionPoints = new HashSet<>();
+        for (int i = 0; i < size; i++) {
+            actionPoints.add(buf.readBlockPos());
+        }
         double speed = buf.readDouble();
-        return new MovePathPacket(id, points, speed);
+        return new MovePathPacket(id, points, actionPoints, speed);
     }
 
     public static void handle(MovePathPacket packet, IPayloadContext ctx) {
