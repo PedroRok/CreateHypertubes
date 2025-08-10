@@ -3,6 +3,7 @@ package com.pedrorok.hypertube.core.travel;
 import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
 import com.pedrorok.hypertube.network.packets.FinishPathPacket;
 import com.pedrorok.hypertube.network.packets.MovePathPacket;
+import com.pedrorok.hypertube.network.packets.SpeedChangePacket;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
@@ -31,6 +32,14 @@ public class ClientTravelPathMover {
     public static void startMoving(MovePathPacket packet) {
         boolean isPlayer = Minecraft.getInstance().player.getId() == packet.entityId();
         ACTIVE_PATHS.put(packet.entityId(), new PathData(packet.pathPoints(), packet.travelSpeed(), isPlayer));
+    }
+
+    public static void updateEntitySpeed(SpeedChangePacket packet) {
+        PathData data = ACTIVE_PATHS.get(packet.entityId());
+        if (data != null) {
+            data.travelSpeed = packet.newSpeed();
+            System.out.println(packet.newSpeed());
+        }
     }
 
     @SubscribeEvent
@@ -108,7 +117,7 @@ public class ClientTravelPathMover {
 
     private static class PathData {
         private final List<Vec3> points;
-        private final double travelSpeed;
+        private double travelSpeed;
         private int currentIndex = 0;
         private int lastUpdateTick = 0;
 

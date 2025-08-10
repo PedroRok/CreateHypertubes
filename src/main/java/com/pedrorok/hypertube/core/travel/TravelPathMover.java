@@ -1,15 +1,19 @@
 package com.pedrorok.hypertube.core.travel;
 
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.network.packets.EntityTravelDirDataPacket;
 import com.pedrorok.hypertube.network.packets.SyncEntityPosPacket;
 import lombok.Getter;
+import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
@@ -18,8 +22,10 @@ import java.util.function.BiConsumer;
  */
 public class TravelPathMover {
     private final List<Vec3> pathPoints;
+    private final Map<Integer, BlockPos> actionPoints;
     @Getter
-    private final float travelSpeed;
+    @Setter
+    private float travelSpeed;
     private final BiConsumer<LivingEntity, Boolean> onFinishCallback;
     @Getter
     private final BlockPos lastPos;
@@ -34,8 +40,9 @@ public class TravelPathMover {
 
     private Vec3 lastDirection;
 
-    public TravelPathMover(Vec3 entityPos, List<Vec3> points, float travelSpeed, Vec3 lastDirection, BlockPos lastPos, BiConsumer<LivingEntity, Boolean> onFinishCallback) {
+    public TravelPathMover(Vec3 entityPos, List<Vec3> points, Map<Integer, BlockPos> actionPoints, float travelSpeed, Vec3 lastDirection, BlockPos lastPos, BiConsumer<LivingEntity, Boolean> onFinishCallback) {
         this.pathPoints = points;
+        this.actionPoints = actionPoints;
         this.travelSpeed = travelSpeed;
         this.lastPos = lastPos;
 
@@ -66,6 +73,13 @@ public class TravelPathMover {
             currentEnd = pathPoints.get(currentSegment).subtract(0, 0.25, 0);
             totalDistance = currentStart.distanceTo(currentEnd);
             traveled = 0;
+            if (actionPoints.get(currentSegment-1) != null) {
+                BlockPos actionPos = actionPoints.get(currentSegment - 1);
+                Block block = entity.level().getBlockState(actionPos).getBlock();
+                if (block instanceof ITubeActionPoint travelAction) {
+                    travelAction.handleTravelPath(entity, this, actionPos);
+                }
+            }
         }
 
         Vec3 direction = currentEnd.subtract(currentStart).normalize().scale(travelSpeed);

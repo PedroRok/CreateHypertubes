@@ -1,0 +1,6 @@
+{
+	"parent": "create_hypertube:block/hypertube_accelerator/tube_accelerator",
+	"textures": {
+		"1": "create_hypertube:block/tube_entrance_open"
+	}
+}

@@ -77,6 +77,7 @@ public class TravelManager {
         TravelPathMover pathMover = new TravelPathMover(
                 entity.position(),
                 travelPathData.getTravelPoints(),
+                travelPathData.getActionPoints(),
                 finalSpeed,
                 travelPathData.getEndDirection(entity.level()),
                 travelPathData.getLastBlockPos(),

@@ -28,6 +28,9 @@ public class TravelConstants {
 
     public static final float DEFAULT_SPEED_MULTIPLIER = 1;
 
+    public static final float NEEDED_SPEED = 16;
+
+
     public static final Set<EntityType<?>> TRAVELLER_ENTITIES = new HashSet<>(Set.of(
             EntityType.PLAYER,
             EntityType.VILLAGER,

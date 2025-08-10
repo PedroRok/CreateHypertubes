@@ -1,8 +1,10 @@
 package com.pedrorok.hypertube.registry;
 
 import com.pedrorok.hypertube.HypertubeMod;
+import com.pedrorok.hypertube.blocks.blockentities.HyperAcceleratorBlockEntity;
 import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
+import com.pedrorok.hypertube.client.renderer.AcceleratorEntityRenderer;
 import com.pedrorok.hypertube.client.renderer.EntranceBlockEntityRenderer;
 import com.pedrorok.hypertube.client.renderer.HypertubeBlockEntityRenderer;
 import com.simibubi.create.foundation.data.CreateRegistrate;
@@ -25,6 +27,12 @@ public class ModBlockEntities {
             .blockEntity("hypertube_entity", HypertubeBlockEntity::new)
             .renderer(() -> HypertubeBlockEntityRenderer::new)
             .validBlocks(ModBlocks.HYPERTUBE)
+            .register();
+
+    public static final BlockEntityEntry<HyperAcceleratorBlockEntity> HYPER_ACCELERATOR = REGISTRATE
+            .blockEntity("hyper_accelerator_entity", HyperAcceleratorBlockEntity::new)
+            .renderer(() -> AcceleratorEntityRenderer::new)
+            .validBlocks(ModBlocks.HYPER_ACCELERATOR)
             .register();
 
     public static void register() {

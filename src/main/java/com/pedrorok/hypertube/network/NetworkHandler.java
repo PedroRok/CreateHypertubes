@@ -41,5 +41,10 @@ public class NetworkHandler {
                 SyncEntityPosPacket.STREAM_CODEC,
                 SyncEntityPosPacket::handle
         );
+        registrar.playToClient(
+                SpeedChangePacket.TYPE,
+                SpeedChangePacket.STREAM_CODEC,
+                SpeedChangePacket::handle
+        );
     }
 }
