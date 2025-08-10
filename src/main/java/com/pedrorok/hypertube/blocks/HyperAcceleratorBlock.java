@@ -1,39 +1,27 @@
 package com.pedrorok.hypertube.blocks;
 
 import com.pedrorok.hypertube.blocks.blockentities.HyperAcceleratorBlockEntity;
-import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
-import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravelPathMover;
 import com.pedrorok.hypertube.network.packets.SpeedChangePacket;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
-import com.pedrorok.hypertube.utils.MessageUtils;
 import com.pedrorok.hypertube.utils.TubeUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;
-import com.simibubi.create.content.equipment.wrench.IWrenchable;
-import com.simibubi.create.content.kinetics.base.KineticBlock;
 import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -54,7 +42,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -157,10 +144,11 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
         Level level = entity.level();
         HyperAcceleratorBlockEntity tube = (HyperAcceleratorBlockEntity) level.getBlockEntity(pos);
         if (tube == null) return;
-        float speed = TubeUtils.calculateTravelSpeed(tube.getSpeed()) / 2;
+        float speed = TubeUtils.calculateTravelSpeed(Math.abs(tube.getSpeed())) / 2;
         float newSpeed = mover.getTravelSpeed() + speed;
         mover.setTravelSpeed(newSpeed);
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, new SpeedChangePacket(entity.getId(), newSpeed));
+        TubeSoundManager.playTubeSuctionSound(entity, entity.position());
     }
 
     // ------- Collision Shapes -------

@@ -77,7 +77,7 @@ public class TravelPathData {
             travelPoints.add(nextPipe.getCenter());
             blockConnections.add(nextPipe);
             if (level.getBlockState(nextPipe).getBlock() instanceof ITubeActionPoint) {
-                actionPoints.put(travelPoints.size(), nextPipe);
+                actionPoints.put(travelPoints.size() - 1, nextPipe);
             }
             addTravelPoint(nextPipe, level);
             break;
@@ -122,13 +122,13 @@ public class TravelPathData {
             if (!blockConnections.contains(fromPosFinal)) {
                 blockConnections.add(fromPosFinal);
                 if (level.getBlockState(fromPosFinal).getBlock() instanceof ITubeActionPoint) {
-                    actionPoints.put(startIndex, fromPosFinal);
+                    actionPoints.put(startIndex - 3, fromPosFinal);
                 }
             }
             if (!blockConnections.contains(toPosFinal)) {
                 blockConnections.add(toPosFinal);
                 if (level.getBlockState(toPosFinal).getBlock() instanceof ITubeActionPoint) {
-                    actionPoints.put(bezierPoints.size(), toPosFinal);
+                    actionPoints.put(travelPoints.size() - 3, toPosFinal);
                 }
             }
 
