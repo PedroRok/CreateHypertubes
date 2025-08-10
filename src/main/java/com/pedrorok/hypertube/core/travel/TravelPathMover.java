@@ -76,13 +76,13 @@ public class TravelPathMover {
             currentEnd = pathPoints.get(currentSegment).subtract(0, 0.25, 0);
             totalDistance = currentStart.distanceTo(currentEnd);
             traveled = 0;
-            if (actionPoints.contains(entity.getOnPos())) {
-                BlockPos actionPos = entity.getOnPos();
-                Block block = entity.level().getBlockState(actionPos).getBlock();
-                if (block instanceof ITubeActionPoint travelAction) {
-                    travelAction.handleTravelPath(entity, this, actionPos);
-                }
-            }
+            //if (actionPoints.contains(entity.getOnPos())) {
+            //    BlockPos actionPos = entity.getOnPos();
+            //    Block block = entity.level().getBlockState(actionPos).getBlock();
+            //    if (block instanceof ITubeActionPoint travelAction) {
+            //        travelAction.handleTravelPath(entity, this, actionPos);
+            //    }
+            //}
         }
 
         if (!activeActionPoints.isEmpty()) {
