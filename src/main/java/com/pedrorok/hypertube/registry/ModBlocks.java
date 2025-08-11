@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube.registry;
 
 import com.pedrorok.hypertube.HypertubeMod;
+import com.pedrorok.hypertube.blocks.HyperAcceleratorBlock;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.items.HypertubeItem;
@@ -39,6 +40,16 @@ public class ModBlocks {
             .register();
 
     public static final BlockEntry<HyperEntranceBlock> HYPERTUBE_ENTRANCE = REGISTRATE.block("hypertube_entrance", HyperEntranceBlock::new)
+            .simpleItem()
+            .properties((a) -> PROPERTIES)
+            .transform(axeOrPickaxe())
+            .defaultBlockstate()
+            .defaultLoot()
+            .item(BlockItem::new)
+            .transform(customItemModel())
+            .register();
+
+    public static final BlockEntry<HyperAcceleratorBlock> HYPER_ACCELERATOR = REGISTRATE.block("hypertube_accelerator", HyperAcceleratorBlock::new)
             .simpleItem()
             .properties((a) -> PROPERTIES)
             .transform(axeOrPickaxe())

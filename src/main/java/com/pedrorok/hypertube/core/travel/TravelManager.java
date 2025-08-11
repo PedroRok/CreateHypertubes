@@ -79,13 +79,14 @@ public class TravelManager {
         TravelPathMover pathMover = new TravelPathMover(
                 entity,
                 travelPathData.getTravelPoints(),
+                travelPathData.getActionPoints(),
                 finalSpeed,
                 travelPathData.getEndDirection(entity.level()),
                 travelPathData.getLastBlockPos(),
                 TravelManager::finishTravel);
         travelDataMap.put(entity.getUUID(), pathMover);
 
-        MovePathPacket movePathPacket = new MovePathPacket(entity.getId(), travelPathData.getTravelPoints(), finalSpeed);
+        MovePathPacket movePathPacket = new MovePathPacket(entity.getId(), travelPathData.getTravelPoints(), travelPathData.getActionPoints(), finalSpeed);
         NetworkHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
                 movePathPacket);
 
@@ -173,6 +174,12 @@ public class TravelManager {
         TravelPathMover pathMover = travelDataMap.get(entityUuid);
         if (pathMover == null) return;
         pathMover.setClientFinish();
+    }
+
+    public static void actionPointReach(UUID entityUuid, BlockPos blockPos) {
+        TravelPathMover pathMover = travelDataMap.get(entityUuid);
+        if (pathMover == null) return;
+        pathMover.handleActionPoint(blockPos);
     }
 
     private static void handleServer(LivingEntity entity) {
