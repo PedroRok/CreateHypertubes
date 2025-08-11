@@ -1,0 +1,8 @@
+{
+	"parent": "create_hypertube:block/hypertube_accelerator/tube_accelerator",
+	"textures": {
+		"1": "create_hypertube:block/hypertube_entrance",
+		"2": "create_hypertube:block/hypertube",
+		"3": "create_hypertube:block/tube_red_led_off"
+	}
+}

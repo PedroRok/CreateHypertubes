@@ -1,14 +1,12 @@
 package com.pedrorok.hypertube.blocks;
 
 import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
-import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.utils.MessageUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
-import com.simibubi.create.content.kinetics.base.KineticBlock;
 import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -18,7 +16,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -45,7 +42,7 @@ import java.util.List;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperEntranceBlock extends TubeBlock implements EntityBlock, ICogWheel, SimpleWaterloggedBlock {
+public class HyperEntranceBlock extends TubeBlock implements EntityBlock, ICogWheel {
 
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;

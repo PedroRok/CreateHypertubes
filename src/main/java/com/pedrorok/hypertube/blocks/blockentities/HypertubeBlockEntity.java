@@ -2,26 +2,17 @@ package com.pedrorok.hypertube.blocks.blockentities;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
-import com.pedrorok.hypertube.core.connection.BezierConnection;
-import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
-import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.util.Tuple;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,6 +65,7 @@ public class HypertubeBlockEntity extends TubeBlockEntity {
         connectionInDirection.updateTubeSegments(level);
         return true;
     }
+
     // --------- Tube Segment Methods ---------
     @Override
     public List<IConnection> getConnections() {

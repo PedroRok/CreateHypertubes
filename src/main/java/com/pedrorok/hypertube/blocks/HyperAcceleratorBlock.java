@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube.blocks;
 
 import com.pedrorok.hypertube.blocks.blockentities.HyperAcceleratorBlockEntity;
+import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
@@ -9,12 +10,14 @@ import com.pedrorok.hypertube.core.travel.TravelPathMover;
 import com.pedrorok.hypertube.network.packets.SpeedChangePacket;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
-import com.pedrorok.hypertube.registry.ModSounds;
+import com.pedrorok.hypertube.utils.MessageUtils;
 import com.pedrorok.hypertube.utils.TubeUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;
+import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -49,22 +52,26 @@ import java.util.List;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICogWheel, ITubeConnection, SimpleWaterloggedBlock, ITubeActionPoint {
+public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICogWheel, ITubeActionPoint {
 
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
+    public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
+    public static final BooleanProperty ACCELERATE = BooleanProperty.create("accelerate");
 
     public HyperAcceleratorBlock(Properties properties) {
         super(properties);
         registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(OPEN, false)
-                .setValue(WATERLOGGED, false));
+                .setValue(WATERLOGGED, false)
+                .setValue(ACTIVE, false)
+                .setValue(ACCELERATE, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, OPEN, WATERLOGGED);
+        builder.add(FACING, OPEN, WATERLOGGED, ACTIVE, ACCELERATE);
         super.createBlockStateDefinition(builder);
     }
 
@@ -136,7 +143,32 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
 
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
-        // TODO: Implement the wrenched behavior
+        BlockEntity blockEntity = context.getLevel().getBlockEntity(context.getClickedPos());
+        if (blockEntity instanceof HyperAcceleratorBlockEntity entrance) {
+            if (entrance.wrenchClicked(context.getClickedFace())) {
+                IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
+                return InteractionResult.SUCCESS;
+            }
+        }
+        Player player = context.getPlayer();
+        BlockState blockState = state.setValue(ACCELERATE, !state.getValue(ACCELERATE));
+        Level level = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+        level.setBlock(pos, blockState, 3);
+
+        /*if (blockState.getValue(ACCELERATE)) {
+            MessageUtils.sendActionMessage(player,
+                    Component.translatable("block.hypertube.hyper_entrance.manual_lock")
+                            .append(" (")
+                            .append(Component.translatable("block.hypertube.hyper_entrance.sneak_to_enter"))
+                            .append(")")
+                            .withColor(0xFF5500), true);
+        } else {
+            MessageUtils.sendActionMessage(player,
+                    Component.translatable("block.hypertube.hyper_entrance.automatic_lock")
+                            .withColor(0x55FF00), true);
+        }*/
+        IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
         return InteractionResult.SUCCESS;
     }
 

@@ -2,44 +2,31 @@ package com.pedrorok.hypertube.blocks.blockentities;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
-import com.pedrorok.hypertube.core.connection.BezierConnection;
-import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravelManager;
-import com.pedrorok.hypertube.registry.ModParticles;
-import com.pedrorok.hypertube.registry.ModSounds;
 import com.pedrorok.hypertube.utils.TubeUtils;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import lombok.Getter;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025

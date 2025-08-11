@@ -4,42 +4,25 @@ import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperAcceleratorBlock;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
-import com.pedrorok.hypertube.core.connection.BezierConnection;
-import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
-import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
-import com.pedrorok.hypertube.core.travel.TravelManager;
-import com.pedrorok.hypertube.registry.ModParticles;
-import com.pedrorok.hypertube.registry.ModSounds;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
 import com.simibubi.create.content.kinetics.base.IRotate;
-import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import lombok.Getter;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,18 +67,11 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
     // --------- Tube Segment Methods ---------
     public boolean wrenchClicked(Direction direction) {
         IConnection connectionInDirection = getConnectionInDirection(direction);
-        if (connectionInDirection == null) {
-            if (connectionOne != null) {
-                connectionOne.updateTubeSegments(level);
-            }
-            if (connectionTwo != null) {
-                connectionTwo.updateTubeSegments(level);
-            }
-            return true;
-        }
+        if (connectionInDirection == null) return false;
         connectionInDirection.updateTubeSegments(level);
         return true;
     }
+
     // --------- Tube Segment Methods ---------
     @Override
     public void tick() {
@@ -141,6 +117,7 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
         }
         return true;
     }
+
     @Override
     public boolean addToTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         return false;
@@ -199,5 +176,10 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
     @Override
     protected int getConnectionCount() {
         return 2;
+    }
+
+    @Override
+    public void onSpeedChanged(float previousSpeed) {
+        level.setBlock(getBlockPos(), this.getBlockState().setValue(HyperAcceleratorBlock.ACTIVE, Math.abs(this.getSpeed()) >= TravelConstants.NEEDED_SPEED), 3);
     }
 }
