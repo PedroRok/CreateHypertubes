@@ -77,6 +77,7 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
     }
 
 
+    @OnlyIn(Dist.CLIENT)
     protected void playClientEffects(TubeSoundManager.TubeAmbientSound sound) {
         BlockState state = this.getBlockState();
         BlockPos pos = this.getBlockPos();

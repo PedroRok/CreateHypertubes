@@ -1,5 +1,6 @@
 {
   "itemGroup.create_hypertube": "机械动力：超级管道",
+  "block.create_hypertube.hypertube_accelerator": "超级管道加速方块",
   "block.create_hypertube.hypertube_entrance": "超级管道入口块",
   "block.create_hypertube.hypertube": "超级管道块",
   "subtitles.create_hypertube.suction": "超级管道：抽吸",

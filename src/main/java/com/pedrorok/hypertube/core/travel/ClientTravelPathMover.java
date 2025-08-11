@@ -92,7 +92,6 @@ public class ClientTravelPathMover {
             if (entity == null || !entity.isAlive() || entity.isSpectator()) continue;
             data.handleActionPoint((LivingEntity) entity);
 
-
             Vec3 renderPos = data.getRenderPosition(partialTicks);
 
             entity.moveTo(renderPos.x, renderPos.y, renderPos.z);

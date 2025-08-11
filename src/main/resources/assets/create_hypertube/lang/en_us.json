@@ -1,5 +1,6 @@
 {
   "itemGroup.create_hypertube": "Create: Hypertube",
+  "block.create_hypertube.hypertube_accelerator": "Hypertube Accelerator Block",
   "block.create_hypertube.hypertube_entrance": "Hypertube Entrance Block",
   "block.create_hypertube.hypertube": "Hypertube Block",
   "subtitles.create_hypertube.suction": "Hypertube Suction",
