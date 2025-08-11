@@ -6,7 +6,6 @@ import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
-import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravelManager;
@@ -15,7 +14,6 @@ import com.pedrorok.hypertube.registry.ModSounds;
 import com.pedrorok.hypertube.utils.TubeUtils;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
 import com.simibubi.create.content.kinetics.base.IRotate;
-import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -25,14 +23,12 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -49,7 +45,7 @@ import java.util.UUID;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHaveHoveringInformation, ITubeConnectionEntity {
+public class HyperEntranceBlockEntity extends TubeBlockEntity implements IHaveHoveringInformation {
 
     private static final float RADIUS = 1.0f;
     private final UUID tubeSoundId = UUID.randomUUID();
@@ -132,18 +128,8 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
                           (isLocked || nearbyEntity.isShiftKeyDown()
                            || nearbyEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG));
 
-        if (!canOpen) {
-            if (isOpen) {
-                level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, false), 3);
-                playOpenCloseSound(false);
-            }
-            return;
-        }
 
-        if (!isOpen) {
-            level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, true), 3);
-            playOpenCloseSound(true);
-        }
+        if (isTubeClosed(canOpen, isOpen)) return;
 
         LivingEntity inRangeEntity = getInRangeLivingEntities((ServerLevel) level,
                 pos.getCenter(),
@@ -162,17 +148,39 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
 
     @OnlyIn(Dist.CLIENT)
     private void tickClient(boolean isBlocked) {
-
-        BlockState state = this.getBlockState();
-        BlockPos pos = this.getBlockPos();
-
         float actualSpeed = Math.abs(this.getSpeed());
-
         TubeSoundManager.TubeAmbientSound sound = TubeSoundManager.getAmbientSound(tubeSoundId);
         if (actualSpeed < TravelConstants.NEEDED_SPEED || isBlocked) {
             sound.tickClientPlayerSounds();
             return;
         }
+        playClientEffects(sound);
+    }
+
+    /**
+     * @return true if the tube is closed, false if it was opened
+     */
+    protected boolean isTubeClosed(boolean canOpen, boolean isOpen) {
+        BlockState state = this.getBlockState();
+        BlockPos pos = this.getBlockPos();
+        if (!canOpen) {
+            if (isOpen) {
+                level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, false), 3);
+                playOpenCloseSound(false);
+            }
+            return true;
+        }
+
+        if (!isOpen) {
+            level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, true), 3);
+            playOpenCloseSound(true);
+        }
+        return false;
+    }
+
+    protected void playClientEffects(TubeSoundManager.TubeAmbientSound sound) {
+        BlockState state = this.getBlockState();
+        BlockPos pos = this.getBlockPos();
 
         boolean isOpen = state.getValue(HyperEntranceBlock.OPEN);
 
@@ -207,7 +215,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
     }
 
     @Nullable
-    private LivingEntity getInRangeLivingEntities(ServerLevel level, Vec3 centerPos, Direction facing) {
+    protected LivingEntity getInRangeLivingEntities(ServerLevel level, Vec3 centerPos, Direction facing) {
         Vec3 checkPos = centerPos.add(Vec3.atLowerCornerOf(facing.getOpposite().getNormal()));
 
         return level.getNearestEntity(
@@ -220,7 +228,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
     }
 
     @Nullable
-    private LivingEntity getNearbyLivingEntities(ServerLevel level, Vec3 centerPos) {
+    protected LivingEntity getNearbyLivingEntities(ServerLevel level, Vec3 centerPos) {
         return level.getNearestEntity(
                 level.getEntitiesOfClass(LivingEntity.class,
                         AABB.ofSize(centerPos, RADIUS * 6, RADIUS * 6, RADIUS * 6),
@@ -262,7 +270,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         return true;
     }
 
-    private void playOpenCloseSound(boolean open) {
+    protected void playOpenCloseSound(boolean open) {
         RandomSource random = level.random;
         float pitch = 0.4F + random.nextFloat() * 0.4F;
         level.playSound(null, this.getBlockPos(), open ? ModSounds.HYPERTUBE_ENTRANCE_OPEN.get() : ModSounds.HYPERTUBE_ENTRANCE_CLOSE.get(), SoundSource.BLOCKS, 0.2f, pitch);
@@ -270,14 +278,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
 
     @Override
     public @Nullable IConnection getConnectionInDirection(Direction direction) {
-        SimpleConnection sameConnectionBlockPos = IConnection.getSameConnectionBlockPos(connection, level, worldPosition);
-        if (sameConnectionBlockPos != null) {
-            Direction thisConn = sameConnectionBlockPos.direction();
-            if (thisConn != null && thisConn.equals(direction)) {
-                return connection;
-            }
-        }
-        return null;
+        return getConnectionDirection(direction, connection) ? connection : null;
     }
 
     @Override
@@ -348,13 +349,7 @@ public class HyperEntranceBlockEntity extends KineticBlockEntity implements IHav
         return connections;
     }
 
-    public void sync() {
-        if (level != null && !level.isClientSide) {
-            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_ALL);
-        }
-    }
-
-    public static void spawnSuctionParticle(Level level, BlockPos blockPos, Direction face) {
+    protected void spawnSuctionParticle(Level level, BlockPos blockPos, Direction face) {
         face = face.getOpposite();
         Vec3 center = Vec3.atCenterOf(blockPos);
         RandomSource rand = level.getRandom();

@@ -31,7 +31,7 @@ import java.util.List;
  * @project Create Hypertube
  */
 @Getter
-public class HypertubeBlockEntity extends BlockEntity implements ITubeConnectionEntity {
+public class HypertubeBlockEntity extends TubeBlockEntity {
 
     private IConnection connectionOne;
     private IConnection connectionTwo;
@@ -42,39 +42,20 @@ public class HypertubeBlockEntity extends BlockEntity implements ITubeConnection
 
     // --------- Nbt Methods ---------
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
-        super.saveAdditional(tag, registries);
-        writeConnection(tag, new Tuple<>(connectionOne, "ConnectionTo"), new Tuple<>(connectionTwo, "ConnectionFrom"));
-    }
-
-    @Override
-    protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
-        super.loadAdditional(tag, registries);
-
-        if (tag.contains("ConnectionTo")) {
-            this.connectionOne = getConnection(tag, "ConnectionTo");
+    protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(compound, registries, clientPacket);
+        if (compound.contains("ConnectionTo")) {
+            this.connectionOne = getConnection(compound, "ConnectionTo");
         }
-        if (tag.contains("ConnectionFrom")) {
-            this.connectionTwo = getConnection(tag, "ConnectionFrom");
+        if (compound.contains("ConnectionFrom")) {
+            this.connectionTwo = getConnection(compound, "ConnectionFrom");
         }
     }
 
     @Override
-    public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registries) {
-        CompoundTag tag = super.getUpdateTag(registries);
-        saveAdditional(tag, registries);
-        return tag;
-    }
-
-    @Override
-    public @NotNull ClientboundBlockEntityDataPacket getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this);
-    }
-
-    @Override
-    public void onDataPacket(@NotNull Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.@NotNull Provider registries) {
-        CompoundTag tag = pkt.getTag();
-        loadAdditional(tag, registries);
+    protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(compound, registries, clientPacket);
+        writeConnection(compound, new Tuple<>(connectionOne, "ConnectionTo"), new Tuple<>(connectionTwo, "ConnectionFrom"));
     }
     // --------- Nbt Methods ---------
 
@@ -134,17 +115,6 @@ public class HypertubeBlockEntity extends BlockEntity implements ITubeConnection
         if (getConnectionDirection(direction, connectionOne)) return connectionOne;
         if (getConnectionDirection(direction, connectionTwo)) return connectionTwo;
         return null;
-    }
-
-    private boolean getConnectionDirection(Direction direction, IConnection connection) {
-        if (connection != null) {
-            SimpleConnection sameConnectionBlockPos = IConnection.getSameConnectionBlockPos(connection, level, worldPosition);
-            if (sameConnectionBlockPos != null) {
-                Direction thisConn = sameConnectionBlockPos.direction();
-                return thisConn != null && thisConn.equals(direction);
-            }
-        }
-        return false;
     }
 
     @Override
@@ -238,11 +208,5 @@ public class HypertubeBlockEntity extends BlockEntity implements ITubeConnection
             return Vec3.atLowerCornerOf(IConnection.getSameConnectionBlockPos(connectionOne, level, getBlockPos()).direction().getOpposite().getNormal());
         }
         return null;
-    }
-
-    public void sync() {
-        if (level != null && !level.isClientSide) {
-            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_ALL);
-        }
     }
 }

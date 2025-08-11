@@ -49,7 +49,7 @@ import java.util.UUID;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperAcceleratorBlockEntity extends KineticBlockEntity implements IHaveHoveringInformation, ITubeConnectionEntity {
+public class HyperAcceleratorBlockEntity extends HyperEntranceBlockEntity implements IHaveHoveringInformation {
 
     private static final float RADIUS = 1.0f;
 
@@ -99,21 +99,6 @@ public class HyperAcceleratorBlockEntity extends KineticBlockEntity implements I
         return true;
     }
     // --------- Tube Segment Methods ---------
-
-    @Override
-    public void remove() {
-        if (level.isClientSide) {
-            removeClient();
-        }
-        super.remove();
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    private void removeClient() {
-        TubeSoundManager.getAmbientSound(tubeSoundId).stopSound();
-        TubeSoundManager.removeAmbientSound(tubeSoundId);
-    }
-
     @Override
     public void tick() {
         super.tick();
@@ -132,94 +117,14 @@ public class HyperAcceleratorBlockEntity extends KineticBlockEntity implements I
 
         boolean canOpen = nearbyEntity != null && nearbyEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG);
 
-        if (!canOpen) {
-            if (isOpen) {
-                level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, false), 3);
-                playOpenCloseSound(false);
-            }
-            return;
-        }
-
-        if (!isOpen) {
-            level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, true), 3);
-            playOpenCloseSound(true);
-        }
-
-        LivingEntity inRangeEntity = getInRangeLivingEntities((ServerLevel) level,
-                pos.getCenter(),
-                state.getValue(HyperEntranceBlock.FACING));
-        if (inRangeEntity == null) return;
-
-        if (!inRangeEntity.isShiftKeyDown() &&
-            !inRangeEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) {
-            return;
-        }
+        isTubeClosed(canOpen, isOpen);
     }
 
 
     @OnlyIn(Dist.CLIENT)
     private void tickClient() {
-
-        BlockState state = this.getBlockState();
-        BlockPos pos = this.getBlockPos();
-
-
         TubeSoundManager.TubeAmbientSound sound = TubeSoundManager.getAmbientSound(tubeSoundId);
-
-        boolean isOpen = state.getValue(HyperEntranceBlock.OPEN);
-
-        LocalPlayer player = Minecraft.getInstance().player;
-        Vec3 source = pos.getCenter();
-        Vec3 listener = player.position();
-
-        Vec3 worldDirection = source.subtract(listener).normalize();
-
-        Vec3 forward = player.getLookAngle().normalize();
-        Vec3 up = player.getUpVector(1.0F).normalize();
-        Vec3 right = forward.cross(up).normalize();
-
-        double x = worldDirection.dot(right);
-        double y = worldDirection.dot(up);
-        double z = worldDirection.dot(forward);
-
-        Vec3 rotatedDirection = new Vec3(x, y, z).normalize();
-
-        double distance = player.distanceToSqr(source);
-
-        if (isOpen) {
-            HyperEntranceBlockEntity.spawnSuctionParticle(level, pos, state.getValue(HyperAcceleratorBlock.FACING));
-        }
-
-        sound.enableClientPlayerSound(
-                player,
-                rotatedDirection,
-                distance,
-                isOpen
-        );
-    }
-
-    @Nullable
-    private LivingEntity getInRangeLivingEntities(ServerLevel level, Vec3 centerPos, Direction facing) {
-        Vec3 checkPos = centerPos.add(Vec3.atLowerCornerOf(facing.getOpposite().getNormal()));
-
-        return level.getNearestEntity(
-                level.getEntitiesOfClass(LivingEntity.class,
-                        AABB.ofSize(checkPos, (RADIUS - 0.25) * 2, (RADIUS - 0.25) * 2, (RADIUS - 0.25) * 2),
-                        (entity) -> TravelConstants.TRAVELLER_ENTITIES.contains(entity.getType())),
-                TargetingConditions.forNonCombat().ignoreLineOfSight(),
-                null,
-                centerPos.x, centerPos.y, centerPos.z);
-    }
-
-    @Nullable
-    private LivingEntity getNearbyLivingEntities(ServerLevel level, Vec3 centerPos) {
-        return level.getNearestEntity(
-                level.getEntitiesOfClass(LivingEntity.class,
-                        AABB.ofSize(centerPos, RADIUS * 6, RADIUS * 6, RADIUS * 6),
-                        (entity) -> TravelConstants.TRAVELLER_ENTITIES.contains(entity.getType())),
-                TargetingConditions.forNonCombat().ignoreLineOfSight(),
-                null,
-                centerPos.x, centerPos.y, centerPos.z);
+        playClientEffects(sound);
     }
 
     @Override
@@ -242,28 +147,11 @@ public class HyperAcceleratorBlockEntity extends KineticBlockEntity implements I
         return true;
     }
 
-    private void playOpenCloseSound(boolean open) {
-        RandomSource random = level.random;
-        float pitch = 0.4F + random.nextFloat() * 0.4F;
-        level.playSound(null, this.getBlockPos(), open ? ModSounds.HYPERTUBE_ENTRANCE_OPEN.get() : ModSounds.HYPERTUBE_ENTRANCE_CLOSE.get(), SoundSource.BLOCKS, 0.2f, pitch);
-    }
-
     @Override
     public @Nullable IConnection getConnectionInDirection(Direction direction) {
         if (getConnectionDirection(direction, connectionOne)) return connectionOne;
         if (getConnectionDirection(direction, connectionTwo)) return connectionTwo;
         return null;
-    }
-
-    private boolean getConnectionDirection(Direction direction, IConnection connection) {
-        if (connection != null) {
-            SimpleConnection sameConnectionBlockPos = IConnection.getSameConnectionBlockPos(connection, level, worldPosition);
-            if (sameConnectionBlockPos != null) {
-                Direction thisConn = sameConnectionBlockPos.direction();
-                return thisConn != null && thisConn.equals(direction);
-            }
-        }
-        return false;
     }
 
     @Override
@@ -365,12 +253,6 @@ public class HyperAcceleratorBlockEntity extends KineticBlockEntity implements I
             connections.add(connectionTwo);
         }
         return connections;
-    }
-
-    public void sync() {
-        if (level != null && !level.isClientSide) {
-            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_ALL);
-        }
     }
 
     @Override
