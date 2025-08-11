@@ -70,9 +70,4 @@ public class AcceleratorEntityRenderer extends KineticBlockEntityRenderer<HyperA
     public boolean shouldRender(HyperAcceleratorBlockEntity p_173568_, Vec3 p_173569_) {
         return true;
     }
-
-    @Override
-    public @NotNull AABB getRenderBoundingBox(@NotNull HyperAcceleratorBlockEntity blockEntity) {
-        return AABB.INFINITE;
-    }
 }

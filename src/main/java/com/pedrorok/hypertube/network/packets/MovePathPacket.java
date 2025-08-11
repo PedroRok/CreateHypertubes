@@ -20,6 +20,11 @@ import java.util.Set;
 public record MovePathPacket(int entityId, List<Vec3> pathPoints, Set<BlockPos> actionPoints,
                              double travelSpeed) implements Packet<MovePathPacket> {
 
+
+    public MovePathPacket(FriendlyByteBuf buf) {
+        this(buf.readInt(), readPathPoints(buf), readActionPoints(buf), buf.readDouble());
+    }
+
     @Override
     public void toBytes(FriendlyByteBuf buf) {
         buf.writeInt(entityId);
@@ -36,12 +41,15 @@ public record MovePathPacket(int entityId, List<Vec3> pathPoints, Set<BlockPos> 
         buf.writeDouble(travelSpeed);
     }
 
-    public MovePathPacket(FriendlyByteBuf buf) {
-        this(buf.readInt(), readPathPoints(buf), buf.readDouble());
+    @Override
+    public void execute(Supplier<NetworkEvent.Context> ctx) {
+        ctx.get().enqueueWork(() -> {
+            ClientTravelPathMover.startMoving(this);
+        });
+        ctx.get().setPacketHandled(true);
     }
 
-    public static MovePathPacket decode(FriendlyByteBuf buf) {
-        int id = buf.readInt();
+    private static List<Vec3> readPathPoints(FriendlyByteBuf buf) {
         int size = buf.readInt();
         List<Vec3> points = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
@@ -50,21 +58,16 @@ public record MovePathPacket(int entityId, List<Vec3> pathPoints, Set<BlockPos> 
             double z = buf.readDouble();
             points.add(new Vec3(x, y, z));
         }
-        size = buf.readInt();
+        return points;
+    }
+
+
+    public static Set<BlockPos> readActionPoints(FriendlyByteBuf buf) {
+        int size = buf.readInt();
         Set<BlockPos> actionPoints = new HashSet<>();
         for (int i = 0; i < size; i++) {
             actionPoints.add(buf.readBlockPos());
         }
-        double speed = buf.readDouble();
-        return new MovePathPacket(id, points, actionPoints, speed);
-    }
-
-
-    @Override
-    public void execute(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            ClientTravelPathMover.startMoving(this);
-        });
-        ctx.get().setPacketHandled(true);
+        return actionPoints;
     }
 }

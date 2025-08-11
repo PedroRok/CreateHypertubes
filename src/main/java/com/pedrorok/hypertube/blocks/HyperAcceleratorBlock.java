@@ -5,6 +5,7 @@ import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravelPathMover;
+import com.pedrorok.hypertube.network.NetworkHandler;
 import com.pedrorok.hypertube.network.packets.SpeedChangePacket;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
@@ -13,6 +14,7 @@ import com.pedrorok.hypertube.utils.TubeUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -42,7 +44,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -160,11 +162,11 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
         if (blockState.getValue(ACCELERATE)) {
             MessageUtils.sendActionMessage(player,
                     Component.translatable("block.hypertube.hyper_accelerator.accelerate_mode")
-                            .withColor(0xFFFF00), true);
+                            .withStyle(ChatFormatting.YELLOW), true);
         } else {
             MessageUtils.sendActionMessage(player,
                     Component.translatable("block.hypertube.hyper_accelerator.brake_mode")
-                            .withColor(0xFF8800), true);
+                            .withStyle(ChatFormatting.GOLD), true);
         }
         IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
         return InteractionResult.SUCCESS;
@@ -179,7 +181,8 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
         float newSpeed = mover.getTravelSpeed() + speed * (tube.getBlockState().getValue(ACCELERATE) ? 1 : -1);
         newSpeed = Math.max(0.4333f, newSpeed);
         mover.setTravelSpeed(newSpeed);
-        PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, new SpeedChangePacket(entity.getId(), newSpeed));
+        NetworkHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
+                new SpeedChangePacket(entity.getId(), newSpeed));
         TubeSoundManager.playTubeSuctionSound(entity, entity.position());
     }
 

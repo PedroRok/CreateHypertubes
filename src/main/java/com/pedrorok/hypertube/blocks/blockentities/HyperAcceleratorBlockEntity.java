@@ -2,7 +2,6 @@ package com.pedrorok.hypertube.blocks.blockentities;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperAcceleratorBlock;
-import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
@@ -11,6 +10,7 @@ import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import lombok.Getter;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -22,8 +22,8 @@ import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,8 +48,8 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
 
     // --------- Nbt Methods ---------
     @Override
-    protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
-        super.read(compound, registries, clientPacket);
+    protected void read(CompoundTag compound, boolean clientPacket) {
+        super.read(compound, clientPacket);
         if (compound.contains("ConnectionOne")) {
             connectionOne = getConnection(compound, "ConnectionOne");
         }
@@ -59,8 +59,8 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
     }
 
     @Override
-    protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
-        super.write(compound, registries, clientPacket);
+    protected void write(CompoundTag compound, boolean clientPacket) {
+        super.write(compound, clientPacket);
         writeConnection(compound, new Tuple<>(connectionOne, "ConnectionOne"), new Tuple<>(connectionTwo, "ConnectionTwo"));
     }
     // --------- Nbt Methods ---------
@@ -114,12 +114,12 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
             tooltip.add(Component.literal("     ")
                     .append(Component.literal("\u2592 "))
                     .append(Component.translatable("tooltip.create_hypertube.entrance_no_speed"))
-                    .withColor(0xFF0000));
+                    .withStyle(ChatFormatting.RED));
         } else {
             MutableComponent literalTooltip = Component.literal("     ");
             literalTooltip = literalTooltip.append(getBlockState().getValue(HyperAcceleratorBlock.ACCELERATE)
-                    ? Component.translatable("block.hypertube.hyper_accelerator.accelerate_mode").withColor(0xFFFF00)
-                    : Component.translatable("block.hypertube.hyper_accelerator.brake_mode").withColor(0xFF8800));
+                    ? Component.translatable("block.hypertube.hyper_accelerator.accelerate_mode").withStyle(ChatFormatting.YELLOW)
+                    : Component.translatable("block.hypertube.hyper_accelerator.brake_mode").withStyle(ChatFormatting.GOLD));
             tooltip.add(literalTooltip);
         }
         return true;

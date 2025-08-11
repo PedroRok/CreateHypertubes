@@ -21,10 +21,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 03/07/2025
@@ -184,7 +181,9 @@ public class ClientTravelPathMover {
             BlockPos actionPos = entity.getOnPos();
             Block block = entity.level().getBlockState(actionPos).getBlock();
             if (block instanceof ITubeActionPoint travelAction) {
-                PacketDistributor.sendToServer(new ActionPointReachPacket(entity.getUUID(), actionPos));
+                NetworkHandler.INSTANCE.sendToServer(
+                        new ActionPointReachPacket(entity.getUUID(), actionPos)
+                );
             }
         }
 

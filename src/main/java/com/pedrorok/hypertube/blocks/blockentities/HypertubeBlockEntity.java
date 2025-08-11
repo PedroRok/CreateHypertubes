@@ -7,6 +7,7 @@ import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -33,8 +34,8 @@ public class HypertubeBlockEntity extends TubeBlockEntity {
 
     // --------- Nbt Methods ---------
     @Override
-    protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
-        super.read(compound, registries, clientPacket);
+    protected void read(CompoundTag compound, boolean clientPacket) {
+        super.read(compound, clientPacket);
         if (compound.contains("ConnectionTo")) {
             this.connectionOne = getConnection(compound, "ConnectionTo");
         }
@@ -44,8 +45,8 @@ public class HypertubeBlockEntity extends TubeBlockEntity {
     }
 
     @Override
-    protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
-        super.write(compound, registries, clientPacket);
+    protected void write(CompoundTag compound, boolean clientPacket) {
+        super.write(compound, clientPacket);
         writeConnection(compound, new Tuple<>(connectionOne, "ConnectionTo"), new Tuple<>(connectionTwo, "ConnectionFrom"));
     }
     // --------- Nbt Methods ---------

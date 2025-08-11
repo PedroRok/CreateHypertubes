@@ -29,8 +29,8 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.level.BlockEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.level.BlockEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -86,7 +86,8 @@ public abstract class TubeBlock extends KineticBlock implements ITubeConnection,
 
     // ---- Waterlogging ----
     @Override
-    protected @NotNull BlockState updateShape(BlockState p_313906_, @NotNull Direction p_313739_, @NotNull BlockState p_313829_, @NotNull LevelAccessor p_313692_, @NotNull BlockPos p_313842_, @NotNull BlockPos p_313843_) {
+    @NotNull
+    public BlockState updateShape(BlockState p_313906_, @NotNull Direction p_313739_, @NotNull BlockState p_313829_, @NotNull LevelAccessor p_313692_, @NotNull BlockPos p_313842_, @NotNull BlockPos p_313843_) {
         if (p_313906_.getValue(WATERLOGGED)) {
             p_313692_.scheduleTick(p_313842_, Fluids.WATER, Fluids.WATER.getTickDelay(p_313692_));
         }
@@ -94,7 +95,7 @@ public abstract class TubeBlock extends KineticBlock implements ITubeConnection,
     }
 
     @Override
-    protected @NotNull FluidState getFluidState(BlockState p_313789_) {
+    public @NotNull FluidState getFluidState(BlockState p_313789_) {
         return p_313789_.getValue(WATERLOGGED) ? Fluids.WATER.getSource(true) : super.getFluidState(p_313789_);
     }
 
@@ -102,25 +103,28 @@ public abstract class TubeBlock extends KineticBlock implements ITubeConnection,
     public abstract Item getItem();
 
     @Override
-    public @NotNull ItemStack getCloneItemStack(@NotNull LevelReader level, @NotNull BlockPos pos, @NotNull BlockState state) {
+    public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter level, BlockPos pos, Player player) {
         return getItem().getDefaultInstance();
     }
 
     @Override
-    public @NotNull ItemStack getCloneItemStack(@NotNull BlockState state, @NotNull HitResult target, @NotNull LevelReader level, @NotNull BlockPos pos, @NotNull Player player) {
+    public ItemStack getCloneItemStack(BlockGetter p_49823_, BlockPos p_49824_, BlockState p_49825_) {
         return getItem().getDefaultInstance();
     }
+
 
     // ---- Destroying ----
     @Override
-    public @NotNull BlockState playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Player player) {
-        return playerWillDestroy(level, pos, state, player, false);
+    public @NotNull void playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Player player) {
+        playerWillDestroy(level, pos, state, player, false);
     }
 
-    BlockState playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Player player, boolean wrenched) {
+    void playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Player player, boolean wrenched) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof ITubeConnectionEntity tube))
-            return super.playerWillDestroy(level, pos, state, player);
+        if (!(blockEntity instanceof ITubeConnectionEntity tube)) {
+            super.playerWillDestroy(level, pos, state, player);
+            return;
+        }
 
         int toDrop = tube.blockBroken();
 
@@ -139,8 +143,7 @@ public abstract class TubeBlock extends KineticBlock implements ITubeConnection,
                 else Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
             }
         }
-
-        return super.playerWillDestroy(level, pos, state, player);
+        super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override
@@ -155,7 +158,7 @@ public abstract class TubeBlock extends KineticBlock implements ITubeConnection,
         if (!(world instanceof ServerLevel)) return InteractionResult.SUCCESS;
 
         BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(world, pos, world.getBlockState(pos), player);
-        NeoForge.EVENT_BUS.post(event);
+        MinecraftForge.EVENT_BUS.post(event);
         if (event.isCanceled()) return InteractionResult.SUCCESS;
 
         world.destroyBlock(pos, false);

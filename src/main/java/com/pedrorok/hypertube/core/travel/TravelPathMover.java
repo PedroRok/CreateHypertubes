@@ -69,7 +69,7 @@ public class TravelPathMover {
 
         if (traveled >= totalDistance) {
             currentSegment++;
-            if (currentSegment >= pathPoints.size() || finished) {
+            if (currentSegment >= pathPoints.size()) {
                 onFinishCallback.accept(entity, false);
                 return;
             }
@@ -126,7 +126,9 @@ public class TravelPathMover {
         entity.setYRot(yaw);
         entity.setXRot(pitch);
         if (entity.level().isClientSide) return;
-        PacketDistributor.sendToPlayersTrackingEntity(entity, EntityTravelDirDataPacket.create(entity));
+        NetworkHandler.INSTANCE.send(PacketDistributor.SERVER.noArg(),
+                EntityTravelDirDataPacket.create(entity)
+        );
     }
 
     public Vec3 getLastDir() {

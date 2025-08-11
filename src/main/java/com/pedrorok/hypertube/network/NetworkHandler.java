@@ -29,6 +29,9 @@ public class NetworkHandler {
         register(FinishPathPacket.class);
         register(MovePathPacket.class);
         register(SyncEntityPosPacket.class);
+        register(EntityTravelDirDataPacket.class);
+        register(SpeedChangePacket.class);
+        register(ActionPointReachPacket.class);
     }
 
     private static <T extends Packet<T>> void register(Class<T> clazz) {
@@ -44,15 +47,6 @@ public class NetworkHandler {
                     }
                 },
                 Packet::execute
-        );
-        registrar.playToClient(
-                SpeedChangePacket.TYPE,
-                SpeedChangePacket.STREAM_CODEC,
-                SpeedChangePacket::handle
-        );
-        registrar.playToServer(ActionPointReachPacket.TYPE,
-                ActionPointReachPacket.STREAM_CODEC,
-                ActionPointReachPacket::handle
         );
     }
 }

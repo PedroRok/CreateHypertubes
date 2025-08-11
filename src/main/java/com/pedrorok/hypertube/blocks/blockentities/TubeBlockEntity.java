@@ -11,6 +11,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -117,5 +118,10 @@ public abstract class TubeBlockEntity extends KineticBlockEntity implements ITub
         if (connections.isEmpty()) return null;
         IConnection first = connections.get(0);
         return Vec3.atLowerCornerOf(IConnection.getSameConnectionBlockPos(first, level, getBlockPos()).direction().getOpposite().getNormal());
+    }
+
+    @Override
+    public AABB getRenderBoundingBox() {
+        return new AABB(worldPosition).inflate(512);
     }
 }

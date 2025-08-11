@@ -156,6 +156,6 @@ public class TubeUtils {
 
 
     public static float calculateTravelSpeed(float tubeSpeed) {
-        return (0.4333f * Math.min(1, tubeSpeed/16)) + (tubeSpeed / 240f);
+        return (0.22f* Math.min(1, tubeSpeed/16)) + (tubeSpeed / 200f);
     }
 }

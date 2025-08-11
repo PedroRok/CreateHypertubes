@@ -14,7 +14,6 @@ import java.util.function.Supplier;
  */
 public record FinishPathPacket(UUID entityUuid) implements Packet<FinishPathPacket> {
 
-
     @Override
     public void toBytes(FriendlyByteBuf buf) {
         buf.writeUUID(entityUuid);
