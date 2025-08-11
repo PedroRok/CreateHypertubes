@@ -49,9 +49,7 @@ import java.util.UUID;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperAcceleratorBlockEntity extends HyperEntranceBlockEntity implements IHaveHoveringInformation {
-
-    private static final float RADIUS = 1.0f;
+public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implements IHaveHoveringInformation {
 
     private final UUID tubeSoundId = UUID.randomUUID();
 
@@ -131,14 +129,11 @@ public class HyperAcceleratorBlockEntity extends HyperEntranceBlockEntity implem
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         super.addToGoggleTooltip(tooltip, isPlayerSneaking);
         float finalSpeed = Math.abs(this.getSpeed());
-
-
-        int SPEED_TO_START = 16;
-
-        IRotate.SpeedLevel.getFormattedSpeedText(speed, finalSpeed < SPEED_TO_START)
+        boolean hasNeededSpeed = finalSpeed < TravelConstants.NEEDED_SPEED;
+        IRotate.SpeedLevel.getFormattedSpeedText(speed, hasNeededSpeed)
                 .forGoggles(tooltip);
 
-        if (finalSpeed < SPEED_TO_START) {
+        if (hasNeededSpeed) {
             tooltip.add(Component.literal("     ")
                     .append(Component.literal("\u2592 "))
                     .append(Component.translatable("tooltip.create_hypertube.entrance_no_speed"))
@@ -146,34 +141,9 @@ public class HyperAcceleratorBlockEntity extends HyperEntranceBlockEntity implem
         }
         return true;
     }
-
     @Override
-    public @Nullable IConnection getConnectionInDirection(Direction direction) {
-        if (getConnectionDirection(direction, connectionOne)) return connectionOne;
-        if (getConnectionDirection(direction, connectionTwo)) return connectionTwo;
-        return null;
-    }
-
-    @Override
-    public @Nullable IConnection getThisConnectionFrom(SimpleConnection connection) {
-        if (connectionOne instanceof BezierConnection bezierConnection) {
-            if (connection.isSameConnection(bezierConnection.getFromPos()))
-                return bezierConnection;
-        }
-        if (connectionTwo instanceof BezierConnection bezierConnection) {
-            if (connection.isSameConnection(bezierConnection.getFromPos()))
-                return bezierConnection;
-        }
-        return null;
-    }
-
-    @Override
-    public boolean hasConnectionAvailable() {
-        return connectionTwo == null || connectionOne == null;
-    }
-
-    public boolean isConnected() {
-        return connectionOne != null || connectionTwo != null;
+    public boolean addToTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+        return false;
     }
 
     @Override
@@ -215,35 +185,6 @@ public class HyperAcceleratorBlockEntity extends HyperEntranceBlockEntity implem
     }
 
     @Override
-    public int blockBroken() {
-        int toDrop = 0;
-        if (connectionOne != null) {
-            toDrop = blockBroken(level, connectionOne, worldPosition);
-        }
-        if (connectionTwo != null) {
-            toDrop += blockBroken(level, connectionTwo, worldPosition);
-        }
-        return toDrop;
-    }
-
-    @Override
-    public List<Direction> getFacesConnectable() {
-        if (connectionOne != null && connectionTwo != null) return List.of();
-
-        List<Direction> possibleDirections = ((HyperAcceleratorBlock) getBlockState().getBlock()).getConnectedFaces(getBlockState());
-
-        possibleDirections.removeIf(direction -> {
-            if (connectionOne != null) {
-                return getConnectionDirection(direction, connectionOne);
-            }
-            if (connectionTwo != null) {
-                return getConnectionDirection(direction, connectionTwo);
-            }
-            return false;
-        });
-        return possibleDirections;
-    }
-    @Override
     public List<IConnection> getConnections() {
         List<IConnection> connections = new ArrayList<>();
         if (connectionOne != null) {
@@ -256,16 +197,7 @@ public class HyperAcceleratorBlockEntity extends HyperEntranceBlockEntity implem
     }
 
     @Override
-    public Vec3 getExitDirection() {
-        if (connectionOne != null && connectionTwo != null) {
-            return null;
-        }
-        if (connectionTwo != null) {
-            return Vec3.atLowerCornerOf(IConnection.getSameConnectionBlockPos(connectionTwo, level, getBlockPos()).direction().getOpposite().getNormal());
-        }
-        if (connectionOne != null) {
-            return Vec3.atLowerCornerOf(IConnection.getSameConnectionBlockPos(connectionOne, level, getBlockPos()).direction().getOpposite().getNormal());
-        }
-        return null;
+    protected int getConnectionCount() {
+        return 2;
     }
 }

@@ -75,28 +75,6 @@ public class HypertubeBlockEntity extends TubeBlockEntity {
         return true;
     }
     // --------- Tube Segment Methods ---------
-
-    @Override
-    public List<Direction> getFacesConnectable() {
-        if (connectionOne != null && connectionTwo != null) return List.of();
-
-        List<Direction> possibleDirections = ((HypertubeBlock) getBlockState().getBlock()).getConnectedFaces(getBlockState());
-        if (possibleDirections.isEmpty()) {
-            return List.of(Direction.values());
-        }
-
-        possibleDirections.removeIf(direction -> {
-            if (connectionOne != null) {
-                return getConnectionDirection(direction, connectionOne);
-            }
-            if (connectionTwo != null) {
-                return getConnectionDirection(direction, connectionTwo);
-            }
-            return false;
-        });
-        return possibleDirections;
-    }
-
     @Override
     public List<IConnection> getConnections() {
         List<IConnection> connections = new ArrayList<>();
@@ -107,36 +85,6 @@ public class HypertubeBlockEntity extends TubeBlockEntity {
             connections.add(connectionTwo);
         }
         return connections;
-    }
-
-
-    @Override
-    public @Nullable IConnection getConnectionInDirection(Direction direction) {
-        if (getConnectionDirection(direction, connectionOne)) return connectionOne;
-        if (getConnectionDirection(direction, connectionTwo)) return connectionTwo;
-        return null;
-    }
-
-    @Override
-    public @Nullable IConnection getThisConnectionFrom(SimpleConnection connection) {
-        if (connectionOne instanceof BezierConnection bezierConnection) {
-            if (connection.isSameConnection(bezierConnection.getFromPos()))
-                return bezierConnection;
-        }
-        if (connectionTwo instanceof BezierConnection bezierConnection) {
-            if (connection.isSameConnection(bezierConnection.getFromPos()))
-                return bezierConnection;
-        }
-        return null;
-    }
-
-    @Override
-    public boolean hasConnectionAvailable() {
-        return connectionTwo == null || connectionOne == null;
-    }
-
-    public boolean isConnected() {
-        return connectionOne != null || connectionTwo != null;
     }
 
     @Override
@@ -185,18 +133,6 @@ public class HypertubeBlockEntity extends TubeBlockEntity {
     }
 
     @Override
-    public int blockBroken() {
-        int toDrop = 0;
-        if (connectionOne != null) {
-            toDrop = blockBroken(level, connectionOne, worldPosition);
-        }
-        if (connectionTwo != null) {
-            toDrop += blockBroken(level, connectionTwo, worldPosition);
-        }
-        return toDrop;
-    }
-
-    @Override
     public Vec3 getExitDirection() {
         if (connectionOne != null && connectionTwo != null) {
             return null;
@@ -208,5 +144,10 @@ public class HypertubeBlockEntity extends TubeBlockEntity {
             return Vec3.atLowerCornerOf(IConnection.getSameConnectionBlockPos(connectionOne, level, getBlockPos()).direction().getOpposite().getNormal());
         }
         return null;
+    }
+
+    @Override
+    protected int getConnectionCount() {
+        return 2;
     }
 }
