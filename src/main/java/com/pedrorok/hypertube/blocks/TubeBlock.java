@@ -18,6 +18,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -33,6 +34,8 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 09/08/2025
@@ -161,5 +164,21 @@ public abstract class TubeBlock extends KineticBlock implements ITubeConnection,
         world.destroyBlock(pos, false);
         IWrenchable.playRemoveSound(world, pos);
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public boolean canTravelConnect(LevelAccessor world, BlockPos posSelf, Direction facing) {
+        BlockPos relative = posSelf.relative(facing);
+        BlockState otherState = world.getBlockState(relative);
+        Block block = otherState.getBlock();
+        return block instanceof ITubeConnection
+               && (!(block instanceof TubeBlock hypertubeBlock)
+                   || canOtherConnectTo(otherState, hypertubeBlock, facing));
+    }
+
+    private boolean canOtherConnectTo(BlockState otherState, TubeBlock otherTube, Direction
+            facing) {
+        List<Direction> connectedFaces = otherTube.getConnectedFaces(otherState);
+        return connectedFaces.isEmpty() || connectedFaces.contains(facing);
     }
 }

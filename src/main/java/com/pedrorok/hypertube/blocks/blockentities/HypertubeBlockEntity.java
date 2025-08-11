@@ -125,20 +125,6 @@ public class HypertubeBlockEntity extends TubeBlockEntity {
     }
 
     @Override
-    public Vec3 getExitDirection() {
-        if (connectionOne != null && connectionTwo != null) {
-            return null;
-        }
-        if (connectionTwo != null) {
-            return Vec3.atLowerCornerOf(IConnection.getSameConnectionBlockPos(connectionTwo, level, getBlockPos()).direction().getOpposite().getNormal());
-        }
-        if (connectionOne != null) {
-            return Vec3.atLowerCornerOf(IConnection.getSameConnectionBlockPos(connectionOne, level, getBlockPos()).direction().getOpposite().getNormal());
-        }
-        return null;
-    }
-
-    @Override
     protected int getConnectionCount() {
         return 2;
     }

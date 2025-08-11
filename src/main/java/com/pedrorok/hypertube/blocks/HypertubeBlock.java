@@ -55,7 +55,7 @@ import java.util.Set;
  * @author Rok, Pedro Lucas nmm. Created on 21/05/2025
  * @project Create Hypertube
  */
-public class HypertubeBlock extends TubeBlock implements EntityBlock, SimpleWaterloggedBlock, IWrenchable {
+public class HypertubeBlock extends TubeBlock implements EntityBlock {
 
     public static final BooleanProperty CONNECTED = BooleanProperty.create("connected");
     public static final BooleanProperty NORTH_SOUTH = BooleanProperty.create("north_south");
@@ -68,11 +68,18 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock, SimpleWate
 
     public HypertubeBlock(BlockBehaviour.Properties properties) {
         super(properties);
+        registerDefaultState(this.stateDefinition.any()
+                .setValue(CONNECTED, false)
+                .setValue(NORTH_SOUTH, false)
+                .setValue(WATERLOGGED, false)
+                .setValue(EAST_WEST, false)
+                .setValue(UP_DOWN, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(NORTH_SOUTH, EAST_WEST, UP_DOWN, CONNECTED, WATERLOGGED);
+        super.createBlockStateDefinition(builder);
     }
 
     @Override
@@ -226,22 +233,6 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock, SimpleWate
             directions.add(Direction.DOWN);
         }
         return directions;
-    }
-
-    @Override
-    public boolean canTravelConnect(LevelAccessor world, BlockPos posSelf, Direction facing) {
-        BlockPos relative = posSelf.relative(facing);
-        BlockState otherState = world.getBlockState(relative);
-        Block block = otherState.getBlock();
-        return block instanceof ITubeConnection
-               && (!(block instanceof HypertubeBlock hypertubeBlock)
-                   || canOtherConnectTo(world, relative, hypertubeBlock, facing));
-    }
-
-    private boolean canOtherConnectTo(LevelAccessor world, BlockPos otherPos, HypertubeBlock otherTube, Direction
-            facing) {
-        List<Direction> connectedFaces = otherTube.getConnectedFaces(otherTube.getState(null, (Level) world, otherPos));
-        return connectedFaces.isEmpty() || connectedFaces.contains(facing);
     }
 
     @Override
