@@ -126,8 +126,15 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
     }
 
     @Override
-    public boolean addToTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-        return false;
+    public List<IConnection> getConnections() {
+        List<IConnection> connections = new ArrayList<>();
+        if (connectionOne != null) {
+            connections.add(connectionOne);
+        }
+        if (connectionTwo != null) {
+            connections.add(connectionTwo);
+        }
+        return connections;
     }
 
     @Override
@@ -166,18 +173,6 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
         }
         setChanged();
         sync();
-    }
-
-    @Override
-    public List<IConnection> getConnections() {
-        List<IConnection> connections = new ArrayList<>();
-        if (connectionOne != null) {
-            connections.add(connectionOne);
-        }
-        if (connectionTwo != null) {
-            connections.add(connectionTwo);
-        }
-        return connections;
     }
 
     @Override

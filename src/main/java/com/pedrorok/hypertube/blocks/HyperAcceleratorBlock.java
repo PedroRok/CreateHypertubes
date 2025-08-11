@@ -133,12 +133,6 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
         return (level1, pos, state1, be) -> ((HyperAcceleratorBlockEntity) be).tick();
     }
 
-    public boolean canTravelConnect(LevelAccessor world, BlockPos pos, Direction facing) {
-        BlockState state = world.getBlockState(pos);
-        return facing.getOpposite() == state.getValue(FACING)
-               && state.getBlock() instanceof HyperAcceleratorBlock;
-    }
-
     @Override
     public List<Direction> getConnectedFaces(BlockState state) {
         return new ArrayList<>(List.of(state.getValue(FACING).getOpposite(), state.getValue(FACING)));
