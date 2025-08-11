@@ -22,5 +22,7 @@
   "block.hypertube.hyper_entrance.manual_lock": "Mode de verrouillage manuel",
   "block.hypertube.hyper_entrance.sneak_to_enter": "S'accroupir pour entrer",
   "block.hypertube.hyper_entrance.automatic_lock": "Mode de verrouillage automatique",
-  "hypertube.travel.too_short": "Votre tube est trop court pour voyager"
+  "hypertube.travel.too_short": "Votre tube est trop court pour voyager",
+  "block.hypertube.hyper_accelerator.accelerate_mode": "Mode Accélération",
+  "block.hypertube.hyper_accelerator.brake_mode": "Mode Freinage"
 }

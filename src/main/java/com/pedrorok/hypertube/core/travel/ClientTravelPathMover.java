@@ -68,7 +68,6 @@ public class ClientTravelPathMover {
                 continue;
             }
 
-            data.handleActionPoint((LivingEntity) entity);
 
             data.updateLogicalPosition();
             entity.setDeltaMovement(data.getCurrentDirection());
@@ -91,6 +90,8 @@ public class ClientTravelPathMover {
 
             Entity entity = level.getEntity(id);
             if (entity == null || !entity.isAlive() || entity.isSpectator()) continue;
+            data.handleActionPoint((LivingEntity) entity);
+
 
             Vec3 renderPos = data.getRenderPosition(partialTicks);
 

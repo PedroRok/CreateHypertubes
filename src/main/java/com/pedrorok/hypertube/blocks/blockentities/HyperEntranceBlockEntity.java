@@ -140,7 +140,7 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
                             .withColor(0xFF0000)));
         } else if (finalSpeed < TravelConstants.NEEDED_SPEED) {
             tooltip.add(Component.literal("     ")
-                    .append(Component.literal("\u2592 "))
+                    .append(Component.literal("▒ "))
                     .append(Component.translatable("tooltip.create_hypertube.entrance_no_speed"))
                     .withColor(0xFF0000));
         }

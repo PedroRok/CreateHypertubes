@@ -16,6 +16,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
@@ -114,6 +115,12 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
                     .append(Component.literal("\u2592 "))
                     .append(Component.translatable("tooltip.create_hypertube.entrance_no_speed"))
                     .withColor(0xFF0000));
+        } else {
+            MutableComponent literalTooltip = Component.literal("     ");
+            literalTooltip = literalTooltip.append(getBlockState().getValue(HyperAcceleratorBlock.ACCELERATE)
+                    ? Component.translatable("block.hypertube.hyper_accelerator.accelerate_mode").withColor(0xFFFF00)
+                    : Component.translatable("block.hypertube.hyper_accelerator.brake_mode").withColor(0xFF8800));
+            tooltip.add(literalTooltip);
         }
         return true;
     }

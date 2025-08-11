@@ -1,9 +1,7 @@
 package com.pedrorok.hypertube.blocks;
 
 import com.pedrorok.hypertube.blocks.blockentities.HyperAcceleratorBlockEntity;
-import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
-import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravelPathMover;
@@ -26,7 +24,10 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -66,7 +67,7 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
                 .setValue(OPEN, false)
                 .setValue(WATERLOGGED, false)
                 .setValue(ACTIVE, false)
-                .setValue(ACCELERATE, false));
+                .setValue(ACCELERATE, true));
     }
 
     @Override
@@ -156,18 +157,15 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
         BlockPos pos = context.getClickedPos();
         level.setBlock(pos, blockState, 3);
 
-        /*if (blockState.getValue(ACCELERATE)) {
+        if (blockState.getValue(ACCELERATE)) {
             MessageUtils.sendActionMessage(player,
-                    Component.translatable("block.hypertube.hyper_entrance.manual_lock")
-                            .append(" (")
-                            .append(Component.translatable("block.hypertube.hyper_entrance.sneak_to_enter"))
-                            .append(")")
-                            .withColor(0xFF5500), true);
+                    Component.translatable("block.hypertube.hyper_accelerator.accelerate_mode")
+                            .withColor(0xFFFF00), true);
         } else {
             MessageUtils.sendActionMessage(player,
-                    Component.translatable("block.hypertube.hyper_entrance.automatic_lock")
-                            .withColor(0x55FF00), true);
-        }*/
+                    Component.translatable("block.hypertube.hyper_accelerator.brake_mode")
+                            .withColor(0xFF8800), true);
+        }
         IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
         return InteractionResult.SUCCESS;
     }
@@ -178,7 +176,8 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
         HyperAcceleratorBlockEntity tube = (HyperAcceleratorBlockEntity) level.getBlockEntity(pos);
         if (tube == null || mover == null) return;
         float speed = TubeUtils.calculateTravelSpeed(Math.abs(tube.getSpeed())) / 2;
-        float newSpeed = mover.getTravelSpeed() + speed;
+        float newSpeed = mover.getTravelSpeed() + speed * (tube.getBlockState().getValue(ACCELERATE) ? 1 : -1);
+        newSpeed = Math.max(0.4333f, newSpeed);
         mover.setTravelSpeed(newSpeed);
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, new SpeedChangePacket(entity.getId(), newSpeed));
         TubeSoundManager.playTubeSuctionSound(entity, entity.position());

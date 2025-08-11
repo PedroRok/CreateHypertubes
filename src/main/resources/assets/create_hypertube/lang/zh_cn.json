@@ -21,5 +21,8 @@
   "tooltip.create_hypertube.entrance_blocked": "入口被关",
   "block.hypertube.hyper_entrance.manual_lock": "手动关闭模式",
   "block.hypertube.hyper_entrance.sneak_to_enter": "潜行以进入",
-  "block.hypertube.hyper_entrance.automatic_lock": "自动关闭模式"
+  "block.hypertube.hyper_entrance.automatic_lock": "自动关闭模式",
+  "hypertube.travel.too_short": "你的管道太短，无法通行",
+  "block.hypertube.hyper_accelerator.accelerate_mode": "加速模式",
+  "block.hypertube.hyper_accelerator.brake_mode": "制动模式"
 }
