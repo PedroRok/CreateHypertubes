@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "create:large_cogwheel"
+    },
+    "E": {
+      "item": "create_hypertube:hypertube_entrance"
+    },
+    "P": {
+      "item": "create:precision_mechanism"
+    }
+  },
+  "pattern": [
+    " P ",
+    " E ",
+    " C "
+  ],
+  "result": {
+    "count": 2,
+    "id": "create_hypertube:hypertube_accelerator"
+  }
+}
