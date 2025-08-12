@@ -126,7 +126,7 @@ public class TravelPathMover {
         entity.setYRot(yaw);
         entity.setXRot(pitch);
         if (entity.level().isClientSide) return;
-        NetworkHandler.INSTANCE.send(PacketDistributor.SERVER.noArg(),
+        NetworkHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(() -> entity),
                 EntityTravelDirDataPacket.create(entity)
         );
     }

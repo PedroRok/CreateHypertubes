@@ -117,7 +117,9 @@ public abstract class TubeBlockEntity extends KineticBlockEntity implements ITub
         List<IConnection> connections = getConnections();
         if (connections.isEmpty()) return null;
         IConnection first = connections.get(0);
-        return Vec3.atLowerCornerOf(IConnection.getSameConnectionBlockPos(first, level, getBlockPos()).direction().getOpposite().getNormal());
+        SimpleConnection sameConnectionBlockPos = IConnection.getSameConnectionBlockPos(first, level, getBlockPos());
+        if (sameConnectionBlockPos == null) return null;
+        return Vec3.atLowerCornerOf(sameConnectionBlockPos.direction().getOpposite().getNormal());
     }
 
     @Override

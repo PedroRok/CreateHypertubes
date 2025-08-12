@@ -106,7 +106,7 @@ dependencies {
 
     // Fix better third person
     compileOnly fg.deobf("curse.maven:betterthirdperson-435044:4596768")
-    runtimeOnly fg.deobf("curse.maven:betterthirdperson-435044:4596768")
+    //runtimeOnly fg.deobf("curse.maven:betterthirdperson-435044:4596768")
 }
 
 tasks.named('processResources', ProcessResources).configure {
