@@ -164,7 +164,7 @@ public abstract class TubeBlock extends KineticBlock implements ITubeConnection,
         if (event.isCanceled()) return InteractionResult.SUCCESS;
 
         world.destroyBlock(pos, false);
-        IWrenchable.playRemoveSound(world, pos);
+        playRemoveSound(world, pos);
         return InteractionResult.SUCCESS;
     }
 

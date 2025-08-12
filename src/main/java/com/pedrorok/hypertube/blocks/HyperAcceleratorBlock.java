@@ -143,7 +143,7 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
         BlockEntity blockEntity = context.getLevel().getBlockEntity(context.getClickedPos());
         if (blockEntity instanceof HyperAcceleratorBlockEntity entrance) {
             if (entrance.wrenchClicked(context.getClickedFace())) {
-                IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
+                playRotateSound(context.getLevel(), context.getClickedPos());
                 return InteractionResult.SUCCESS;
             }
         }
@@ -162,7 +162,7 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
                     Component.translatable("block.hypertube.hyper_accelerator.brake_mode")
                             .withStyle(ChatFormatting.GOLD), true);
         }
-        IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
+        playRotateSound(context.getLevel(), context.getClickedPos());
         return InteractionResult.SUCCESS;
     }
 

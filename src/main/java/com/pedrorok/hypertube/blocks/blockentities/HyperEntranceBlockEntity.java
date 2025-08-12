@@ -8,7 +8,6 @@ import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravelManager;
 import com.pedrorok.hypertube.utils.TubeUtils;
-import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
 import com.pedrorok.hypertube.registry.ModParticles;
 import com.pedrorok.hypertube.registry.ModSounds;
 import com.simibubi.create.content.equipment.goggles.IHaveHoveringInformation;

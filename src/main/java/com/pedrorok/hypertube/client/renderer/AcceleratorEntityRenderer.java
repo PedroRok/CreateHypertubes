@@ -10,8 +10,8 @@ import com.pedrorok.hypertube.client.BezierTextureRenderer;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.registry.ModPartialModels;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
-import net.createmod.catnip.render.CachedBuffers;
-import net.createmod.catnip.render.SuperByteBuffer;
+import com.simibubi.create.foundation.render.CachedBufferer;
+import com.simibubi.create.foundation.render.SuperByteBuffer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -43,9 +43,9 @@ public class AcceleratorEntityRenderer extends KineticBlockEntityRenderer<HyperA
         }
 
         Direction facing = blockState.getValue(HyperAcceleratorBlock.FACING);
-        SuperByteBuffer cogwheelModel = CachedBuffers.partialFacingVertical(ModPartialModels.COGWHEEL_HOLE, blockState, facing);
+        SuperByteBuffer cogwheelModel = CachedBufferer.partialFacingVertical(ModPartialModels.COGWHEEL_HOLE, blockState, facing);
 
-        float angle = getAngleForBe(be, be.getBlockPos(), facing.getAxis());
+        float angle = getAngleForTe(be, be.getBlockPos(), facing.getAxis());
         Direction.Axis rotationAxisOf = getRotationAxisOf(be);
 
 
