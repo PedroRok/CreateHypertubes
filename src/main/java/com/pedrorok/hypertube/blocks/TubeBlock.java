@@ -80,7 +80,6 @@ public abstract class TubeBlock extends KineticBlock implements ITubeConnection,
         return getShape(state, null);
     }
 
-
     @Override
     public Direction.Axis getRotationAxis(BlockState state) {
         return null;
