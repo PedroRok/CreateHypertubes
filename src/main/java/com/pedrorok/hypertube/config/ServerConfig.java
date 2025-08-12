@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube.config;
 
 import com.pedrorok.hypertube.core.travel.TravelConstants;
+import com.pedrorok.hypertube.utils.TubeUtils;
 import net.minecraft.world.entity.EntityType;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
@@ -15,6 +16,7 @@ public class ServerConfig {
 
     public final ModConfigSpec.BooleanValue ALLOW_FISH_TO_TRAVEL;
     public final ModConfigSpec.BooleanValue ALLOW_VILLAGER_TO_TRAVEL;
+    public final ModConfigSpec.DoubleValue SPEED_MULTIPLIER;
 
 
     private ServerConfig(ModConfigSpec.Builder builder) {
@@ -28,6 +30,10 @@ public class ServerConfig {
         ALLOW_VILLAGER_TO_TRAVEL = builder
                 .comment("Allow villagers to go through the tubes.")
                 .define("allowVillagerTravel", true);
+
+        SPEED_MULTIPLIER = builder
+                .comment("Multiplier for the speed of the tubes. Default is 1.0, which is normal speed. (THIS IS HIGHLY EXPERIMENTAL)")
+                .defineInRange("speedMultiplier", 1.0, 0.5, 99.0);
 
         builder.pop();
     }
@@ -53,5 +59,7 @@ public class ServerConfig {
             TravelConstants.TRAVELLER_ENTITIES.remove(EntityType.VILLAGER);
             TravelConstants.TRAVELLER_ENTITIES.remove(EntityType.WANDERING_TRADER);
         }
+
+        TubeUtils.SPEED_MULTIPLIER = SPEED_MULTIPLIER.get().floatValue();
     }
 }
