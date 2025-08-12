@@ -1,5 +1,6 @@
 {
   "itemGroup.create_hypertube": "Create: Hypertube",
+  "block.create_hypertube.hypertube_accelerator": "Bloc Accélérateur Hypertube",
   "block.create_hypertube.hypertube_entrance": "Bloc d'entrée d'hypertube",
   "block.create_hypertube.hypertube": "Bloc d'hypertube",
   "subtitles.create_hypertube.suction": "Aspiration d'hypertube",
@@ -22,5 +23,7 @@
   "block.hypertube.hyper_entrance.manual_lock": "Mode de verrouillage manuel",
   "block.hypertube.hyper_entrance.sneak_to_enter": "S'accroupir pour entrer",
   "block.hypertube.hyper_entrance.automatic_lock": "Mode de verrouillage automatique",
-  "hypertube.travel.too_short": "Votre tube est trop court pour voyager"
+  "hypertube.travel.too_short": "Votre tube est trop court pour voyager",
+  "block.hypertube.hyper_accelerator.accelerate_mode": "Mode Accélération",
+  "block.hypertube.hyper_accelerator.brake_mode": "Mode Freinage"
 }

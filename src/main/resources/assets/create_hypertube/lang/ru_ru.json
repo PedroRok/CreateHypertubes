@@ -1,5 +1,6 @@
 {
   "itemGroup.create_hypertube": "Create: Hypertube",
+  "block.create_hypertube.hypertube_accelerator": "Блок-ускоритель Гипертрубы",
   "block.create_hypertube.hypertube_entrance": "Вход в гипертрубу",
   "block.create_hypertube.hypertube": "Гипертруба",
   "subtitles.create_hypertube.suction": "Всасывание гипертрубы",
@@ -21,5 +22,8 @@
   "tooltip.create_hypertube.entrance_blocked": "Вход заблокирован",
   "block.hypertube.hyper_entrance.manual_lock": "Режим ручной блокировки",
   "block.hypertube.hyper_entrance.sneak_to_enter": "Красться, чтобы войти",
-  "block.hypertube.hyper_entrance.automatic_lock": "Автоматический режим блокировки"
+  "block.hypertube.hyper_entrance.automatic_lock": "Автоматический режим блокировки",
+  "hypertube.travel.too_short": "Ваша труба слишком коротка для перемещения",
+  "block.hypertube.hyper_accelerator.accelerate_mode": "Режим Ускорения",
+  "block.hypertube.hyper_accelerator.brake_mode": "Режим Торможения"
 }

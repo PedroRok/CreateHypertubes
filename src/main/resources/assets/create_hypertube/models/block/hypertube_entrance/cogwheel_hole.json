@@ -1,4 +1,5 @@
 {
+	"format_version": "1.21.6",
 	"credit": "Made with Blockbench",
 	"parent": "create:block/large_wheels",
 	"texture_size": [32, 32],
@@ -91,7 +92,6 @@
 			"name": "Gear4",
 			"from": [6.5, 6.5, 11],
 			"to": [9.5, 9.5, 17],
-			"rotation": {"angle": 0, "axis": "y", "origin": [0, 0, 0]},
 			"faces": {
 				"east": {"uv": [7, 8, 10, 9.5], "texture": "#1_2"},
 				"south": {"uv": [5, 8, 6.5, 9.5], "texture": "#1_2"},

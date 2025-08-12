@@ -1,14 +1,19 @@
 package com.pedrorok.hypertube.core.travel;
 
 import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
+import com.pedrorok.hypertube.network.packets.ActionPointReachPacket;
 import com.pedrorok.hypertube.network.NetworkHandler;
 import com.pedrorok.hypertube.network.packets.FinishPathPacket;
 import com.pedrorok.hypertube.network.packets.MovePathPacket;
+import com.pedrorok.hypertube.network.packets.SpeedChangePacket;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
@@ -16,10 +21,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 03/07/2025
@@ -31,7 +33,14 @@ public class ClientTravelPathMover {
 
     public static void startMoving(MovePathPacket packet) {
         boolean isPlayer = Minecraft.getInstance().player.getId() == packet.entityId();
-        ACTIVE_PATHS.put(packet.entityId(), new PathData(packet.pathPoints(), packet.travelSpeed(), isPlayer));
+        ACTIVE_PATHS.put(packet.entityId(), new PathData(packet.pathPoints(), packet.actionPoints(), packet.travelSpeed(), isPlayer));
+    }
+
+    public static void updateEntitySpeed(SpeedChangePacket packet) {
+        PathData data = ACTIVE_PATHS.get(packet.entityId());
+        if (data != null) {
+            data.travelSpeed = packet.newSpeed();
+        }
     }
 
     @SubscribeEvent
@@ -84,6 +93,7 @@ public class ClientTravelPathMover {
 
             Entity entity = level.getEntity(id);
             if (entity == null || !entity.isAlive() || entity.isSpectator()) continue;
+            data.handleActionPoint((LivingEntity) entity);
 
             Vec3 renderPos = data.getRenderPosition(partialTicks);
 
@@ -110,7 +120,8 @@ public class ClientTravelPathMover {
 
     private static class PathData {
         private final List<Vec3> points;
-        private final double travelSpeed;
+        private final Set<BlockPos> actionPoints;
+        private double travelSpeed;
         private int currentIndex = 0;
         private int lastUpdateTick = 0;
 
@@ -120,8 +131,9 @@ public class ClientTravelPathMover {
         @Getter
         private boolean clientPlayer;
 
-        public PathData(List<Vec3> points, double blocksPerSecond, boolean clientPlayer) {
+        public PathData(List<Vec3> points, Set<BlockPos> actionPoints, double blocksPerSecond, boolean clientPlayer) {
             this.points = points;
+            this.actionPoints = actionPoints;
             this.travelSpeed = blocksPerSecond;
             this.clientPlayer = clientPlayer;
 
@@ -159,6 +171,19 @@ public class ClientTravelPathMover {
             if (doHalfStep) {
                 Vec3 direction = target.subtract(currentLogicalPos).normalize().scale(travelSpeed);
                 currentLogicalPos = currentLogicalPos.add(direction);
+            }
+        }
+
+        public void handleActionPoint(LivingEntity entity) {
+            BlockPos entityPos = entity.getOnPos();
+            if (!actionPoints.contains(entityPos)) return;
+            actionPoints.remove(entityPos);
+            BlockPos actionPos = entity.getOnPos();
+            Block block = entity.level().getBlockState(actionPos).getBlock();
+            if (block instanceof ITubeActionPoint travelAction) {
+                NetworkHandler.INSTANCE.sendToServer(
+                        new ActionPointReachPacket(entity.getUUID(), actionPos)
+                );
             }
         }
 

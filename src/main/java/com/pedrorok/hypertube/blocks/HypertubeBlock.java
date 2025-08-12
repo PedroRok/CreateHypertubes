@@ -20,13 +20,12 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
@@ -34,16 +33,19 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.HalfTransparentBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -61,7 +63,7 @@ import java.util.Set;
  * @author Rok, Pedro Lucas nmm. Created on 21/05/2025
  * @project Create Hypertube
  */
-public class HypertubeBlock extends HalfTransparentBlock implements ITubeConnection, IBE<HypertubeBlockEntity>, IWrenchable, SimpleWaterloggedBlock {
+public class HypertubeBlock extends TubeBlock implements EntityBlock {
 
     public static final BooleanProperty CONNECTED = BooleanProperty.create("connected");
     public static final BooleanProperty NORTH_SOUTH = BooleanProperty.create("north_south");
@@ -76,11 +78,18 @@ public class HypertubeBlock extends HalfTransparentBlock implements ITubeConnect
 
     public HypertubeBlock(BlockBehaviour.Properties properties) {
         super(properties);
+        registerDefaultState(this.stateDefinition.any()
+                .setValue(CONNECTED, false)
+                .setValue(NORTH_SOUTH, false)
+                .setValue(WATERLOGGED, false)
+                .setValue(EAST_WEST, false)
+                .setValue(UP_DOWN, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(NORTH_SOUTH, EAST_WEST, UP_DOWN, CONNECTED, WATERLOGGED);
+        super.createBlockStateDefinition(builder);
     }
 
     @Override
@@ -96,11 +105,13 @@ public class HypertubeBlock extends HalfTransparentBlock implements ITubeConnect
             }
         }
 
+        FluidState fluidstate = context.getLevel().getFluidState(context.getClickedPos());
         if (context.getPlayer() == null) {
             return state.setValue(NORTH_SOUTH, false)
                     .setValue(EAST_WEST, false)
                     .setValue(UP_DOWN, false)
-                    .setValue(CONNECTED, false);
+                    .setValue(CONNECTED, false)
+                    .setValue(WATERLOGGED, fluidstate.is(Fluids.WATER));
         }
 
         Player player = context.getPlayer();
@@ -111,9 +122,11 @@ public class HypertubeBlock extends HalfTransparentBlock implements ITubeConnect
             direction = Direction.DOWN;
         }
 
-        return getState(state, List.of(direction), false);
+        return getState(state, List.of(direction), false).setValue(WATERLOGGED, fluidstate.is(Fluids.WATER));
     }
 
+    // ------- Collision Shapes -------
+    @Override
     public VoxelShape getShape(BlockState state, @Nullable CollisionContext ctx) {
         if (ctx instanceof EntityCollisionContext ecc
             && ecc.getEntity() != null
@@ -127,6 +140,11 @@ public class HypertubeBlock extends HalfTransparentBlock implements ITubeConnect
             return SHAPE_UP_DOWN;
         }
         return SHAPE_NORTH_SOUTH;
+    }
+
+    @Override
+    public Item getItem() {
+        return ModBlocks.HYPERTUBE.asItem();
     }
 
     @Override
@@ -228,60 +246,8 @@ public class HypertubeBlock extends HalfTransparentBlock implements ITubeConnect
     }
 
     @Override
-    public boolean canTravelConnect(LevelAccessor world, BlockPos posSelf, Direction facing) {
-        BlockPos relative = posSelf.relative(facing);
-        BlockState otherState = world.getBlockState(relative);
-        Block block = otherState.getBlock();
-        return block instanceof ITubeConnection
-               && (!(block instanceof HypertubeBlock hypertubeBlock)
-                   || canOtherConnectTo(world, relative, hypertubeBlock, facing));
-    }
-
-    private boolean canOtherConnectTo(LevelAccessor world, BlockPos otherPos, HypertubeBlock otherTube, Direction
-            facing) {
-        List<Direction> connectedFaces = otherTube.getConnectedFaces(otherTube.getState(null, (Level) world, otherPos));
-        return connectedFaces.isEmpty() || connectedFaces.contains(facing);
-    }
-
-    @Override
-    public Class<HypertubeBlockEntity> getBlockEntityClass() {
-        return HypertubeBlockEntity.class;
-    }
-
-    @Override
-    public BlockEntityType<? extends HypertubeBlockEntity> getBlockEntityType() {
-        return ModBlockEntities.HYPERTUBE.get();
-    }
-
-    @Override
     public BlockEntity newBlockEntity(BlockPos blockPos, BlockState state) {
         return ModBlockEntities.HYPERTUBE.get().create(blockPos, state);
-    }
-
-    @Override
-    public void playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Player player) {
-        playerWillDestroy(level, pos, state, player, false);
-    }
-
-    private void playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Player player, boolean wrenched) {
-        BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof ITubeConnectionEntity tube)) {
-            super.playerWillDestroy(level, pos, state, player);
-            return;
-        }
-
-        int toDrop = tube.blockBroken();
-
-        if (!player.isCreative()) {
-            if (toDrop != 0 || wrenched) {
-                ItemStack stack = new ItemStack(ModBlocks.HYPERTUBE.get(), toDrop + (wrenched ? 1 : 0));
-                if (wrenched)
-                    player.getInventory().placeItemBackInInventory(stack);
-                else
-                    Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
-            }
-        }
-        super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override
@@ -330,70 +296,8 @@ public class HypertubeBlock extends HalfTransparentBlock implements ITubeConnect
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockGetter p_49823_, BlockPos p_49824_, BlockState p_49825_) {
-        return ModBlocks.HYPERTUBE.asStack();
-    }
-
-    @Override
-    public boolean propagatesSkylightDown(@NotNull BlockState state, @NotNull BlockGetter reader, @NotNull BlockPos
-            pos) {
+    public boolean propagatesSkylightDown(@NotNull BlockState state, @NotNull BlockGetter reader, @NotNull BlockPos pos) {
         return true;
-    }
-
-    @Override
-    public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos
-            pos, @NotNull CollisionContext context) {
-        return getShape(state, context);
-    }
-
-    @Override
-    public @NotNull VoxelShape getCollisionShape(@NotNull BlockState state, @NotNull BlockGetter
-            worldIn, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-        return getShape(state, context);
-    }
-
-    @Override
-    public @NotNull VoxelShape getBlockSupportShape(@NotNull BlockState state, @NotNull BlockGetter
-            reader, @NotNull BlockPos pos) {
-        return getShape(state);
-    }
-
-    @Override
-    public @NotNull VoxelShape getInteractionShape(@NotNull BlockState state, @NotNull BlockGetter
-            worldIn, @NotNull BlockPos pos) {
-        return getShape(state);
-    }
-
-    @Override
-    public @NotNull RenderShape getRenderShape(@NotNull BlockState state) {
-        return RenderShape.MODEL;
-    }
-
-    public VoxelShape getShape(BlockState state) {
-        return getShape(state, null);
-    }
-
-
-    @Override
-    public InteractionResult onSneakWrenched(BlockState state, UseOnContext context) {
-        if (context.getPlayer() == null) return InteractionResult.PASS;
-        Level world = context.getLevel();
-        BlockPos pos = context.getClickedPos();
-        Player player = context.getPlayer();
-
-        playerWillDestroy(world, context.getClickedPos(), state, context.getPlayer(), true);
-
-        if (!(world instanceof ServerLevel))
-            return InteractionResult.SUCCESS;
-
-        BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(world, pos, world.getBlockState(pos), player);
-        MinecraftForge.EVENT_BUS.post(event);
-        if (event.isCanceled())
-            return InteractionResult.SUCCESS;
-
-        world.destroyBlock(pos, false);
-        this.playRemoveSound(world, pos);
-        return InteractionResult.SUCCESS;
     }
 
     @Override
@@ -426,6 +330,6 @@ public class HypertubeBlock extends HalfTransparentBlock implements ITubeConnect
 
         level.playSound(player, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.75f, 1);
 
-        return IWrenchable.super.onWrenched(state, context);
+        return super.onWrenched(state, context);
     }
 }

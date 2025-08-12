@@ -3,6 +3,7 @@ package com.pedrorok.hypertube.core.travel;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import lombok.Getter;
@@ -14,10 +15,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 25/04/2025
@@ -29,11 +27,14 @@ public class TravelPathData {
     private final List<Vec3> travelPoints;
     private final List<UUID> bezierConnections;
     private final List<BlockPos> blockConnections;
+    @Getter
+    private final Set<BlockPos> actionPoints;
 
     public TravelPathData(BlockPos firstPipe, Level level, BlockPos entrancePos) {
         this.travelPoints = new ArrayList<>();
         this.bezierConnections = new ArrayList<>();
         this.blockConnections = new ArrayList<>();
+        this.actionPoints = new HashSet<>();
         travelPoints.add(entrancePos.getCenter());
         blockConnections.add(entrancePos);
         travelPoints.add(firstPipe.getCenter());
@@ -75,6 +76,9 @@ public class TravelPathData {
                 continue;
             travelPoints.add(nextPipe.getCenter());
             blockConnections.add(nextPipe);
+            if (level.getBlockState(nextPipe).getBlock() instanceof ITubeActionPoint) {
+                actionPoints.add(nextPipe);
+            }
             addTravelPoint(nextPipe, level);
             break;
         }
@@ -85,7 +89,7 @@ public class TravelPathData {
         if (!(level.getBlockEntity(pos) instanceof ITubeConnectionEntity hypertubeBlockEntity)) return false;
         boolean connected = false;
         for (IConnection connection : hypertubeBlockEntity.getConnections()) {
-            BezierConnection bezier = null;
+            BezierConnection bezier;
             boolean inverse = false;
             if (connection instanceof SimpleConnection simple) {
                 BlockEntity blockEntity = level.getBlockEntity(simple.pos());
@@ -114,10 +118,18 @@ public class TravelPathData {
             final BlockPos toPosFinal = inverse ? fromPos : toPos;
             final BlockPos fromPosFinal = inverse ? toPos : fromPos;
 
-            if (!blockConnections.contains(fromPosFinal))
+            if (!blockConnections.contains(fromPosFinal)) {
                 blockConnections.add(fromPosFinal);
-            if (!blockConnections.contains(toPosFinal))
+                if (level.getBlockState(fromPosFinal).getBlock() instanceof ITubeActionPoint) {
+                    actionPoints.add(fromPosFinal);
+                }
+            }
+            if (!blockConnections.contains(toPosFinal)) {
                 blockConnections.add(toPosFinal);
+                if (level.getBlockState(toPosFinal).getBlock() instanceof ITubeActionPoint) {
+                    actionPoints.add(toPosFinal);
+                }
+            }
 
             addTravelPoint(toPosFinal, level);
             connected = true;

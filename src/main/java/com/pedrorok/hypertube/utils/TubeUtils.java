@@ -154,4 +154,8 @@ public class TubeUtils {
         return foundTubes >= neededTubes;
     }
 
+
+    public static float calculateTravelSpeed(float tubeSpeed) {
+        return (0.22f* Math.min(1, tubeSpeed/16)) + (tubeSpeed / 200f);
+    }
 }

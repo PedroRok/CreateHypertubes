@@ -1,0 +1,102 @@
+{
+  "multipart": [
+
+    { "when": { "facing": "north", "active": false },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_off", "uvlock": false }
+    },
+    { "when": { "facing": "east", "active": false  },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_off", "y": 90, "uvlock": false }
+    },
+    { "when": { "facing": "south", "active": false  },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_off", "y": 180, "uvlock": false }
+    },
+    { "when": { "facing": "west", "active": false  },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_off", "y": 270, "uvlock": false }
+    },
+    { "when": { "facing": "up", "active": false  },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_off", "x": 270, "uvlock": false }
+    },
+    { "when": { "facing": "down", "active": false  },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_off", "x": 90, "uvlock": false }
+    },
+
+    { "when": { "facing": "north", "open": true, "active": true, "accelerate": true },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_open", "uvlock": false }
+    },
+    { "when": { "facing": "east", "open": true, "active": true, "accelerate": true },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_open", "y": 90, "uvlock": false }
+    },
+    { "when": { "facing": "south", "open": true, "active": true, "accelerate": true },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_open", "y": 180, "uvlock": false }
+    },
+    { "when": { "facing": "west", "open": true, "active": true, "accelerate": true },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_open", "y": 270, "uvlock": false }
+    },
+    { "when": { "facing": "up", "open": true, "active": true, "accelerate": true },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_open", "x": 270, "uvlock": false }
+    },
+    { "when": { "facing": "down", "open": true, "active": true, "accelerate": true },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_open", "x": 90, "uvlock": false }
+    },
+
+    { "when": { "facing": "north", "open": false, "active": true, "accelerate": true },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator", "uvlock": false }
+    },
+    { "when": { "facing": "east", "open": false, "active": true, "accelerate": true },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator", "y": 90, "uvlock": false }
+    },
+    { "when": { "facing": "south", "open": false, "active": true, "accelerate": true },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator", "y": 180, "uvlock": false }
+    },
+    { "when": { "facing": "west", "open": false, "active": true, "accelerate": true },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator", "y": 270, "uvlock": false }
+    },
+    { "when": { "facing": "up", "open": false, "active": true, "accelerate": true },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator", "x": 270, "uvlock": false }
+    },
+    { "when": { "facing": "down", "open": false, "active": true, "accelerate": true },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator", "x": 90, "uvlock": false }
+    },
+
+
+
+
+    { "when": { "facing": "north", "open": true, "active": true, "accelerate": false },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_stop_open", "uvlock": false }
+    },
+    { "when": { "facing": "east", "open": true, "active": true, "accelerate": false },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_stop_open", "y": 90, "uvlock": false }
+    },
+    { "when": { "facing": "south", "open": true, "active": true, "accelerate": false },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_stop_open", "y": 180, "uvlock": false }
+    },
+    { "when": { "facing": "west", "open": true, "active": true, "accelerate": false },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_stop_open", "y": 270, "uvlock": false }
+    },
+    { "when": { "facing": "up", "open": true, "active": true, "accelerate": false },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_stop_open", "x": 270, "uvlock": false }
+    },
+    { "when": { "facing": "down", "open": true, "active": true, "accelerate": false },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_stop_open", "x": 90, "uvlock": false }
+    },
+
+    { "when": { "facing": "north", "open": false, "active": true, "accelerate": false },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_stop", "uvlock": false }
+    },
+    { "when": { "facing": "east", "open": false, "active": true, "accelerate": false },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_stop", "y": 90, "uvlock": false }
+    },
+    { "when": { "facing": "south", "open": false, "active": true, "accelerate": false },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_stop", "y": 180, "uvlock": false }
+    },
+    { "when": { "facing": "west", "open": false, "active": true, "accelerate": false },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_stop", "y": 270, "uvlock": false }
+    },
+    { "when": { "facing": "up", "open": false, "active": true, "accelerate": false },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_stop", "x": 270, "uvlock": false }
+    },
+    { "when": { "facing": "down", "open": false, "active": true, "accelerate": false },
+      "apply": { "model": "create_hypertube:block/hypertube_accelerator/tube_accelerator_stop", "x": 90, "uvlock": false }
+    }
+  ]
+}
