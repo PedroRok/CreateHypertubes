@@ -54,7 +54,7 @@ public class HypertubeRecipeGen extends RecipeProvider {
                 .define('E', ModBlocks.HYPERTUBE_ENTRANCE.get())
                 .define('C', AllBlocks.COGWHEEL)
                 .unlockedBy("has_precision_mechanism", has(AllItems.PRECISION_MECHANISM))
-                .save(consumer, ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "hyper_accelerator_small_cogwheel"));
+                .save(consumer, new ResourceLocation(HypertubeMod.MOD_ID, "hyper_accelerator_small_cogwheel"));
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.HYPER_ACCELERATOR.get(), 2)
                 .pattern(" P ")
                 .pattern(" E ")
@@ -63,6 +63,6 @@ public class HypertubeRecipeGen extends RecipeProvider {
                 .define('E', ModBlocks.HYPERTUBE_ENTRANCE.get())
                 .define('C', AllBlocks.LARGE_COGWHEEL)
                 .unlockedBy("has_precision_mechanism", has(AllItems.PRECISION_MECHANISM))
-                .save(consumer, ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "hyper_accelerator_large_cogwheel"));
+                .save(consumer, new ResourceLocation(HypertubeMod.MOD_ID, "hyper_accelerator_large_cogwheel"));
     }
 }
