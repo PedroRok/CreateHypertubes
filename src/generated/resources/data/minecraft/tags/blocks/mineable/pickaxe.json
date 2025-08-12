@@ -1,6 +1,7 @@
 {
   "values": [
     "create_hypertube:hypertube",
-    "create_hypertube:hypertube_entrance"
+    "create_hypertube:hypertube_entrance",
+    "create_hypertube:hypertube_accelerator"
   ]
 }

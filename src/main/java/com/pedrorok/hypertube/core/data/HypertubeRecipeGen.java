@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.core.data;
 
+import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
@@ -8,6 +9,7 @@ import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.common.Tags;
 import org.jetbrains.annotations.NotNull;
@@ -45,6 +47,22 @@ public class HypertubeRecipeGen extends RecipeProvider {
                 .unlockedBy("has_brass_sheet", has(AllItems.BRASS_SHEET))
                 .save(consumer);
 
-        // TODO: add recipe for Hypertube accelerator
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.HYPER_ACCELERATOR.get(), 2)
+                .pattern(" P ")
+                .pattern("CEC")
+                .define('P', AllItems.PRECISION_MECHANISM)
+                .define('E', ModBlocks.HYPERTUBE_ENTRANCE.get())
+                .define('C', AllBlocks.COGWHEEL)
+                .unlockedBy("has_precision_mechanism", has(AllItems.PRECISION_MECHANISM))
+                .save(consumer, ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "hyper_accelerator_small_cogwheel"));
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.HYPER_ACCELERATOR.get(), 2)
+                .pattern(" P ")
+                .pattern(" E ")
+                .pattern(" C ")
+                .define('P', AllItems.PRECISION_MECHANISM)
+                .define('E', ModBlocks.HYPERTUBE_ENTRANCE.get())
+                .define('C', AllBlocks.LARGE_COGWHEEL)
+                .unlockedBy("has_precision_mechanism", has(AllItems.PRECISION_MECHANISM))
+                .save(consumer, ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "hyper_accelerator_large_cogwheel"));
     }
 }

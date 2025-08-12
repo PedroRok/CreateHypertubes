@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_precision_mechanism": {
+      "conditions": {
+        "items": [
+          {
+            "items": "create:precision_mechanism"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "create_hypertube:hyper_accelerator_small_cogwheel"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_precision_mechanism"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "create_hypertube:hyper_accelerator_small_cogwheel"
+    ]
+  }
+}
