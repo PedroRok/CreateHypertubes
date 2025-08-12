@@ -5,7 +5,9 @@
       "conditions": {
         "items": [
           {
-            "items": "create:precision_mechanism"
+            "items": [
+              "create:precision_mechanism"
+            ]
           }
         ]
       },
@@ -28,5 +30,6 @@
     "recipes": [
       "create_hypertube:hyper_accelerator_large_cogwheel"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }
