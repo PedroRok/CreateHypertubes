@@ -98,7 +98,12 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
 
     @OnlyIn(Dist.CLIENT)
     private void tickClient() {
+        float actualSpeed = Math.abs(this.getSpeed());
         TubeSoundManager.TubeAmbientSound sound = TubeSoundManager.getAmbientSound(tubeSoundId);
+        if (actualSpeed < TravelConstants.NEEDED_SPEED) {
+            sound.tickClientPlayerSounds();
+            return;
+        }
         playClientEffects(sound);
     }
 
@@ -183,5 +188,12 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
     @Override
     public void onSpeedChanged(float previousSpeed) {
         level.setBlock(getBlockPos(), this.getBlockState().setValue(HyperAcceleratorBlock.ACTIVE, Math.abs(this.getSpeed()) >= TravelConstants.NEEDED_SPEED), 3);
+    }
+
+    @Override
+    public void remove() {
+        super.remove();
+        TubeSoundManager.TubeAmbientSound sound = TubeSoundManager.getAmbientSound(tubeSoundId);
+        sound.stopSound();
     }
 }
