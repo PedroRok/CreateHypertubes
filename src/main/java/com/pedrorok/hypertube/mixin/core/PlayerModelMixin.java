@@ -6,7 +6,6 @@ import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -21,7 +20,7 @@ public abstract class PlayerModelMixin {
 
     @Inject(method = "setupAnim*", at = @At("RETURN"), cancellable = true, order = 1001)
     private void createHypertube$onSetupAnim(LivingEntity entity, float limbSwing, float limbSwingAmount,
-                             float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
+                                             float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
         if (!entity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
 
 

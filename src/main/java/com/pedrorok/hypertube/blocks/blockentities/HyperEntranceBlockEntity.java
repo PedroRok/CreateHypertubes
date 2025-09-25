@@ -95,21 +95,15 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
         boolean isLocked = !getBlockState().getValue(HyperEntranceBlock.LOCKED);
         LivingEntity nearbyEntity = getNearbyLivingEntities((ServerLevel) level, pos.getCenter());
 
-        boolean canOpen = nearbyEntity != null &&
-                          (isLocked || nearbyEntity.isShiftKeyDown()
-                           || nearbyEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG));
+        boolean canOpen = nearbyEntity != null && (isLocked || nearbyEntity.isShiftKeyDown() || nearbyEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG));
 
 
         if (isTubeClosed(canOpen, isOpen)) return;
 
-        LivingEntity inRangeEntity = getInRangeLivingEntities((ServerLevel) level,
-                pos.getCenter(),
-                state.getValue(HyperEntranceBlock.FACING));
+        LivingEntity inRangeEntity = getInRangeLivingEntities((ServerLevel) level, pos.getCenter(), state.getValue(HyperEntranceBlock.FACING));
         if (inRangeEntity == null) return;
 
-        if (!isLocked &&
-            !inRangeEntity.isShiftKeyDown() &&
-            !inRangeEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) {
+        if (!isLocked && !inRangeEntity.isShiftKeyDown() && !inRangeEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) {
             return;
         }
 
@@ -131,29 +125,20 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         super.addToGoggleTooltip(tooltip, isPlayerSneaking);
         float finalSpeed = Math.abs(this.getSpeed());
-        IRotate.SpeedLevel.getFormattedSpeedText(speed, finalSpeed < TravelConstants.NEEDED_SPEED)
-                .forGoggles(tooltip);
+        IRotate.SpeedLevel.getFormattedSpeedText(speed, finalSpeed < TravelConstants.NEEDED_SPEED).forGoggles(tooltip);
 
         if (getBlockState().getValue(HyperEntranceBlock.IN_FRONT)) {
-            tooltip.add(Component.literal("     ")
-                    .append(Component.translatable("tooltip.create_hypertube.entrance_blocked")
-                            .withColor(0xFF0000)));
+            tooltip.add(Component.literal("     ").append(Component.translatable("tooltip.create_hypertube.entrance_blocked").withColor(0xFF0000)));
         } else if (finalSpeed < TravelConstants.NEEDED_SPEED) {
-            tooltip.add(Component.literal("     ")
-                    .append(Component.literal("▒ "))
-                    .append(Component.translatable("tooltip.create_hypertube.entrance_no_speed"))
-                    .withColor(0xFF0000));
+            tooltip.add(Component.literal("     ").append(Component.literal("▒ ")).append(Component.translatable("tooltip.create_hypertube.entrance_no_speed")).withColor(0xFF0000));
         }
         return true;
     }
 
     @Override
     public boolean addToTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-        if (getBlockState().getValue(HyperEntranceBlock.LOCKED)
-            && Math.abs(this.getSpeed()) >= TravelConstants.NEEDED_SPEED) {
-            tooltip.add(Component.literal("     ")
-                    .append(Component.translatable("block.hypertube.hyper_entrance.sneak_to_enter"))
-                    .withColor(0xFFFFFF));
+        if (getBlockState().getValue(HyperEntranceBlock.LOCKED) && Math.abs(this.getSpeed()) >= TravelConstants.NEEDED_SPEED) {
+            tooltip.add(Component.literal("     ").append(Component.translatable("block.hypertube.hyper_entrance.sneak_to_enter")).withColor(0xFFFFFF));
         }
         return true;
     }
@@ -184,8 +169,7 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
 
     @Override
     public List<Direction> getFacesConnectable() {
-        if (connection != null)
-            return List.of();
+        if (connection != null) return List.of();
         return List.of(getBlockState().getValue(HyperEntranceBlock.FACING));
     }
 

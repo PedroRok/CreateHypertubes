@@ -1,7 +1,6 @@
 package com.pedrorok.hypertube.utils;
 
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
-import com.pedrorok.hypertube.config.ServerConfig;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.placement.ResponseDTO;
@@ -160,6 +159,6 @@ public class TubeUtils {
 
     public static float calculateTravelSpeed(float tubeSpeed) {
         tubeSpeed = tubeSpeed * SPEED_MULTIPLIER;
-        return (0.4333f * Math.min(1, tubeSpeed/16)) + (tubeSpeed / 240f);
+        return (0.4333f * Math.min(1, tubeSpeed / 16)) + (tubeSpeed / 240f);
     }
 }
