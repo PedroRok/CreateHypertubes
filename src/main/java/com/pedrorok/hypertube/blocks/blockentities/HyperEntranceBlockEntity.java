@@ -2,6 +2,7 @@ package com.pedrorok.hypertube.blocks.blockentities;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
+import com.pedrorok.hypertube.config.ServerConfig;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
@@ -9,6 +10,7 @@ import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravelManager;
 import com.pedrorok.hypertube.utils.TubeUtils;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
+import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import lombok.Getter;
 import net.minecraft.ChatFormatting;
@@ -97,21 +99,15 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
         boolean isLocked = !getBlockState().getValue(HyperEntranceBlock.LOCKED);
         LivingEntity nearbyEntity = getNearbyLivingEntities((ServerLevel) level, pos.getCenter());
 
-        boolean canOpen = nearbyEntity != null &&
-                          (isLocked || nearbyEntity.isShiftKeyDown()
-                           || nearbyEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG));
+        boolean canOpen = nearbyEntity != null && (isLocked || nearbyEntity.isShiftKeyDown() || nearbyEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG));
 
 
         if (isTubeClosed(canOpen, isOpen)) return;
 
-        LivingEntity inRangeEntity = getInRangeLivingEntities((ServerLevel) level,
-                pos.getCenter(),
-                state.getValue(HyperEntranceBlock.FACING));
+        LivingEntity inRangeEntity = getInRangeLivingEntities((ServerLevel) level, pos.getCenter(), state.getValue(HyperEntranceBlock.FACING));
         if (inRangeEntity == null) return;
 
-        if (!isLocked &&
-            !inRangeEntity.isShiftKeyDown() &&
-            !inRangeEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) {
+        if (!isLocked && !inRangeEntity.isShiftKeyDown() && !inRangeEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) {
             return;
         }
 
@@ -133,8 +129,7 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         super.addToGoggleTooltip(tooltip, isPlayerSneaking);
         float finalSpeed = Math.abs(this.getSpeed());
-        IRotate.SpeedLevel.getFormattedSpeedText(speed, finalSpeed < TravelConstants.NEEDED_SPEED)
-                .forGoggles(tooltip);
+        IRotate.SpeedLevel.getFormattedSpeedText(speed, finalSpeed < TravelConstants.NEEDED_SPEED).forGoggles(tooltip);
 
         if (getBlockState().getValue(HyperEntranceBlock.IN_FRONT)) {
             tooltip.add(Component.literal("     ")
@@ -186,8 +181,7 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
 
     @Override
     public List<Direction> getFacesConnectable() {
-        if (connection != null)
-            return List.of();
+        if (connection != null) return List.of();
         return List.of(getBlockState().getValue(HyperEntranceBlock.FACING));
     }
 
@@ -212,5 +206,13 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
     @Override
     protected int getConnectionCount() {
         return 1;
+    }
+
+
+    // --------- Stress Methods ---------
+    public float calculateStressApplied() {
+        float impact = (float) ServerConfig.get().STRESS_IMPACT_ENTRANCE.getAsDouble();
+        this.lastStressApplied = impact;
+        return impact;
     }
 }

@@ -11,8 +11,8 @@ import org.spongepowered.asm.mixin.gen.Accessor;
  */
 @Mixin(PlayerModel.class)
 public interface PlayerModelAccessor {
-    
+
     @Accessor("cloak")
     ModelPart createHypertube$getCloak();
-    
+
 }
