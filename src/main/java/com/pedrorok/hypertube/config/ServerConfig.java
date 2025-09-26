@@ -18,6 +18,8 @@ public class ServerConfig {
     public final ModConfigSpec.BooleanValue ALLOW_VILLAGER_TO_TRAVEL;
     public final ModConfigSpec.DoubleValue SPEED_MULTIPLIER;
 
+    public final ModConfigSpec.DoubleValue STRESS_IMPACT_ENTRANCE;
+    public final ModConfigSpec.DoubleValue STRESS_IMPACT_ACCELERATOR;
 
     private ServerConfig(ModConfigSpec.Builder builder) {
         builder.comment("Change these settings to customize the server-side behavior of the mod.")
@@ -35,6 +37,16 @@ public class ServerConfig {
                 .comment("Multiplier for the speed of the tubes. Default is 1.0, which is normal speed. (THIS IS HIGHLY EXPERIMENTAL)")
                 .defineInRange("speedMultiplier", 1.0, 0.5, 99.0);
 
+        builder.pop();
+
+        builder.comment("Stress Settings")
+                .push("Stress Settings");
+        STRESS_IMPACT_ENTRANCE = builder
+                .comment("Stress impact of the Hyper Entrance block.")
+                .defineInRange("entranceStressImpact", 4.0, 0.0, 100.0);
+        STRESS_IMPACT_ACCELERATOR = builder
+                .comment("Stress impact of the Hyper Accelerator block.")
+                .defineInRange("acceleratorStressImpact", 4.0, 0.0, 100.0);
         builder.pop();
     }
 

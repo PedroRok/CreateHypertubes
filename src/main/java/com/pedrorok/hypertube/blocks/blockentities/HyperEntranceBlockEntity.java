@@ -2,6 +2,7 @@ package com.pedrorok.hypertube.blocks.blockentities;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
+import com.pedrorok.hypertube.config.ServerConfig;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
@@ -9,6 +10,7 @@ import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravelManager;
 import com.pedrorok.hypertube.utils.TubeUtils;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
+import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
@@ -194,5 +196,13 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
     @Override
     protected int getConnectionCount() {
         return 1;
+    }
+
+
+    // --------- Stress Methods ---------
+    public float calculateStressApplied() {
+        float impact = (float) ServerConfig.get().STRESS_IMPACT_ENTRANCE.getAsDouble();
+        this.lastStressApplied = impact;
+        return impact;
     }
 }

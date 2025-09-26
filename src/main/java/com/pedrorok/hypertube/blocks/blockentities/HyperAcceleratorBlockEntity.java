@@ -3,6 +3,7 @@ package com.pedrorok.hypertube.blocks.blockentities;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperAcceleratorBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
+import com.pedrorok.hypertube.config.ServerConfig;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
@@ -194,5 +195,13 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
         super.remove();
         TubeSoundManager.TubeAmbientSound sound = TubeSoundManager.getAmbientSound(tubeSoundId);
         sound.stopSound();
+    }
+
+
+    // --------- Stress Methods ---------
+    public float calculateStressApplied() {
+        float impact = (float) ServerConfig.get().STRESS_IMPACT_ACCELERATOR.getAsDouble();
+        this.lastStressApplied = impact;
+        return impact;
     }
 }
