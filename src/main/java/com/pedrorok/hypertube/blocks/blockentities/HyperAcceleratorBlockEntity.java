@@ -201,7 +201,7 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
 
     // --------- Stress Methods ---------
     public float calculateStressApplied() {
-        float impact = (float) ServerConfig.get().STRESS_IMPACT_ACCELERATOR.getAsDouble();
+        float impact = ServerConfig.get().STRESS_IMPACT_ACCELERATOR.get().floatValue();
         this.lastStressApplied = impact;
         return impact;
     }

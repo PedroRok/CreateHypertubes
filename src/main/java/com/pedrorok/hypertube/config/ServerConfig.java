@@ -16,6 +16,7 @@ public class ServerConfig {
 
     public final ForgeConfigSpec.BooleanValue ALLOW_FISH_TO_TRAVEL;
     public final ForgeConfigSpec.BooleanValue ALLOW_VILLAGER_TO_TRAVEL;
+    public final  ForgeConfigSpec.DoubleValue SPEED_MULTIPLIER;
 
     public final ForgeConfigSpec.DoubleValue STRESS_IMPACT_ENTRANCE;
     public final ForgeConfigSpec.DoubleValue STRESS_IMPACT_ACCELERATOR;

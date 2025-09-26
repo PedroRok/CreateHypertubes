@@ -211,7 +211,7 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
 
     // --------- Stress Methods ---------
     public float calculateStressApplied() {
-        float impact = (float) ServerConfig.get().STRESS_IMPACT_ENTRANCE.getAsDouble();
+        float impact = ServerConfig.get().STRESS_IMPACT_ENTRANCE.get().floatValue();
         this.lastStressApplied = impact;
         return impact;
     }
