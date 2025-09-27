@@ -3,6 +3,7 @@ package com.pedrorok.hypertube.blocks.blockentities;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperAcceleratorBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
+import com.pedrorok.hypertube.config.ServerConfig;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
@@ -98,7 +99,12 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
 
     @OnlyIn(Dist.CLIENT)
     private void tickClient() {
+        float actualSpeed = Math.abs(this.getSpeed());
         TubeSoundManager.TubeAmbientSound sound = TubeSoundManager.getAmbientSound(tubeSoundId);
+        if (actualSpeed < TravelConstants.NEEDED_SPEED) {
+            sound.tickClientPlayerSounds();
+            return;
+        }
         playClientEffects(sound);
     }
 
@@ -183,5 +189,20 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
     @Override
     public void onSpeedChanged(float previousSpeed) {
         level.setBlock(getBlockPos(), this.getBlockState().setValue(HyperAcceleratorBlock.ACTIVE, Math.abs(this.getSpeed()) >= TravelConstants.NEEDED_SPEED), 3);
+    }
+
+    @Override
+    public void remove() {
+        super.remove();
+        TubeSoundManager.TubeAmbientSound sound = TubeSoundManager.getAmbientSound(tubeSoundId);
+        sound.stopSound();
+    }
+
+
+    // --------- Stress Methods ---------
+    public float calculateStressApplied() {
+        float impact = ServerConfig.get().STRESS_IMPACT_ACCELERATOR.get().floatValue();
+        this.lastStressApplied = impact;
+        return impact;
     }
 }

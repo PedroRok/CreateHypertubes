@@ -11,5 +11,5 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface ITubeActionPoint {
 
-    public void handleTravelPath(LivingEntity entity,@Nullable TravelPathMover mover, BlockPos pos);
+    public void handleTravelPath(LivingEntity entity, @Nullable TravelPathMover mover, BlockPos pos);
 }

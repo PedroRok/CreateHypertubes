@@ -26,6 +26,8 @@ import java.util.List;
  */
 public class TubeUtils {
 
+    public static float SPEED_MULTIPLIER = 1;
+
 
     public static ResponseDTO checkClickedHypertube(Level level, BlockPos pos, Direction direction) {
         if (level.getBlockEntity(pos) instanceof HypertubeBlockEntity tubeEntity
@@ -156,6 +158,7 @@ public class TubeUtils {
 
 
     public static float calculateTravelSpeed(float tubeSpeed) {
+        tubeSpeed = tubeSpeed * SPEED_MULTIPLIER;
         return (0.22f* Math.min(1, tubeSpeed/16)) + (tubeSpeed / 200f);
     }
 }
