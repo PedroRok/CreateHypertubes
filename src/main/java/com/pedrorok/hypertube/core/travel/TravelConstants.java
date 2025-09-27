@@ -1,6 +1,5 @@
 package com.pedrorok.hypertube.core.travel;
 
-import com.simibubi.create.AllEntityTypes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -37,8 +36,7 @@ public class TravelConstants {
             EntityType.WANDERING_TRADER,
             EntityType.SALMON,
             EntityType.COD,
-            EntityType.TROPICAL_FISH,
-            AllEntityTypes.PACKAGE.get()
+            EntityType.TROPICAL_FISH
     ));
 
     @OnlyIn(Dist.CLIENT)
