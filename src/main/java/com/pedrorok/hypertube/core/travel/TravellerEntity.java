@@ -40,4 +40,19 @@ public record TravellerEntity(BiConsumer<LivingEntity, PoseStack> renderEntityOn
         };
         return new TravellerEntity(renderAnimal);
     }
+
+    public static TravellerEntity ofAny(float maxSize) {
+        BiConsumer<LivingEntity, PoseStack> renderAny = (entity, poseStack) -> {
+            float size = Math.min(maxSize, entity.getBbWidth());
+            poseStack.pushPose();
+            poseStack.translate(0, 0.1, 0);
+            poseStack.mulPose(Axis.YP.rotationDegrees(-entity.getYRot()));
+            poseStack.mulPose(Axis.XP.rotationDegrees(entity.getXRot()));
+            poseStack.mulPose(Axis.YP.rotationDegrees(entity.getYRot()));
+            poseStack.translate(0, -0.1, 0);
+            poseStack.scale(size, size, size);
+        };
+        return new TravellerEntity(renderAny);
+
+    }
 }

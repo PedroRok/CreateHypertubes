@@ -6,6 +6,7 @@ import com.pedrorok.hypertube.network.packets.ActionPointReachPacket;
 import com.pedrorok.hypertube.network.packets.FinishPathPacket;
 import com.pedrorok.hypertube.network.packets.MovePathPacket;
 import com.pedrorok.hypertube.network.packets.SpeedChangePacket;
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -29,7 +30,7 @@ import java.util.*;
  */
 @EventBusSubscriber(value = Dist.CLIENT)
 public class ClientTravelPathMover {
-    private static final Map<Integer, PathData> ACTIVE_PATHS = new HashMap<>();
+    private static final Int2ObjectArrayMap<PathData> ACTIVE_PATHS = new Int2ObjectArrayMap<>();
 
     public static void startMoving(MovePathPacket packet) {
         boolean isPlayer = Minecraft.getInstance().player.getId() == packet.entityId();

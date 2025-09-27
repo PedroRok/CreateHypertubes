@@ -7,6 +7,7 @@ import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
 import com.pedrorok.hypertube.core.placement.TubePlacement;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
+import com.pedrorok.hypertube.core.travel.TravellerEntity;
 import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.minecraft.client.Minecraft;
@@ -85,8 +86,10 @@ public class ClientEvents {
         LivingEntity entity = event.getEntity();
         if (!entity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
         PoseStack poseStack = event.getPoseStack();
-        TravelConstants.Client.ENTITIES_RENDER
-                .get(entity.getType())
+        TravellerEntity travellerEntity = TravelConstants.Client.ENTITIES_RENDER
+                .get(entity.getType());
+        if (travellerEntity == null) travellerEntity = TravellerEntity.ofAny(0.5f);
+        travellerEntity
                 .renderEntityOnTube()
                 .accept(entity, poseStack);
     }

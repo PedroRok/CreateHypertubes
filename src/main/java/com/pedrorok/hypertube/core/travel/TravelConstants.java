@@ -38,7 +38,11 @@ public class TravelConstants {
             EntityType.SALMON,
             EntityType.COD,
             EntityType.TROPICAL_FISH,
-            AllEntityTypes.PACKAGE.get()
+            AllEntityTypes.PACKAGE.get(),
+            EntityType.COW,
+            EntityType.PIG,
+            EntityType.SHEEP,
+            EntityType.CHICKEN
     ));
 
     @OnlyIn(Dist.CLIENT)
