@@ -31,12 +31,6 @@ public class CameraMixin {
     @Shadow
     private boolean detached;
 
-    @Shadow
-    private Entity entity;
-
-    @Shadow
-    private float partialTickTime;
-
     // FPS CONTROL
     @Unique
     private long createHypertube$lastTickTime = 0;
