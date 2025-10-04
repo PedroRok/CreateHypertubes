@@ -37,11 +37,22 @@ public class DetachedPlayerDirController {
     @Setter
     private boolean detached = false;
 
+
+    private float rotatingYaw = 0;
+
     public void updateRotation(float newYaw, float newPitch) {
         if (!detached) {
             yaw = newYaw;
             pitch = newPitch;
             return;
+        }
+
+        boolean goingUp = pitch >= 85;
+        boolean goingDown = pitch <= -85;
+        if (!goingUp && !goingDown) {
+            rotatingYaw = newYaw;
+        } else {
+            newYaw = rotatingYaw+=5;
         }
         this.targetYaw = newYaw;
         this.targetPitch = newPitch;
