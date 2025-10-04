@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
+import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -50,6 +51,18 @@ public class DetachedCameraController {
     @Setter
     private boolean detached = false;
 
+    @Getter
+    @Setter
+    private float cameraHorizontalCompensation = 0;
+
+    @Getter
+    @Setter
+    private int cameraVerticalCompensation = 0;
+
+    @Getter
+    @Setter
+    private Direction checkDirection = null;
+
     private DetachedCameraController() {
     }
 
@@ -77,12 +90,19 @@ public class DetachedCameraController {
     private float getCameraYaw(Vec3 entityPos, Vec3 cameraPos) {
         Vec3 cameraToPlayerNormal = cameraPos.subtract(entityPos).multiply(1, 0, 1).normalize();
         float yaw = (float) Math.toDegrees(Math.atan2(cameraToPlayerNormal.z, cameraToPlayerNormal.x)) + 90;
-        yaw = Mth.wrapDegrees(yaw);
+        yaw = Mth.wrapDegrees(yaw + cameraHorizontalCompensation);
         return (((yaw - this.yaw + 540) % 360) - 180) * (1 - Math.min(lastMouseMov, 1));
     }
 
-    private float getCameraPitch() {
-        return (((30 - this.pitch + 540) % 360) - 180) * (1 - Math.min(lastMouseMov, 1));
+    private float getCameraPitch(float entityPitch) {
+        System.out.println(entityPitch);
+        float compensatedPitch;
+        if (entityPitch < 50) {
+            compensatedPitch = -entityPitch;
+        } else {
+            compensatedPitch = -entityPitch / 2f;
+        }
+        return (((30 - (this.pitch + compensatedPitch) + 540) % 360) - 180) * (1 - Math.min(lastMouseMov, 1));
     }
 
     private Vec3 getRelativeCameraPos(Entity renderViewEntity) {
@@ -97,7 +117,7 @@ public class DetachedCameraController {
         Vec3 entityPos = renderViewEntity.position();
         Vec3 relativeCameraPos = getRelativeCameraPos(renderViewEntity);
 
-        updateCameraRotation(getCameraYaw(entityPos, relativeCameraPos) * 0.1f, getCameraPitch() * 0.1f, false);
+        updateCameraRotation(getCameraYaw(entityPos, relativeCameraPos) * 0.1f, getCameraPitch(renderViewEntity.getXRot()) * 0.1f, false);
 
         updateTargetPosition(relativeCameraPos);
         tickCameraPosRot();
