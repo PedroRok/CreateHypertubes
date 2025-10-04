@@ -57,10 +57,6 @@ public class DetachedCameraController {
 
     @Getter
     @Setter
-    private int cameraVerticalCompensation = 0;
-
-    @Getter
-    @Setter
     private Direction checkDirection = null;
 
     private DetachedCameraController() {
