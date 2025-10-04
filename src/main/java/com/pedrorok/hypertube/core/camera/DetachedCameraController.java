@@ -91,7 +91,6 @@ public class DetachedCameraController {
     }
 
     private float getCameraPitch(float entityPitch) {
-        System.out.println(entityPitch);
         float compensatedPitch;
         if (entityPitch < 50) {
             compensatedPitch = -entityPitch;
