@@ -9,6 +9,7 @@ import com.pedrorok.hypertube.network.NetworkHandler;
 import com.pedrorok.hypertube.network.packets.MovePathPacket;
 import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
 import com.pedrorok.hypertube.utils.MessageUtils;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -41,7 +42,7 @@ import static com.pedrorok.hypertube.core.travel.TravelConstants.*;
  */
 public class TravelManager {
 
-    private static final Map<UUID, TravelPathMover> travelDataMap = new HashMap<>();
+    private static final Object2ObjectArrayMap<UUID, TravelPathMover> travelDataMap = new Object2ObjectArrayMap<>();
 
     public static void tryStartTravel(LivingEntity entity, BlockPos pos, BlockState state, float speed) {
         CompoundTag entityPersistentData = entity.getPersistentData();
