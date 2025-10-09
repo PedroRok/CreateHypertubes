@@ -32,8 +32,8 @@ public class ModDataComponent {
 
     public static void removeSimpleConnection(ItemStack stack) {
         if (stack.hasTag()) {
-            stack.getOrCreateTag().remove(TUBE_SIMPLE_POS);
-            stack.getOrCreateTag().remove(TUBE_SIMPLE_DIR);
+            stack.getTag().remove(TUBE_SIMPLE_POS);
+            stack.getTag().remove(TUBE_SIMPLE_DIR);
         }
     }
 }
