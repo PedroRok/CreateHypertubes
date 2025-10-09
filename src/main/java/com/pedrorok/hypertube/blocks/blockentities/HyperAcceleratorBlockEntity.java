@@ -193,8 +193,10 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
     @Override
     public void remove() {
         super.remove();
-        TubeSoundManager.TubeAmbientSound sound = TubeSoundManager.getAmbientSound(tubeSoundId);
-        sound.stopSound();
+        if (level.isClientSide) {
+            TubeSoundManager.TubeAmbientSound sound = TubeSoundManager.getAmbientSound(tubeSoundId);
+            sound.stopSound();
+        }
     }
 
 
