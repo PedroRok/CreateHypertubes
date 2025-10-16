@@ -1,13 +1,11 @@
+
 package com.pedrorok.hypertube.registry;
 
 import com.pedrorok.hypertube.HypertubeMod;
-import com.simibubi.create.foundation.data.CreateRegistrate;
-import com.tterrag.registrate.util.entry.RegistryEntry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -29,24 +27,16 @@ public class ModCreativeTab {
             CREATIVE_MODE_TABS.register("create_hypertubes", () ->
                     CreativeModeTab.builder()
                             .title(Component.translatable("itemGroup." + HypertubeMod.MOD_ID))
-                            .icon(ModBlocks.HYPERTUBE::asStack)
+                            .icon(() -> ModBlocks.HYPERTUBE.get().getItem().getDefaultInstance())
+                            .displayItems((parameters, output) -> {
+                                output.accept(ModItems.HYPERTUBE.get());
+                                output.accept(ModItems.HYPERTUBE_ENTRANCE.get());
+                                output.accept(ModItems.HYPER_ACCELERATOR.get());
+                            })
                             .build()
             );
 
     public static void register(IEventBus eventBus) {
         CREATIVE_MODE_TABS.register(eventBus);
     }
-
-    @SubscribeEvent
-    private static void addCreative(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey().equals(TUBE_TAB.getKey())) {
-            CreateRegistrate REGISTRATE = HypertubeMod.get();
-            for (RegistryEntry<Block, Block> entry : REGISTRATE.getAll(Registries.BLOCK)) {
-                var block = entry.get();
-                if (block.asItem() == Items.AIR) continue;
-                event.accept(block);
-            }
-        }
-    }
-
 }

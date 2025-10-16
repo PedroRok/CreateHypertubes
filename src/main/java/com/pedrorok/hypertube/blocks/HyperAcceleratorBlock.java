@@ -115,7 +115,7 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
 
     @Override
     public Item getItem() {
-        return ModBlocks.HYPER_ACCELERATOR.asItem();
+        return ModBlocks.HYPER_ACCELERATOR.get().getItem();
     }
 
     @Nullable

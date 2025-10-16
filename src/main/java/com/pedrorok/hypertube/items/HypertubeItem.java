@@ -7,7 +7,6 @@ import com.pedrorok.hypertube.core.placement.ResponseDTO;
 import com.pedrorok.hypertube.core.placement.TubePlacement;
 import com.pedrorok.hypertube.registry.ModDataComponent;
 import com.pedrorok.hypertube.utils.MessageUtils;
-import com.simibubi.create.AllDataComponents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -123,6 +122,6 @@ public class HypertubeItem extends BlockItem {
 
     @Override
     public boolean isFoil(ItemStack stack) {
-        return stack.has(AllDataComponents.TRACK_CONNECTING_FROM) || stack.has(DataComponents.ENCHANTMENT_GLINT_OVERRIDE);
+        return stack.has(DataComponents.ENCHANTMENT_GLINT_OVERRIDE);
     }
 }

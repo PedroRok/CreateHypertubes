@@ -1,7 +1,6 @@
 package com.pedrorok.hypertube.network.packets;
 
 import com.pedrorok.hypertube.HypertubeMod;
-import com.simibubi.create.foundation.networking.ISyncPersistentData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -63,9 +62,9 @@ public record SyncPersistentDataPacket(int entityId, CompoundTag readData) imple
             CompoundTag data = entityByID.getPersistentData();
             new HashSet<>(data.getAllKeys()).forEach(data::remove);
             data.merge(packet.readData);
-            if (!(entityByID instanceof ISyncPersistentData))
+            /*if (!(entityByID instanceof ISyncPersistentData)) TODO: try understand what this does
                 return;
-            ((ISyncPersistentData) entityByID).onPersistentDataUpdated();
+            ((ISyncPersistentData) entityByID).onPersistentDataUpdated();*/
         } catch (Exception e) {
             HypertubeMod.LOGGER.error("Failed to handle SyncPersistentDataPacket for entity ID: {}", packet.entityId, e);
         }

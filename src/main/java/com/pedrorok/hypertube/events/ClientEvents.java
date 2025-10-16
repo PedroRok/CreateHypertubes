@@ -8,8 +8,6 @@ import com.pedrorok.hypertube.core.placement.TubePlacement;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravellerEntity;
-import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
-import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
@@ -67,12 +65,12 @@ public class ClientEvents {
 
         PoseStack ms = event.getPoseStack();
         ms.pushPose();
-        SuperRenderTypeBuffer buffer = DefaultSuperRenderTypeBuffer.getInstance();
+        //SuperRenderTypeBuffer buffer = DefaultSuperRenderTypeBuffer.getInstance();
         Vec3 camera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
 
-        TubePlacement.drawCustomBlockSelection(ms, buffer, camera);
+        //TubePlacement.drawCustomBlockSelection(ms, buffer, camera);
 
-        buffer.draw();
+        //buffer.draw();
         RenderSystem.enableCull();
         ms.popPose();
     }

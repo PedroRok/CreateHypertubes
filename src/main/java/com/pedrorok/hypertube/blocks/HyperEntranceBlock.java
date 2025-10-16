@@ -148,7 +148,7 @@ public class HyperEntranceBlock extends TubeBlock implements EntityBlock, ICogWh
 
     @Override
     public Item getItem() {
-        return ModBlocks.HYPERTUBE_ENTRANCE.asItem();
+        return ModBlocks.HYPERTUBE_ENTRANCE.get().getItem();
     }
 
     @Nullable

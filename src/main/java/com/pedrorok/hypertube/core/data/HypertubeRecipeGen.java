@@ -1,18 +1,9 @@
 package com.pedrorok.hypertube.core.data;
 
-import com.pedrorok.hypertube.HypertubeMod;
-import com.pedrorok.hypertube.registry.ModBlocks;
-import com.simibubi.create.AllBlocks;
-import com.simibubi.create.AllItems;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
-import net.minecraft.data.recipes.ShapedRecipeBuilder;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Items;
-import net.neoforged.neoforge.common.Tags;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -28,7 +19,7 @@ public class HypertubeRecipeGen extends RecipeProvider {
 
     @Override
     protected void buildRecipes(RecipeOutput consumer) {
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.HYPERTUBE.get(), 16)
+        /*ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.HYPERTUBE.get(), 16)
                 .pattern("BGB")
                 .pattern("G G")
                 .pattern("BGB")
@@ -63,6 +54,6 @@ public class HypertubeRecipeGen extends RecipeProvider {
                 .define('E', ModBlocks.HYPERTUBE_ENTRANCE.get())
                 .define('C', AllBlocks.LARGE_COGWHEEL)
                 .unlockedBy("has_precision_mechanism", has(AllItems.PRECISION_MECHANISM))
-                .save(consumer, ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "hyper_accelerator_large_cogwheel"));
+                .save(consumer, ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "hyper_accelerator_large_cogwheel"));*/
     }
 }

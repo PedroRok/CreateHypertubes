@@ -4,17 +4,15 @@ import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperAcceleratorBlock;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
-import com.pedrorok.hypertube.items.HypertubeItem;
-import com.simibubi.create.foundation.data.CreateRegistrate;
-import com.simibubi.create.infrastructure.config.CStress;
-import com.tterrag.registrate.util.entry.BlockEntry;
-import net.minecraft.world.item.BlockItem;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
-import static com.simibubi.create.foundation.data.ModelGen.customItemModel;
-import static com.simibubi.create.foundation.data.TagGen.axeOrPickaxe;
-
+import java.util.function.Supplier;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 17/04/2025
@@ -30,36 +28,19 @@ public class ModBlocks {
             .isViewBlocking((state, level, pos) -> false)
             .isSuffocating((state, level, pos) -> false);
 
-    private static final CreateRegistrate REGISTRATE = HypertubeMod.get();
+    public static final DeferredRegister<Block> BLOCKS =
+            DeferredRegister.create(Registries.BLOCK, HypertubeMod.MOD_ID);
 
-    public static final BlockEntry<HypertubeBlock> HYPERTUBE = REGISTRATE.block("hypertube", HypertubeBlock::new)
-            .item(HypertubeItem::new).build()
-            .properties((a) -> PROPERTIES)
-            .transform(axeOrPickaxe())
-            .defaultBlockstate()
-            .defaultLoot()
-            .register();
+    public static final DeferredHolder<Block, HypertubeBlock> HYPERTUBE =
+            BLOCKS.register("hypertube", () -> new HypertubeBlock(PROPERTIES));
 
-    public static final BlockEntry<HyperEntranceBlock> HYPERTUBE_ENTRANCE = REGISTRATE.block("hypertube_entrance", HyperEntranceBlock::new)
-            .simpleItem()
-            .properties((a) -> PROPERTIES)
-            .transform(axeOrPickaxe())
-            .defaultBlockstate()
-            .defaultLoot()
-            .item(BlockItem::new)
-            .transform(customItemModel())
-            .register();
+    public static final DeferredHolder<Block, HyperEntranceBlock> HYPERTUBE_ENTRANCE =
+            BLOCKS.register("hypertube_entrance", () -> new HyperEntranceBlock(PROPERTIES));
 
-    public static final BlockEntry<HyperAcceleratorBlock> HYPER_ACCELERATOR = REGISTRATE.block("hypertube_accelerator", HyperAcceleratorBlock::new)
-            .simpleItem()
-            .properties((a) -> PROPERTIES)
-            .transform(axeOrPickaxe())
-            .defaultBlockstate()
-            .defaultLoot()
-            .item(BlockItem::new)
-            .transform(customItemModel())
-            .register();
+    public static final DeferredHolder<Block, HyperAcceleratorBlock> HYPER_ACCELERATOR =
+            BLOCKS.register("hypertube_accelerator", () -> new HyperAcceleratorBlock(PROPERTIES));
 
-    public static void register() {
+    public static void register(IEventBus eventBus) {
+        BLOCKS.register(eventBus);
     }
 }

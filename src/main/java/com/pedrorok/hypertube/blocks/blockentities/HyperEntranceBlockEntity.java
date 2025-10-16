@@ -9,8 +9,6 @@ import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravelManager;
 import com.pedrorok.hypertube.utils.TubeUtils;
-import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
-import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
@@ -34,7 +32,7 @@ import java.util.List;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements IHaveHoveringInformation {
+public class HyperEntranceBlockEntity extends ActionTubeBlockEntity {
 
 
     @Getter
@@ -69,9 +67,7 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
     }
     // --------- Tube Segment Methods ---------
 
-    @Override
     public void tick() {
-        super.tick();
         Boolean isBlocked = getBlockState().getValue(HyperEntranceBlock.IN_FRONT);
         if (level.isClientSide) {
             tickClient(isBlocked);
@@ -121,28 +117,6 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
             return;
         }
         playClientEffects(sound);
-    }
-
-    @Override
-    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-        super.addToGoggleTooltip(tooltip, isPlayerSneaking);
-        float finalSpeed = Math.abs(this.getSpeed());
-        IRotate.SpeedLevel.getFormattedSpeedText(speed, finalSpeed < TravelConstants.NEEDED_SPEED).forGoggles(tooltip);
-
-        if (getBlockState().getValue(HyperEntranceBlock.IN_FRONT)) {
-            tooltip.add(Component.literal("     ").append(Component.translatable("tooltip.create_hypertube.entrance_blocked").withColor(0xFF0000)));
-        } else if (finalSpeed < TravelConstants.NEEDED_SPEED) {
-            tooltip.add(Component.literal("     ").append(Component.literal("▒ ")).append(Component.translatable("tooltip.create_hypertube.entrance_no_speed")).withColor(0xFF0000));
-        }
-        return true;
-    }
-
-    @Override
-    public boolean addToTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-        if (getBlockState().getValue(HyperEntranceBlock.LOCKED) && Math.abs(this.getSpeed()) >= TravelConstants.NEEDED_SPEED) {
-            tooltip.add(Component.literal("     ").append(Component.translatable("block.hypertube.hyper_entrance.sneak_to_enter")).withColor(0xFFFFFF));
-        }
-        return true;
     }
 
     @Override
@@ -196,13 +170,5 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
     @Override
     protected int getConnectionCount() {
         return 1;
-    }
-
-
-    // --------- Stress Methods ---------
-    public float calculateStressApplied() {
-        float impact = (float) ServerConfig.get().STRESS_IMPACT_ENTRANCE.getAsDouble();
-        this.lastStressApplied = impact;
-        return impact;
     }
 }

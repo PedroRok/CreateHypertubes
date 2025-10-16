@@ -132,7 +132,7 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
 
     @Override
     public Item getItem() {
-        return ModBlocks.HYPERTUBE.asItem();
+        return ModBlocks.HYPERTUBE.get().getItem();
     }
 
     @Override

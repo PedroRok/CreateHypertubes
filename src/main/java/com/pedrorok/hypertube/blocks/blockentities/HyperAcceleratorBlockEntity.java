@@ -74,9 +74,7 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
     }
 
     // --------- Tube Segment Methods ---------
-    @Override
     public void tick() {
-        super.tick();
         if (level.isClientSide) {
             tickClient();
             return;
@@ -105,29 +103,6 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
             return;
         }
         playClientEffects(sound);
-    }
-
-    @Override
-    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-        super.addToGoggleTooltip(tooltip, isPlayerSneaking);
-        float finalSpeed = Math.abs(this.getSpeed());
-        boolean hasNeededSpeed = finalSpeed < TravelConstants.NEEDED_SPEED;
-        IRotate.SpeedLevel.getFormattedSpeedText(speed, hasNeededSpeed)
-                .forGoggles(tooltip);
-
-        if (hasNeededSpeed) {
-            tooltip.add(Component.literal("     ")
-                    .append(Component.literal("\u2592 "))
-                    .append(Component.translatable("tooltip.create_hypertube.entrance_no_speed"))
-                    .withColor(0xFF0000));
-        } else {
-            MutableComponent literalTooltip = Component.literal("     ");
-            literalTooltip = literalTooltip.append(getBlockState().getValue(HyperAcceleratorBlock.ACCELERATE)
-                    ? Component.translatable("block.hypertube.hyper_accelerator.accelerate_mode").withColor(0xFFFF00)
-                    : Component.translatable("block.hypertube.hyper_accelerator.brake_mode").withColor(0xFF8800));
-            tooltip.add(literalTooltip);
-        }
-        return true;
     }
 
     @Override
@@ -186,24 +161,11 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
     }
 
     @Override
-    public void onSpeedChanged(float previousSpeed) {
-        level.setBlock(getBlockPos(), this.getBlockState().setValue(HyperAcceleratorBlock.ACTIVE, Math.abs(this.getSpeed()) >= TravelConstants.NEEDED_SPEED), 3);
-    }
-
-    @Override
     public void remove() {
         super.remove();
         if (level.isClientSide) {
             TubeSoundManager.TubeAmbientSound sound = TubeSoundManager.getAmbientSound(tubeSoundId);
             sound.stopSound();
         }
-    }
-
-
-    // --------- Stress Methods ---------
-    public float calculateStressApplied() {
-        float impact = (float) ServerConfig.get().STRESS_IMPACT_ACCELERATOR.getAsDouble();
-        this.lastStressApplied = impact;
-        return impact;
     }
 }

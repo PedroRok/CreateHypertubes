@@ -161,12 +161,11 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
     }
 
 
-    @Override
     public void remove() {
         if (level.isClientSide) {
             removeClient();
         }
-        super.remove();
+        super.setRemoved();
     }
 
     @OnlyIn(Dist.CLIENT)

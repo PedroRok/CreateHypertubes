@@ -5,22 +5,35 @@ import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
+import com.simibubi.create.api.event.BlockEntityBehaviourEvent;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
+import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForge;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 11/08/2025
  * @project Create Hypertube
  */
-public abstract class TubeBlockEntity extends KineticBlockEntity implements ITubeConnectionEntity {
+public abstract class TubeBlockEntity extends BlockEntity implements ITubeConnectionEntity {
     public TubeBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
     }
@@ -117,5 +130,26 @@ public abstract class TubeBlockEntity extends KineticBlockEntity implements ITub
         if (connections.isEmpty()) return null;
         IConnection first = connections.get(0);
         return Vec3.atLowerCornerOf(IConnection.getSameConnectionBlockPos(first, level, getBlockPos()).direction().getOpposite().getNormal());
+    }
+
+    public float getSpeed() {
+        return 16;
+    }
+
+    protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.saveAdditional(tag, registries);
+    }
+
+
+    /**
+     * Hook only these in future subclasses of STE
+     */
+    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.loadAdditional(tag, registries);
+    }
+
+    @Override
+    protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
+        read(tag, registries, false);
     }
 }

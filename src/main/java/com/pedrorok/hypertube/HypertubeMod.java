@@ -23,8 +23,6 @@ public class HypertubeMod {
     public static final String MOD_ID = "create_hypertube";
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
-    public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(HypertubeMod.MOD_ID)
-            .defaultCreativeTab((ResourceKey<CreativeModeTab>) null);
 
     public HypertubeMod(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.addListener(this::commonSetup);
@@ -36,9 +34,9 @@ public class HypertubeMod {
 
         ModPartialModels.init();
 
-        ModBlocks.register();
-        ModBlockEntities.register();
-
+        ModBlocks.register(modEventBus);
+        ModItems.register(modEventBus);
+        ModBlockEntities.register(modEventBus);
         ModCreativeTab.register(modEventBus);
         ModDataComponent.register(modEventBus);
 
@@ -49,9 +47,5 @@ public class HypertubeMod {
 
     private void commonSetup(final FMLCommonSetupEvent event) {
 
-    }
-
-    public static CreateRegistrate get() {
-        return REGISTRATE;
     }
 }

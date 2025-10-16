@@ -11,6 +11,7 @@ import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SuperByteBuffer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
@@ -22,32 +23,18 @@ import org.jetbrains.annotations.NotNull;
  * @author Rok, Pedro Lucas nmm. Created on 02/06/2025
  * @project Create Hypertube
  */
-public class AcceleratorEntityRenderer extends KineticBlockEntityRenderer<HyperAcceleratorBlockEntity> {
+public class AcceleratorEntityRenderer implements BlockEntityRenderer<HyperAcceleratorBlockEntity> {
 
     private final BezierTextureRenderer tubeRenderer = BezierTextureRenderer.get();
 
-    public AcceleratorEntityRenderer(BlockEntityRendererProvider.Context context) {
-        super(context);
-    }
-
     @Override
-    protected void renderSafe(HyperAcceleratorBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer,
+    public void render(HyperAcceleratorBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer,
                               int light, int overlay) {
 
         BlockState blockState = be.getBlockState();
         if (!(blockState.getBlock() instanceof HyperAcceleratorBlock)) {
             return;
         }
-
-        Direction facing = blockState.getValue(HyperAcceleratorBlock.FACING);
-        SuperByteBuffer cogwheelModel = CachedBuffers.partialFacingVertical(ModPartialModels.COGWHEEL_HOLE, blockState, facing);
-
-        float angle = getAngleForBe(be, be.getBlockPos(), facing.getAxis());
-        Direction.Axis rotationAxisOf = getRotationAxisOf(be);
-
-
-        kineticRotationTransform(cogwheelModel, be, rotationAxisOf, angle, light);
-        cogwheelModel.renderInto(ms, buffer.getBuffer(RenderType.solid()));
 
         if (be.getConnectionOne() instanceof BezierConnection bezierConnectionOne) {
             tubeRenderer.renderBezierConnection(be.getBlockPos(), bezierConnectionOne, ms, buffer, light, overlay);
