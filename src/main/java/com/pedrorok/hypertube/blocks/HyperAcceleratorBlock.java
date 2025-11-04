@@ -11,8 +11,6 @@ import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.utils.MessageUtils;
 import com.pedrorok.hypertube.utils.TubeUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;
-import com.simibubi.create.content.equipment.wrench.IWrenchable;
-import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -52,7 +50,7 @@ import java.util.List;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICogWheel, ITubeActionPoint {
+public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ITubeActionPoint {
 
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
@@ -135,7 +133,7 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
         return new ArrayList<>(List.of(state.getValue(FACING).getOpposite(), state.getValue(FACING)));
     }
 
-    @Override
+    /*@Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
         BlockEntity blockEntity = context.getLevel().getBlockEntity(context.getClickedPos());
         if (blockEntity instanceof HyperAcceleratorBlockEntity entrance) {
@@ -161,7 +159,7 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
         }
         IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
         return InteractionResult.SUCCESS;
-    }
+    }*/
 
     @Override
     public void handleTravelPath(LivingEntity entity, TravelPathMover mover, BlockPos pos) {
@@ -185,10 +183,5 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
             return VoxelUtils.empty();
         }
         return Shapes.block();
-    }
-
-    @Override
-    public boolean isSmallCog() {
-        return true;
     }
 }

@@ -9,8 +9,6 @@ import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
-import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
-import com.simibubi.create.content.kinetics.base.IRotate;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -34,7 +32,7 @@ import java.util.UUID;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implements IHaveHoveringInformation {
+public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity {
 
     private final UUID tubeSoundId = UUID.randomUUID();
 
