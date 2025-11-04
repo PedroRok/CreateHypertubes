@@ -5,15 +5,9 @@ import com.pedrorok.hypertube.blocks.HyperAcceleratorBlock;
 import com.pedrorok.hypertube.blocks.blockentities.HyperAcceleratorBlockEntity;
 import com.pedrorok.hypertube.client.BezierTextureRenderer;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
-import com.pedrorok.hypertube.registry.ModPartialModels;
-import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
-import net.createmod.catnip.render.CachedBuffers;
-import net.createmod.catnip.render.SuperByteBuffer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -27,9 +21,12 @@ public class AcceleratorEntityRenderer implements BlockEntityRenderer<HyperAccel
 
     private final BezierTextureRenderer tubeRenderer = BezierTextureRenderer.get();
 
+    public AcceleratorEntityRenderer(BlockEntityRendererProvider.Context context) {
+    }
+
     @Override
     public void render(HyperAcceleratorBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer,
-                              int light, int overlay) {
+                       int light, int overlay) {
 
         BlockState blockState = be.getBlockState();
         if (!(blockState.getBlock() instanceof HyperAcceleratorBlock)) {

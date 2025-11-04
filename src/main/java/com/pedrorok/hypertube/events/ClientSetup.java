@@ -5,6 +5,7 @@ import com.pedrorok.hypertube.client.renderer.AcceleratorEntityRenderer;
 import com.pedrorok.hypertube.client.renderer.EntranceBlockEntityRenderer;
 import com.pedrorok.hypertube.client.renderer.HypertubeBlockEntityRenderer;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;

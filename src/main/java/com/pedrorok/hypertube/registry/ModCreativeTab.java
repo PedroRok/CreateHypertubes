@@ -17,7 +17,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-@EventBusSubscriber(modid = HypertubeMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+//@EventBusSubscriber(modid = HypertubeMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public class ModCreativeTab {
 
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =

@@ -8,6 +8,7 @@ import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravelManager;
+import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.utils.TubeUtils;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import lombok.Getter;
@@ -38,8 +39,8 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity {
     @Getter
     private IConnection connection;
 
-    public HyperEntranceBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
-        super(type, pos, state);
+    public HyperEntranceBlockEntity(BlockPos pos, BlockState state) {
+        super(ModBlockEntities.HYPERTUBE_ENTRANCE.get(), pos, state);
     }
 
     // --------- Nbt Methods ---------

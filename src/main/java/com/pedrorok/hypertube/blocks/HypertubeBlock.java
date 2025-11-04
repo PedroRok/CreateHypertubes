@@ -10,6 +10,7 @@ import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModDataComponent;
+import com.pedrorok.hypertube.registry.ModItems;
 import com.pedrorok.hypertube.utils.MessageUtils;
 import com.pedrorok.hypertube.utils.RayCastUtils;
 import com.pedrorok.hypertube.utils.TubeUtils;
@@ -132,14 +133,27 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
 
     @Override
     public Item getItem() {
-        return ModBlocks.HYPERTUBE.get().getItem();
+        return ModItems.HYPERTUBE.get();
     }
 
     @Override
-    public void neighborChanged(@NotNull BlockState state, @NotNull Level world, @NotNull BlockPos pos, @NotNull Block block, @NotNull BlockPos pos1, boolean b) {
-        super.neighborChanged(state, world, pos, block, pos1, b);
+    public void neighborChanged(@NotNull BlockState state, @NotNull Level world, @NotNull BlockPos pos,
+                                @NotNull Block block, @NotNull BlockPos neighborPos, boolean isMoving) {
+        super.neighborChanged(state, world, pos, block, neighborPos, isMoving);
+
+        if (world.isClientSide()) return;
+
         BlockState newState = getStateFromBlockEntity(state, world, pos);
-        world.setBlockAndUpdate(pos, newState);
+        if (!state.equals(newState)) {
+            world.setBlock(pos, newState, Block.UPDATE_ALL);
+
+            // Sincroniza BlockEntity após mudança de vizinho
+            BlockEntity be = world.getBlockEntity(pos);
+            if (be instanceof HypertubeBlockEntity hypertube) {
+                hypertube.setChanged();
+                world.sendBlockUpdated(pos, state, newState, Block.UPDATE_CLIENTS);
+            }
+        }
     }
 
     private BlockState getStateFromBlockEntity(BlockState blockState, Level world, BlockPos pos) {
@@ -161,7 +175,6 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
 
         return getState(blockState, world, pos);
     }
-
 
     public BlockState getState(BlockState blockState, Collection<Direction> activeDirections, boolean connected) {
         if (activeDirections == null) {
@@ -201,6 +214,13 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
 
         BlockState newState = getStateFromBlockEntity(state, world, pos);
         updateBlockState(world, pos, newState);
+
+        // CRÍTICO: Força sincronização da BlockEntity após atualizar o estado
+        BlockEntity be = world.getBlockEntity(pos);
+        if (be instanceof HypertubeBlockEntity hypertube) {
+            hypertube.setChanged();
+            world.sendBlockUpdated(pos, state, newState, Block.UPDATE_CLIENTS);
+        }
     }
 
     public void updateBlockState(Level world, BlockPos pos, BlockState newState) {
@@ -209,7 +229,20 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
         BlockState currentState = world.getBlockState(pos);
 
         if (!currentState.equals(newState)) {
-            world.setBlockAndUpdate(pos, newState);
+            // Usa flags corretas para sincronização:
+            // Block.UPDATE_ALL = 3 (UPDATE_NEIGHBORS | UPDATE_CLIENTS)
+            world.setBlock(pos, newState, Block.UPDATE_ALL);
+
+            // Notifica vizinhos sobre a mudança
+            world.updateNeighborsAt(pos, newState.getBlock());
+
+            // Força sincronização da BlockEntity
+            BlockEntity be = world.getBlockEntity(pos);
+            if (be instanceof HypertubeBlockEntity hypertube) {
+                hypertube.setChanged();
+                // Envia pacote de atualização para clientes
+                world.sendBlockUpdated(pos, currentState, newState, Block.UPDATE_CLIENTS);
+            }
         }
     }
 
@@ -239,7 +272,8 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
     }
 
     @Override
-    public void setPlacedBy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @Nullable LivingEntity placer, @NotNull ItemStack stack) {
+    public void setPlacedBy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state,
+                            @Nullable LivingEntity placer, @NotNull ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (!(placer instanceof Player player)) return;
         if (level.isClientSide()) return;
@@ -255,15 +289,16 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
         SimpleConnection connectionFrom = stack.get(ModDataComponent.TUBE_CONNECTING_FROM);
         if (connectionFrom == null) return;
 
-        Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, () -> state.getBlock() instanceof ITubeConnection, true);
+        Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player,
+                () -> state.getBlock() instanceof ITubeConnection, true);
         SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
 
         if (!TubeUtils.checkPlayerPlacingBlockValidation(player, bezierConnection, level)) {
-            level.playSound(placer, pos, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS,
-                    1, 0.5f);
+            level.playSound(placer, pos, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, 1, 0.5f);
             return;
         }
+
         BlockEntity otherBlockEntity = level.getBlockEntity(connectionFrom.pos());
         if (!(otherBlockEntity instanceof ITubeConnectionEntity otherConnection)) return;
 
@@ -271,16 +306,31 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
                 1, level.random.nextFloat() * 0.1f + 0.9f);
 
         if (!otherConnection.hasConnectionAvailable()) {
-            MessageUtils.sendActionMessage(player, Component.translatable("placement.create_hypertube.invalid_conn").withColor(0xFF0000), true);
+            MessageUtils.sendActionMessage(player,
+                    Component.translatable("placement.create_hypertube.invalid_conn").withColor(0xFF0000), true);
             return;
         }
 
+        // Define conexões
         otherConnection.setConnection(bezierConnection, bezierConnection.getFromPos().direction());
         thisConnection.setConnection(connectionFrom, finalDirection);
 
+        // CRÍTICO: Força sincronização após criar conexões
+        if (blockEntity instanceof HypertubeBlockEntity hypertube) {
+            hypertube.setChanged();
+            BlockState newState = getState(state, List.of(finalDirection), true);
+            level.setBlock(pos, newState, Block.UPDATE_ALL);
+            level.sendBlockUpdated(pos, state, newState, Block.UPDATE_CLIENTS);
+        }
+
+        // Também sincroniza o outro bloco
+        if (otherBlockEntity instanceof HypertubeBlockEntity otherHypertube) {
+            otherHypertube.setChanged();
+            BlockState otherState = level.getBlockState(connectionFrom.pos());
+            level.sendBlockUpdated(connectionFrom.pos(), otherState, otherState, Block.UPDATE_CLIENTS);
+        }
+
         MessageUtils.sendActionMessage(player, Component.empty(), true);
-        if (!(level.getBlockState(pos).getBlock() instanceof HypertubeBlock hypertubeBlock)) return;
-        hypertubeBlock.updateBlockState(level, pos, hypertubeBlock.getState(state, List.of(finalDirection), true));
     }
 
     @Override
@@ -294,24 +344,31 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
         Player player = context.getPlayer();
+
         if (state.getValue(CONNECTED)) {
             if (level.getBlockEntity(pos) instanceof ITubeConnectionEntity tube) {
                 tube.wrenchClicked(context.getClickedFace());
             }
             updateAfterWrenched(state, context);
+
+            // CRÍTICO: Sincroniza após usar wrench em conexão
+            if (!level.isClientSide() && level.getBlockEntity(pos) instanceof HypertubeBlockEntity hypertube) {
+                hypertube.setChanged();
+                BlockState newState = level.getBlockState(pos);
+                level.sendBlockUpdated(pos, state, newState, Block.UPDATE_CLIENTS);
+            }
+
             IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
             return InteractionResult.SUCCESS;
         }
 
+        // Rotação sem conexão
         if (state.getValue(EAST_WEST)) {
-            state = state.setValue(EAST_WEST, false)
-                    .setValue(UP_DOWN, true);
+            state = state.setValue(EAST_WEST, false).setValue(UP_DOWN, true);
         } else if (state.getValue(UP_DOWN)) {
-            state = state.setValue(UP_DOWN, false)
-                    .setValue(NORTH_SOUTH, true);
+            state = state.setValue(UP_DOWN, false).setValue(NORTH_SOUTH, true);
         } else if (state.getValue(NORTH_SOUTH)) {
-            state = state.setValue(NORTH_SOUTH, false)
-                    .setValue(EAST_WEST, true);
+            state = state.setValue(NORTH_SOUTH, false).setValue(EAST_WEST, true);
         } else {
             state = getState(state, List.of(context.getClickedFace()), false);
         }

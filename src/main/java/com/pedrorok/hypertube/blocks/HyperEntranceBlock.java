@@ -4,6 +4,7 @@ import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
+import com.pedrorok.hypertube.registry.ModItems;
 import com.pedrorok.hypertube.utils.MessageUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
@@ -148,7 +149,7 @@ public class HyperEntranceBlock extends TubeBlock implements EntityBlock, ICogWh
 
     @Override
     public Item getItem() {
-        return ModBlocks.HYPERTUBE_ENTRANCE.get().getItem();
+        return ModItems.HYPERTUBE_ENTRANCE.get();
     }
 
     @Nullable

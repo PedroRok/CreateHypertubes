@@ -59,7 +59,7 @@ public class TubePlacement {
         if (hitResult.getType() != HitResult.Type.BLOCK)
             return;
 
-        Item tubeItem = ModBlocks.HYPERTUBE.asItem();
+        Item tubeItem = ModBlocks.HYPERTUBE.get().getItem();
         if (!stack.getItem().equals(tubeItem)) {
             stack = player.getOffhandItem();
             if (!stack.getItem().equals(tubeItem))
@@ -191,7 +191,7 @@ public class TubePlacement {
     @OnlyIn(Dist.CLIENT)
     public static void drawCustomBlockSelection(PoseStack ms, MultiBufferSource buffer, Vec3 camera) {
         ItemStack mainHandItem = Minecraft.getInstance().player.getMainHandItem();
-        if (!mainHandItem.is(ModBlocks.HYPERTUBE.asItem())) return;
+        if (!mainHandItem.is(ModBlocks.HYPERTUBE.get().getItem())) return;
         if (!mainHandItem.hasFoil()) return;
         SimpleConnection connection = mainHandItem.get(ModDataComponent.TUBE_CONNECTING_FROM);
         if (connection == null) return;

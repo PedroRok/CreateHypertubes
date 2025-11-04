@@ -40,7 +40,7 @@ public class TubeUtils {
     public static boolean checkPlayerPlacingBlock(@NotNull Player player, Level level, BlockPos pos) {
 
         ItemStack itemInHand = player.getItemInHand(InteractionHand.MAIN_HAND);
-        if (itemInHand.getItem() != ModBlocks.HYPERTUBE.asItem()) {
+        if (itemInHand.getItem() != ModBlocks.HYPERTUBE.get().getItem()) {
             return true;
         }
         if (!itemInHand.hasFoil()) {
@@ -133,7 +133,7 @@ public class TubeUtils {
                 continue;
 
             ItemStack stackInSlot = (offhand ? inv.offhand : inv.items).get(i);
-            boolean isTube = ModBlocks.HYPERTUBE.asStack().is(stackInSlot.getItem());
+            boolean isTube = ModBlocks.HYPERTUBE.get().getItem().getDefaultInstance().is(stackInSlot.getItem());
             if (!isTube)
                 continue;
             if (foundTubes >= neededTubes)

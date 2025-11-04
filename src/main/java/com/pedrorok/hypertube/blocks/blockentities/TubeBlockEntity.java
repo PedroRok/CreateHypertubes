@@ -14,6 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -42,7 +43,8 @@ public abstract class TubeBlockEntity extends BlockEntity implements ITubeConnec
 
     public void sync() {
         if (level != null && !level.isClientSide) {
-            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_ALL);
+            setChanged();
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         }
     }
 
@@ -136,20 +138,43 @@ public abstract class TubeBlockEntity extends BlockEntity implements ITubeConnec
         return 16;
     }
 
+    // ========== SINCRONIZAÇÃO CORRIGIDA ==========
+
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
-        super.saveAdditional(tag, registries);
+        // Override em subclasses para escrever dados customizados
     }
 
-
-    /**
-     * Hook only these in future subclasses of STE
-     */
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
-        super.loadAdditional(tag, registries);
+        // Override em subclasses para ler dados customizados
+    }
+
+    @Override
+    protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
+        super.saveAdditional(tag, registries);
+        write(tag, registries, false);
     }
 
     @Override
     protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
+        super.loadAdditional(tag, registries);
         read(tag, registries, false);
+    }
+
+    // Sincronização cliente-servidor
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registries) {
+        CompoundTag tag = super.getUpdateTag(registries);
+        write(tag, registries, true);
+        return tag;
+    }
+
+    @Override
+    public void handleUpdateTag(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
+        read(tag, registries, true);
+    }
+
+    @Override
+    public @Nullable ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 }

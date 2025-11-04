@@ -30,10 +30,6 @@ public class HypertubeMod {
         modContainer.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC, MOD_ID + "-client.toml");
         modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC, MOD_ID + "-server.toml");
 
-        REGISTRATE.registerEventListeners(modEventBus);
-
-        ModPartialModels.init();
-
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
         ModBlockEntities.register(modEventBus);

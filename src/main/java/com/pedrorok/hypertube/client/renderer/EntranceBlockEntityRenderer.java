@@ -7,6 +7,7 @@ import com.pedrorok.hypertube.client.BezierTextureRenderer;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -19,6 +20,10 @@ import org.jetbrains.annotations.NotNull;
 public class EntranceBlockEntityRenderer implements BlockEntityRenderer<HyperEntranceBlockEntity> {
 
     private final BezierTextureRenderer tubeRenderer = BezierTextureRenderer.get();
+
+    public EntranceBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
+    }
+
 
     @Override
     public void render(HyperEntranceBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer,
