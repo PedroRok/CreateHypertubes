@@ -42,7 +42,7 @@ public class ServerConfig {
                         "WHITELIST - Only entities in the whitelist can travel (ignores tag)",
                         "BLACKLIST - All entities can travel except those in the blacklist",
                         "TAG_WITH_BLACKLIST - Use tag but exclude entities in the blacklist")
-                .defineEnum("entityListMode", EntityListMode.TAG_ONLY);
+                .defineEnum("entityListMode", EntityListMode.BLACKLIST);
 
         ENTITY_WHITELIST = builder
                 .comment("Entities that CAN travel (only used when mode is WHITELIST).",
