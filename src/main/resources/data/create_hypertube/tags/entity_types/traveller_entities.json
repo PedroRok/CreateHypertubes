@@ -1,0 +1,15 @@
+{
+  "values": [
+    "minecraft:player",
+    "minecraft:villager",
+    "minecraft:wandering_trader",
+    "minecraft:salmon",
+    "minecraft:cod",
+    "minecraft:tropical_fish",
+    "create:package",
+    "minecraft:cow",
+    "minecraft:pig",
+    "minecraft:sheep",
+    "minecraft:chicken"
+  ]
+}
