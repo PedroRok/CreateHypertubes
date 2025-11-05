@@ -16,6 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -50,8 +51,8 @@ public class HyperEntranceBlock extends TubeBlock implements EntityBlock, ICogWh
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
     public static final BooleanProperty LOCKED = BlockStateProperties.LOCKED;
-
     public static final BooleanProperty IN_FRONT = BooleanProperty.create("has_block_in_front");
+    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
     private static final VoxelShape SHAPE_NORTH = Block.box(0D, 0D, 0D, 16D, 16D, 23D);
     private static final VoxelShape SHAPE_SOUTH = Block.box(0D, 0D, -7D, 16D, 16D, 16D);
@@ -68,12 +69,13 @@ public class HyperEntranceBlock extends TubeBlock implements EntityBlock, ICogWh
                 .setValue(OPEN, false)
                 .setValue(LOCKED, true)
                 .setValue(IN_FRONT, false)
-                .setValue(WATERLOGGED, false));
+                .setValue(WATERLOGGED, false)
+                .setValue(POWERED, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, OPEN, IN_FRONT, LOCKED, WATERLOGGED);
+        builder.add(FACING, OPEN, IN_FRONT, LOCKED, WATERLOGGED, POWERED);
         super.createBlockStateDefinition(builder);
     }
 
@@ -107,12 +109,6 @@ public class HyperEntranceBlock extends TubeBlock implements EntityBlock, ICogWh
                 .setValue(LOCKED, true)
                 .setValue(IN_FRONT, isFrontBlocked)
                 .setValue(WATERLOGGED, fluidstate.is(Fluids.WATER));
-    }
-
-    @Override
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block p_60512_, BlockPos p_60513_, boolean p_60514_) {
-        super.neighborChanged(state, level, pos, p_60512_, p_60513_, p_60514_);
-        updateInFrontProperty(level, pos, state);
     }
 
     @Override
@@ -227,4 +223,29 @@ public class HyperEntranceBlock extends TubeBlock implements EntityBlock, ICogWh
         IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
         return InteractionResult.SUCCESS;
     }
+
+    // ------- Redstone Things -------
+    @Override
+    public boolean canConnectRedstone(BlockState state, BlockGetter world, BlockPos pos, Direction side) {
+        return side != null && side != state.getValue(FACING) && side != state.getValue(FACING).getOpposite();
+    }
+
+
+    @Override
+    protected void neighborChanged(BlockState state, Level level, @NotNull BlockPos pos, @NotNull Block block, @NotNull BlockPos fromPos, boolean isMoving) {
+        boolean neighborHasSignal = level.hasNeighborSignal(pos) || level.hasNeighborSignal(pos.above());
+        boolean actualState = state.getValue(POWERED);
+        if (neighborHasSignal && !actualState) {
+            level.scheduleTick(pos, this, 4);
+            level.setBlock(pos, state.setValue(POWERED, true).setValue(LOCKED, !state.getValue(LOCKED)), 2);
+            IWrenchable.playRotateSound(level, pos);
+
+        } else if (!neighborHasSignal && actualState) {
+            level.setBlock(pos, state.setValue(POWERED, false).setValue(LOCKED, !state.getValue(LOCKED)), 2);
+            IWrenchable.playRotateSound(level, pos);
+        }
+        BlockState blockState = level.getBlockState(pos);
+        updateInFrontProperty(level, pos, blockState);
+    }
+    // ------------ END -------------
 }
