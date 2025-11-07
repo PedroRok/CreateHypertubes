@@ -199,7 +199,7 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
 
 
     @Override
-    protected void neighborChanged(BlockState state, Level level, @NotNull BlockPos pos, @NotNull Block block, @NotNull BlockPos fromPos, boolean isMoving) {
+    public void neighborChanged(BlockState state, Level level, @NotNull BlockPos pos, @NotNull Block block, @NotNull BlockPos fromPos, boolean isMoving) {
         boolean neighborHasSignal = level.hasNeighborSignal(pos) || level.hasNeighborSignal(pos.above());
         boolean actualState = state.getValue(POWERED);
         if (neighborHasSignal && !actualState) {

@@ -111,7 +111,7 @@ public class ServerConfig {
         targetSet.clear();
         for (String entityId : entityIds) {
             try {
-                ResourceLocation location = ResourceLocation.parse(entityId);
+                ResourceLocation location = ResourceLocation.tryParse(entityId);
                 EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(location);
 
                 if (entityType != null) {

@@ -15,6 +15,7 @@ import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -144,6 +145,10 @@ public class TravelManager {
         //if (level.isClientSide) return;
         TravelPathMover pathMover = travelDataMap.get(entity.getUUID());
         travelDataMap.remove(entity.getUUID());
+        
+        // test to fix a bug
+        removeDismountedData(entity);
+
         entity.getPersistentData().putBoolean(TRAVEL_TAG, false);
         entity.getPersistentData().putLong(LAST_TRAVEL_TIME, System.currentTimeMillis() + DEFAULT_TRAVEL_TIME);
         entity.getPersistentData().putLong(LAST_TRAVEL_BLOCKPOS, pathMover.getLastPos().asLong());
@@ -169,6 +174,19 @@ public class TravelManager {
 
         if (!(entity instanceof Player player)) return;
         player.startFallFlying();
+    }
+
+
+    // FIXING Steam n' Rails Dismount Bug
+    private static void removeDismountedData(LivingEntity entity) {
+        CompoundTag persistentData = entity.getPersistentData();
+        if (persistentData.contains("ForgeData", Tag.TAG_COMPOUND)) {
+            CompoundTag forgeData = persistentData.getCompound("ForgeData");
+            if (forgeData.contains("ContraptionDismountLocation")) {
+                forgeData.remove("ContraptionDismountLocation");
+                persistentData.put("ForgeData", forgeData);
+            }
+        }
     }
 
     public static void finishTravel(UUID entityUuid) {

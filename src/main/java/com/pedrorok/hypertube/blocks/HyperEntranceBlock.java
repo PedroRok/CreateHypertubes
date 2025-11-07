@@ -113,12 +113,6 @@ public class HyperEntranceBlock extends TubeBlock implements EntityBlock, ICogWh
     }
 
     @Override
-    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block p_60512_, BlockPos p_60513_, boolean p_60514_) {
-        super.neighborChanged(state, level, pos, p_60512_, p_60513_, p_60514_);
-        updateInFrontProperty(level, pos, state);
-    }
-
-    @Override
     public void onNeighborChange(BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
         super.onNeighborChange(state, level, pos, neighbor);
         updateInFrontProperty((Level) level, pos, state);
