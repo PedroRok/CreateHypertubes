@@ -160,6 +160,10 @@ public class TravelManager {
 
         Vec3 lastDir = pathMover.getLastDir();
         Vec3 lastBlockPos = pathMover.getLastPos().getCenter();
+        BlockState blockState = level.getBlockState(BlockPos.containing(lastBlockPos));
+        if (blockState.getBlock() instanceof HyperEntranceBlock) {
+            lastBlockPos = pathMover.getLastPos().relative(blockState.getValue(HyperEntranceBlock.FACING).getOpposite()).getCenter();
+        }
         if (!forced) {
             if (level instanceof ServerLevel) {
                 entity.teleportTo(lastBlockPos.x, lastBlockPos.y, lastBlockPos.z);
