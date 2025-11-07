@@ -39,7 +39,7 @@ public class ModServerEvents {
     @SubscribeEvent
     public static void onEntityTick(LivingEvent.LivingTickEvent event) {
         LivingEntity living = event.getEntity();
-        if (!TravelConstants.TRAVELLER_ENTITIES.contains(living.getType())) return;
+        if (!ServerConfig.canEntityTravel(living.getType())) return;
         TravelManager.entityTick(living);
         if (living.level().isClientSide) {
             return;

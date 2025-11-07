@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube.blocks.blockentities;
 
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
+import com.pedrorok.hypertube.config.ServerConfig;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModParticles;
@@ -121,7 +122,7 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
         return level.getNearestEntity(
                 level.getEntitiesOfClass(LivingEntity.class,
                         AABB.ofSize(checkPos, (RADIUS - 0.25) * 2, (RADIUS - 0.25) * 2, (RADIUS - 0.25) * 2),
-                        (entity) -> TravelConstants.TRAVELLER_ENTITIES.contains(entity.getType())),
+                        (entity) -> ServerConfig.canEntityTravel(entity.getType())),
                 TargetingConditions.forNonCombat().ignoreLineOfSight(),
                 null,
                 centerPos.x, centerPos.y, centerPos.z);
@@ -132,7 +133,7 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
         return level.getNearestEntity(
                 level.getEntitiesOfClass(LivingEntity.class,
                         AABB.ofSize(centerPos, RADIUS * 6, RADIUS * 6, RADIUS * 6),
-                        (entity) -> TravelConstants.TRAVELLER_ENTITIES.contains(entity.getType())),
+                        (entity) -> ServerConfig.canEntityTravel(entity.getType())),
                 TargetingConditions.forNonCombat().ignoreLineOfSight(),
                 null,
                 centerPos.x, centerPos.y, centerPos.z);

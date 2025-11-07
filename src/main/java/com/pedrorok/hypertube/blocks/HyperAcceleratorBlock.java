@@ -24,11 +24,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
-import net.minecraft.world.level.block.Mirror;
-import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -60,6 +58,7 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
     public static final BooleanProperty ACCELERATE = BooleanProperty.create("accelerate");
+    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
     public HyperAcceleratorBlock(Properties properties) {
         super(properties);
@@ -68,12 +67,13 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
                 .setValue(OPEN, false)
                 .setValue(WATERLOGGED, false)
                 .setValue(ACTIVE, false)
-                .setValue(ACCELERATE, true));
+                .setValue(ACCELERATE, true)
+                .setValue(POWERED, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, OPEN, WATERLOGGED, ACTIVE, ACCELERATE);
+        builder.add(FACING, OPEN, WATERLOGGED, ACTIVE, ACCELERATE, POWERED);
         super.createBlockStateDefinition(builder);
     }
 
@@ -189,7 +189,32 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
         }
         return Shapes.block();
     }
+    // ------------- END -------------
 
+    // ------- Redstone Things -------
+    @Override
+    public boolean canConnectRedstone(BlockState state, BlockGetter world, BlockPos pos, Direction side) {
+        return side != null && side != state.getValue(FACING) && side != state.getValue(FACING).getOpposite();
+    }
+
+
+    @Override
+    protected void neighborChanged(BlockState state, Level level, @NotNull BlockPos pos, @NotNull Block block, @NotNull BlockPos fromPos, boolean isMoving) {
+        boolean neighborHasSignal = level.hasNeighborSignal(pos) || level.hasNeighborSignal(pos.above());
+        boolean actualState = state.getValue(POWERED);
+        if (neighborHasSignal && !actualState) {
+            level.scheduleTick(pos, this, 4);
+            level.setBlock(pos, state.setValue(POWERED, true).setValue(ACCELERATE, !state.getValue(ACCELERATE)), 2);
+            IWrenchable.playRotateSound(level, pos);
+
+        } else if (!neighborHasSignal && actualState) {
+            level.setBlock(pos, state.setValue(POWERED, false).setValue(ACCELERATE, !state.getValue(ACCELERATE)), 2);
+            IWrenchable.playRotateSound(level, pos);
+        }
+    }
+    // ------------ END -------------
+
+    // ------- Other Methods -------
     @Override
     public boolean isSmallCog() {
         return true;
