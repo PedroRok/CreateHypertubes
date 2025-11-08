@@ -96,10 +96,10 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
             return;
         }
 
-        boolean isLocked = !getBlockState().getValue(HyperEntranceBlock.LOCKED);
+        boolean isNotLocked = !getBlockState().getValue(HyperEntranceBlock.LOCKED);
         LivingEntity nearbyEntity = getNearbyLivingEntities((ServerLevel) level, pos.getCenter());
 
-        boolean canOpen = nearbyEntity != null && (isLocked || nearbyEntity.isShiftKeyDown() || nearbyEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG));
+        boolean canOpen = nearbyEntity != null && (isNotLocked || nearbyEntity.isShiftKeyDown() || nearbyEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG));
 
 
         if (isTubeClosed(canOpen, isOpen)) return;
@@ -107,7 +107,7 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
         LivingEntity inRangeEntity = getInRangeLivingEntities((ServerLevel) level, pos.getCenter(), state.getValue(HyperEntranceBlock.FACING));
         if (inRangeEntity == null) return;
 
-        if (!isLocked && !inRangeEntity.isShiftKeyDown() && !inRangeEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) {
+        if (isNotLocked && inRangeEntity.isShiftKeyDown() && !inRangeEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) {
             return;
         }
 
