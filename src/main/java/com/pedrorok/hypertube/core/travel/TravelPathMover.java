@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.core.travel;
 
+import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.network.packets.EntityTravelDirDataPacket;
 import com.pedrorok.hypertube.network.packets.SyncEntityPosPacket;
@@ -9,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -91,6 +93,10 @@ public class TravelPathMover {
             Block block = entity.level().getBlockState(actionPos).getBlock();
             if (block instanceof ITubeActionPoint travelAction) {
                 travelAction.handleTravelPath(entity, this, actionPos);
+            }
+            BlockEntity be = entity.level().getBlockEntity(actionPos);
+            if (be instanceof ActionTubeBlockEntity actionTubeBlockEntity && actionTubeBlockEntity.hasAnySmartTubeAttachment()) {
+                actionTubeBlockEntity.activateAllSmartTubeAttachments(entity, this, actionPos);
             }
         }
 

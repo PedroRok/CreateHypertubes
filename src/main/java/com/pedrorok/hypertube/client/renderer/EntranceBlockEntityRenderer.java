@@ -44,8 +44,7 @@ public class EntranceBlockEntityRenderer extends KineticBlockEntityRenderer<Hype
 
         smartTubeModel.renderInto(ms, buffer.getBuffer(RenderType.translucent()));
             //smartTubeModel.translate(0, 1, 0);
-            //smartTubeModel.rotate(Direction.Axis.Z, (float) Math.toRadians(-90));
-
+        rotateAroundCenterHorizontal(smartTubeModel, 0);
         smartTubeModel.light(light);
 
 
@@ -61,6 +60,18 @@ public class EntranceBlockEntityRenderer extends KineticBlockEntityRenderer<Hype
         if (be.getConnection() instanceof BezierConnection bezierConnection) {
             tubeRenderer.renderBezierConnection(be.getBlockPos(), bezierConnection, ms, buffer, light, overlay);
         }
+    }
+
+    private void rotateAroundCenterVertical(SuperByteBuffer buffer, int degreaseRotated) {
+        buffer.translate(0.5f, 0.5f, 0.5f);
+        buffer.rotateY((float) Math.toRadians(degreaseRotated));
+        buffer.translate(-0.5f, -0.5f, -0.5f);
+    }
+
+    private void rotateAroundCenterHorizontal(SuperByteBuffer buffer, int degreaseRotated) {
+        buffer.translate(0.5f, 0.5f, 0.5f);
+        buffer.rotateX((float) Math.toRadians(degreaseRotated));
+        buffer.translate(-0.5f, -0.5f, -0.5f);
     }
 
     @Override

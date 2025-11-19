@@ -2,6 +2,7 @@ package com.pedrorok.hypertube;
 
 import com.pedrorok.hypertube.config.ClientConfig;
 import com.pedrorok.hypertube.config.ServerConfig;
+import com.pedrorok.hypertube.core.smarttube.ISmartTubeAttachment;
 import com.pedrorok.hypertube.registry.*;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import net.minecraft.resources.ResourceKey;
@@ -33,7 +34,7 @@ public class HypertubeMod {
         modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC, MOD_ID + "-server.toml");
 
         REGISTRATE.registerEventListeners(modEventBus);
-
+        
         ModPartialModels.init();
 
         ModBlocks.register();
@@ -45,6 +46,9 @@ public class HypertubeMod {
         ModParticles.register(modEventBus);
 
         ModSounds.register(modEventBus);
+
+        ISmartTubeAttachment.init();
+
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {

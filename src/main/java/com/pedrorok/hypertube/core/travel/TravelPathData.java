@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.core.travel;
 
+import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
@@ -76,7 +77,8 @@ public class TravelPathData {
                 continue;
             travelPoints.add(nextPipe.getCenter());
             blockConnections.add(nextPipe);
-            if (level.getBlockState(nextPipe).getBlock() instanceof ITubeActionPoint) {
+            if (level.getBlockState(nextPipe).getBlock() instanceof ITubeActionPoint ||
+                (level.getBlockEntity(nextPipe) instanceof ActionTubeBlockEntity tubeEntity && tubeEntity.hasAnySmartTubeAttachment())) {
                 actionPoints.add(nextPipe);
             }
             addTravelPoint(nextPipe, level);
@@ -120,13 +122,15 @@ public class TravelPathData {
 
             if (!blockConnections.contains(fromPosFinal)) {
                 blockConnections.add(fromPosFinal);
-                if (level.getBlockState(fromPosFinal).getBlock() instanceof ITubeActionPoint) {
+                if (level.getBlockState(fromPosFinal).getBlock() instanceof ITubeActionPoint ||
+                    (level.getBlockEntity(fromPosFinal) instanceof ActionTubeBlockEntity tubeEntity && tubeEntity.hasAnySmartTubeAttachment())) {
                     actionPoints.add(fromPosFinal);
                 }
             }
             if (!blockConnections.contains(toPosFinal)) {
                 blockConnections.add(toPosFinal);
-                if (level.getBlockState(toPosFinal).getBlock() instanceof ITubeActionPoint) {
+                if (level.getBlockState(toPosFinal).getBlock() instanceof ITubeActionPoint ||
+                    (level.getBlockEntity(toPosFinal) instanceof ActionTubeBlockEntity tubeEntity && tubeEntity.hasAnySmartTubeAttachment())) {
                     actionPoints.add(toPosFinal);
                 }
             }

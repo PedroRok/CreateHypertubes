@@ -1,15 +1,24 @@
 package com.pedrorok.hypertube.blocks.blockentities;
 
+import com.mojang.serialization.Codec;
+import com.pedrorok.hypertube.HypertubeMod;
+import com.pedrorok.hypertube.blocks.ActionTubeBlock;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.config.ServerConfig;
+import com.pedrorok.hypertube.core.smarttube.ISmartTubeAttachment;
+import com.pedrorok.hypertube.core.smarttube.SmartRedstoneTubeAttachment;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
-import com.pedrorok.hypertube.core.travel.TravelConstants;
+import com.pedrorok.hypertube.core.travel.TravelPathMover;
 import com.pedrorok.hypertube.registry.ModParticles;
 import com.pedrorok.hypertube.registry.ModSounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -24,6 +33,8 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -35,10 +46,92 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
     private static final float RADIUS = 1.0f;
     protected final UUID tubeSoundId = UUID.randomUUID();
 
+    private final Map<Direction, ISmartTubeAttachment> smartTubeAttachments = new HashMap<>();
 
     public ActionTubeBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
     }
+
+    // --------- Smart Tube Methods ---------
+    @Override
+    protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(compound, registries, clientPacket);
+
+        if (smartTubeAttachments.isEmpty()) return;
+        CompoundTag smartTubesTag = new CompoundTag();
+        for (Map.Entry<Direction, ISmartTubeAttachment> entry : smartTubeAttachments.entrySet()) {
+            smartTubesTag.put(entry.getKey().getSerializedName(), Codec.STRING.write(NbtOps.INSTANCE, entry.getValue().getId()));
+        }
+        compound.put("smart_tubes", smartTubesTag);
+    }
+
+    @Override
+    protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(compound, registries, clientPacket);
+
+        smartTubeAttachments.clear();
+
+        if (!compound.contains("SmartTubes", Tag.TAG_COMPOUND)) return;
+
+        CompoundTag smartTubesTag = compound.getCompound("SmartTubes");
+        for (Direction direction : Direction.values()) {
+            String directionKey = direction.getSerializedName();
+            if (!smartTubesTag.contains(directionKey, Tag.TAG_STRING)) continue;
+
+            String smartTubeId = smartTubesTag.getString(directionKey);
+            ISmartTubeAttachment smartTube = ISmartTubeAttachment.get(smartTubeId);
+
+            if (smartTube == null) {
+                HypertubeMod.LOGGER.error("Failed to load smart tube attachment with id: {} for direction: {}",
+                        smartTubeId, direction);
+                continue;
+            }
+
+            smartTubeAttachments.put(direction, smartTube);
+        }
+    }
+
+    public void addSmartTubeAttachment(Direction direction, ISmartTubeAttachment smartTube) {
+        smartTubeAttachments.put(direction, smartTube);
+        setChanged();
+        if (level != null && !level.isClientSide) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    public void activateAllSmartTubeAttachments(LivingEntity entity, TravelPathMover travelPathMover, BlockPos pos) {
+        for (Map.Entry<Direction, ISmartTubeAttachment> attachmentEntry : smartTubeAttachments.entrySet()) {
+            ISmartTubeAttachment value = attachmentEntry.getValue();
+            value.getActionPoint(attachmentEntry.getKey()).handleTravelPath(entity, travelPathMover, pos);
+        }
+    }
+
+    public void removeSmartTubeAttachment(Direction direction) {
+        if (smartTubeAttachments.remove(direction) != null) {
+            setChanged();
+            if (level != null && !level.isClientSide) {
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            }
+        }
+    }
+
+    @Nullable
+    public ISmartTubeAttachment getSmartTubeAttachment(Direction direction) {
+        return smartTubeAttachments.get(direction);
+    }
+
+    public boolean hasSmartTubeAttachment(Direction direction) {
+        return smartTubeAttachments.containsKey(direction);
+    }
+
+    public boolean hasAnySmartTubeAttachment() {
+        return !smartTubeAttachments.isEmpty();
+    }
+
+    public Map<Direction, ISmartTubeAttachment> getSmartTubeAttachments() {
+        return Map.copyOf(smartTubeAttachments);
+    }
+    // --------------------------------------
 
 
     protected void spawnSuctionParticle(Level level, BlockPos blockPos, Direction face) {

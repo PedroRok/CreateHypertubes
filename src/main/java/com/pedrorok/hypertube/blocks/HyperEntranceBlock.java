@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.blocks;
 
+import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
@@ -46,7 +47,7 @@ import java.util.List;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperEntranceBlock extends TubeBlock implements EntityBlock, ICogWheel {
+public class HyperEntranceBlock extends ActionTubeBlock implements EntityBlock, ICogWheel {
 
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
@@ -70,12 +71,13 @@ public class HyperEntranceBlock extends TubeBlock implements EntityBlock, ICogWh
                 .setValue(LOCKED, true)
                 .setValue(IN_FRONT, false)
                 .setValue(WATERLOGGED, false)
+                .setValue(POWER, 0)
                 .setValue(POWERED, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, OPEN, IN_FRONT, LOCKED, WATERLOGGED, POWERED);
+        builder.add(FACING, OPEN, IN_FRONT, LOCKED, WATERLOGGED, POWER, POWERED);
         super.createBlockStateDefinition(builder);
     }
 
@@ -156,7 +158,7 @@ public class HyperEntranceBlock extends TubeBlock implements EntityBlock, ICogWh
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> type) {
-        return (level1, pos, state1, be) -> ((HyperEntranceBlockEntity) be).tick();
+        return (level1, pos, state1, be) -> ((ActionTubeBlockEntity) be).tick();
     }
 
     public boolean canTravelConnect(LevelAccessor world, BlockPos pos, Direction facing) {
