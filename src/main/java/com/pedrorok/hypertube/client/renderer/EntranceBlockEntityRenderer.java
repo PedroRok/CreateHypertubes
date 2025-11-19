@@ -38,8 +38,17 @@ public class EntranceBlockEntityRenderer extends KineticBlockEntityRenderer<Hype
         if (!(blockState.getBlock() instanceof HyperEntranceBlock)) {
             return;
         }
-
         Direction facing = blockState.getValue(HyperEntranceBlock.FACING);
+
+        SuperByteBuffer smartTubeModel = CachedBuffers.partialFacingVertical(ModPartialModels.SMART_TUBE_DETECTOR, blockState, facing);
+
+        smartTubeModel.renderInto(ms, buffer.getBuffer(RenderType.translucent()));
+            //smartTubeModel.translate(0, 1, 0);
+            //smartTubeModel.rotate(Direction.Axis.Z, (float) Math.toRadians(-90));
+
+        smartTubeModel.light(light);
+
+
         SuperByteBuffer cogwheelModel = CachedBuffers.partialFacingVertical(ModPartialModels.COGWHEEL_HOLE, blockState, facing);
 
         float angle = getAngleForBe(be, be.getBlockPos(), facing.getAxis());

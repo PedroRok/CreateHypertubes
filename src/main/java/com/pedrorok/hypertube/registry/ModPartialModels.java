@@ -11,6 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 public class ModPartialModels {
 
     public static PartialModel COGWHEEL_HOLE = block("hypertube_entrance/cogwheel_hole");
+    public static PartialModel SMART_TUBE_DETECTOR = block("smart_tube_detector");
 
     private static PartialModel block(String path) {
         return PartialModel.of(ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "block/" + path));

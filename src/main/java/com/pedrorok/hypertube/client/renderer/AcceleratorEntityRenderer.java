@@ -40,6 +40,13 @@ public class AcceleratorEntityRenderer extends KineticBlockEntityRenderer<HyperA
         }
 
         Direction facing = blockState.getValue(HyperAcceleratorBlock.FACING);
+
+
+        SuperByteBuffer smartTubeModel = CachedBuffers.partialFacingVertical(ModPartialModels.SMART_TUBE_DETECTOR, blockState, facing);
+
+        smartTubeModel.renderInto(ms, buffer.getBuffer(RenderType.translucent()));
+        smartTubeModel.light(light);
+
         SuperByteBuffer cogwheelModel = CachedBuffers.partialFacingVertical(ModPartialModels.COGWHEEL_HOLE, blockState, facing);
 
         float angle = getAngleForBe(be, be.getBlockPos(), facing.getAxis());
