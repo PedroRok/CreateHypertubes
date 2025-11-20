@@ -29,10 +29,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * @project Create Hypertube
  */
 @Mixin(Camera.class)
-public class CameraMixin {
+public abstract class CameraMixin {
 
     @Shadow
     private boolean detached;
+
+    @Shadow public abstract Entity getEntity();
 
     // FPS CONTROL
     @Unique
@@ -48,6 +50,9 @@ public class CameraMixin {
 
     @Inject(method = "setup", at = @At("HEAD"), cancellable = true)
     private void createHypertube$onSetup(BlockGetter p_90576_, Entity renderViewEntity, boolean isFrontView, boolean flipped, float PartialTicks, CallbackInfo ci) {
+        if (this.getEntity() == null) {
+            return;
+        }
         Options options = Minecraft.getInstance().options;
         Player player = Minecraft.getInstance().player;
         if (renderViewEntity != player) return;
@@ -101,6 +106,8 @@ public class CameraMixin {
 
         ci.cancel();
     }
+
+
 
 
     @Unique
