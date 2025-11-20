@@ -74,6 +74,10 @@ public abstract class ActionTubeBlock extends TubeBlock {
         return false;
     }
 
+    public static boolean hasSignalOnSide(Level level, BlockPos pos, Direction side) {
+        return level.getSignal(pos.relative(side), side) > 0;
+    }
+
     @Override
     public boolean canConnectRedstone(BlockState state, BlockGetter world, BlockPos pos, Direction side) {
         ActionTubeBlockEntity tubeBlockEntity = (ActionTubeBlockEntity) world.getBlockEntity(pos);

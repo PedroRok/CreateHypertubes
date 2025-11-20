@@ -2,7 +2,7 @@ package com.pedrorok.hypertube;
 
 import com.pedrorok.hypertube.config.ClientConfig;
 import com.pedrorok.hypertube.config.ServerConfig;
-import com.pedrorok.hypertube.core.smarttube.ISmartTubeAttachment;
+import com.pedrorok.hypertube.core.smarttube.ITubeAttachment;
 import com.pedrorok.hypertube.registry.*;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import net.minecraft.resources.ResourceKey;
@@ -48,7 +48,7 @@ public class HypertubeMod {
 
         ModSounds.register(modEventBus);
 
-        ISmartTubeAttachment.init();
+        ITubeAttachment.init();
 
     }
 

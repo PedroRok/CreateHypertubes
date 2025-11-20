@@ -2,7 +2,7 @@ package com.pedrorok.hypertube.items;
 
 import com.pedrorok.hypertube.blocks.ActionTubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
-import com.pedrorok.hypertube.core.smarttube.ISmartTubeAttachment;
+import com.pedrorok.hypertube.core.smarttube.ITubeAttachment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -52,7 +52,7 @@ public class TubeAttachmentItem extends Item {
             return InteractionResult.FAIL;
         }
 
-        ISmartTubeAttachment smartTube = ISmartTubeAttachment.get(attachmentKey);
+        ITubeAttachment smartTube = ITubeAttachment.get(attachmentKey);
         if (smartTube == null) {
             throw new NoSuchElementException("SmartTube attachment " + attachmentKey + " not found");
         }

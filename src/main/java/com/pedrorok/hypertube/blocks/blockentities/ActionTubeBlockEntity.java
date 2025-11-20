@@ -5,7 +5,7 @@ import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.config.ServerConfig;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
-import com.pedrorok.hypertube.core.smarttube.ISmartTubeAttachment;
+import com.pedrorok.hypertube.core.smarttube.ITubeAttachment;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelPathMover;
 import com.pedrorok.hypertube.registry.ModParticles;
@@ -43,7 +43,7 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
     private static final float RADIUS = 1.0f;
     protected final UUID tubeSoundId = UUID.randomUUID();
 
-    private final Map<Direction, ISmartTubeAttachment> smartTubeAttachments = new HashMap<>();
+    private final Map<Direction, ITubeAttachment> smartTubeAttachments = new HashMap<>();
 
     public ActionTubeBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -56,7 +56,7 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
 
         if (smartTubeAttachments.isEmpty()) return;
         CompoundTag smartTubesTag = new CompoundTag();
-        for (Map.Entry<Direction, ISmartTubeAttachment> entry : smartTubeAttachments.entrySet()) {
+        for (Map.Entry<Direction, ITubeAttachment> entry : smartTubeAttachments.entrySet()) {
             smartTubesTag.put(entry.getKey().getSerializedName(), Codec.STRING.write(NbtOps.INSTANCE, entry.getValue().getId()));
         }
         compound.put("attachments", smartTubesTag);
@@ -73,7 +73,7 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
             if (!smartTubesTag.contains(directionKey, Tag.TAG_STRING)) continue;
 
             String smartTubeId = smartTubesTag.getString(directionKey);
-            ISmartTubeAttachment smartTube = ISmartTubeAttachment.get(smartTubeId);
+            ITubeAttachment smartTube = ITubeAttachment.get(smartTubeId);
 
             if (smartTube == null) {
                 HypertubeMod.LOGGER.error("Failed to load smart tube attachment with id: {} for direction: {}",
@@ -85,7 +85,7 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
         }
     }
 
-    public void addTubeAttachment(Direction direction, ISmartTubeAttachment smartTube) {
+    public void addTubeAttachment(Direction direction, ITubeAttachment smartTube) {
         smartTubeAttachments.put(direction, smartTube);
         setChanged();
         if (level != null && !level.isClientSide) {
@@ -94,8 +94,8 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
     }
 
     public void activateAllTubeAttachments(LivingEntity entity, TravelPathMover travelPathMover, BlockPos pos) {
-        for (Map.Entry<Direction, ISmartTubeAttachment> attachmentEntry : smartTubeAttachments.entrySet()) {
-            ISmartTubeAttachment value = attachmentEntry.getValue();
+        for (Map.Entry<Direction, ITubeAttachment> attachmentEntry : smartTubeAttachments.entrySet()) {
+            ITubeAttachment value = attachmentEntry.getValue();
             ITubeActionPoint actionPoint = value.getActionPoint(attachmentEntry.getKey());
             if (actionPoint == null) continue;
             actionPoint.handleTravelPath(entity, travelPathMover, pos);
@@ -112,7 +112,7 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
     }
 
     @Nullable
-    public ISmartTubeAttachment getTubeAttachment(Direction direction) {
+    public ITubeAttachment getTubeAttachment(Direction direction) {
         return smartTubeAttachments.get(direction);
     }
 
@@ -124,8 +124,8 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
         return !smartTubeAttachments.isEmpty();
     }
 
-    public Map<Direction, ISmartTubeAttachment> getTubeAttachments() {
-        return Map.copyOf(smartTubeAttachments);
+    public Map<Direction, ITubeAttachment> getTubeAttachments() {
+        return smartTubeAttachments;
     }
 
     public List<Direction> getAttachmentDirectionsNoEmit() {
@@ -137,7 +137,7 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
     }
 
     public boolean canEmitTo(Direction direction) {
-        ISmartTubeAttachment attachment = smartTubeAttachments.get(direction);
+        ITubeAttachment attachment = smartTubeAttachments.get(direction);
         if (attachment == null) return false;
         return attachment.emitRedstoneSignal();
     }

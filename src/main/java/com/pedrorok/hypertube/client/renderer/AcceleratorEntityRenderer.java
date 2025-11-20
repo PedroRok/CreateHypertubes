@@ -5,6 +5,7 @@ import com.pedrorok.hypertube.blocks.HyperAcceleratorBlock;
 import com.pedrorok.hypertube.blocks.blockentities.HyperAcceleratorBlockEntity;
 import com.pedrorok.hypertube.client.BezierTextureRenderer;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
+import com.pedrorok.hypertube.core.smarttube.ITubeAttachment;
 import com.pedrorok.hypertube.registry.ModPartialModels;
 import com.pedrorok.hypertube.utils.RenderUtils;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
@@ -18,6 +19,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Map;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 02/06/2025
@@ -42,17 +45,14 @@ public class AcceleratorEntityRenderer extends KineticBlockEntityRenderer<HyperA
 
         Direction facing = blockState.getValue(HyperAcceleratorBlock.FACING);
         boolean isTubeOnVertical = facing.getAxis().isVertical();
-        for (Direction attachmentDirection : be.getAttachmentDirections()) {
-            SuperByteBuffer smartTubeModel =
-                    isTubeOnVertical ?
-                    CachedBuffers.partialFacingVertical(ModPartialModels.REDSTONE_DETECTOR, blockState, Direction.NORTH) :
-                    CachedBuffers.partialFacing(ModPartialModels.REDSTONE_DETECTOR, blockState, Direction.NORTH);
+        be.getTubeAttachments().forEach((direct, attachment) -> {
+            SuperByteBuffer smartTubeModel = CachedBuffers.partial(attachment.getPartialModel(blockState, be, direct), blockState);
 
-            smartTubeModel.renderInto(ms, buffer.getBuffer(RenderType.translucent()));
-            RenderUtils.rotateToFace(smartTubeModel, facing, attachmentDirection, isTubeOnVertical);
-
+            RenderUtils.rotateToFace(smartTubeModel, facing, direct.getOpposite(), isTubeOnVertical);
             smartTubeModel.light(light);
-        }
+            smartTubeModel.renderInto(ms, buffer.getBuffer(RenderType.translucent()));
+        });
+
 
         SuperByteBuffer cogwheelModel = CachedBuffers.partialFacingVertical(ModPartialModels.COGWHEEL_HOLE, blockState, facing);
 
