@@ -192,6 +192,7 @@ public class HyperEntranceBlock extends ActionTubeBlock implements EntityBlock, 
 
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        if (super.onWrenched(state, context) == InteractionResult.SUCCESS) return InteractionResult.SUCCESS;
 
         BlockEntity blockEntity = context.getLevel().getBlockEntity(context.getClickedPos());
         if (blockEntity instanceof HyperEntranceBlockEntity entrance) {

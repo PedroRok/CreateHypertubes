@@ -3,21 +3,22 @@ package com.pedrorok.hypertube.core.smarttube;
 import com.pedrorok.hypertube.blocks.ActionTubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
+import com.pedrorok.hypertube.registry.ModItems;
 import com.pedrorok.hypertube.registry.ModPartialModels;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 19/11/2025
  * @project Create Hypertube
  */
-public class TubeSensorAttachment implements ITubeAttachment {
+public class TubeScannerAttachment implements ITubeAttachment {
 
     @Override
     public String getId() {
-        return "tube_sensor";
+        return "tube_scanner";
     }
 
     @Override
@@ -27,7 +28,10 @@ public class TubeSensorAttachment implements ITubeAttachment {
 
     @Override
     public PartialModel getPartialModel(BlockState blockState, ActionTubeBlockEntity blockEntity, Direction facing) {
-        return ModPartialModels.REDSTONE_DETECTOR;
+        if (blockState.getValue(ActionTubeBlock.POWER) > 0) {
+            return ModPartialModels.TUBE_SCANNER_ACTIVE;
+        }
+        return ModPartialModels.TUBE_SCANNER;
     }
 
     @Override
@@ -52,5 +56,10 @@ public class TubeSensorAttachment implements ITubeAttachment {
                 }
             }
         });
+    }
+
+    @Override
+    public ItemStack getItemStack() {
+        return ModItems.TUBE_SCANNER.asStack();
     }
 }

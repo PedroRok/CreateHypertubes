@@ -16,7 +16,7 @@ public class ModItems {
     public static final ItemEntry<TubeAttachmentItem> REDSTONE_DETECTOR = REGISTRATE.item("redstone_detector_tube_attachment", (properties) -> new TubeAttachmentItem("redstone_input", properties))
             .register();
 
-    public static final ItemEntry<TubeAttachmentItem> TUBE_SENSOR = REGISTRATE.item("tube_sensor_attachment", (properties) -> new TubeAttachmentItem("tube_sensor", properties))
+    public static final ItemEntry<TubeAttachmentItem> TUBE_SCANNER = REGISTRATE.item("tube_scanner_attachment", (properties) -> new TubeAttachmentItem("tube_scanner", properties))
             .register();
 
     public static void register() {

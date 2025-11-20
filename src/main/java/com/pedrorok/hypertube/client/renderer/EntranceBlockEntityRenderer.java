@@ -52,7 +52,7 @@ public class EntranceBlockEntityRenderer extends KineticBlockEntityRenderer<Hype
         });
 
 
-        SuperByteBuffer cogwheelModel = CachedBuffers.partialFacingVertical(ModPartialModels.COGWHEEL_HOLE, blockState, Direction.NORTH);
+        SuperByteBuffer cogwheelModel = CachedBuffers.partialFacingVertical(ModPartialModels.COGWHEEL_HOLE, blockState, facing);
 
         float angle = getAngleForBe(be, be.getBlockPos(), facing.getAxis());
         Direction.Axis rotationAxisOf = getRotationAxisOf(be);

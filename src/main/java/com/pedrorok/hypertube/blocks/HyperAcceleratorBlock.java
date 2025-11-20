@@ -140,6 +140,8 @@ public class HyperAcceleratorBlock extends ActionTubeBlock implements EntityBloc
 
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        if (super.onWrenched(state, context) == InteractionResult.SUCCESS) return InteractionResult.SUCCESS;
+
         BlockEntity blockEntity = context.getLevel().getBlockEntity(context.getClickedPos());
         if (blockEntity instanceof HyperAcceleratorBlockEntity entrance) {
             if (entrance.wrenchClicked(context.getClickedFace())) {

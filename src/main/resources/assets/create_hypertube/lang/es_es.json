@@ -25,5 +25,7 @@
   "block.hypertube.hyper_entrance.automatic_lock": "Modo de bloqueo: Automático",
   "hypertube.travel.too_short": "Tu hipertubo es demasiado corto para viajar en él",
   "block.hypertube.hyper_accelerator.accelerate_mode": "Modo: Aceleración",
-  "block.hypertube.hyper_accelerator.brake_mode": "Modo: Frenado"
+  "block.hypertube.hyper_accelerator.brake_mode": "Modo: Frenado",
+  "item.create_hypertube.redstone_detector_tube_attachment": "Accesorio de tubo detector de redstone",
+  "item.create_hypertube.tube_scanner_attachment": "Accesorio de tubo escáner"
 }

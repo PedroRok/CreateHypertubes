@@ -25,5 +25,7 @@
   "block.hypertube.hyper_entrance.automatic_lock": "Автоматический режим блокировки",
   "hypertube.travel.too_short": "Ваша труба слишком коротка для перемещения",
   "block.hypertube.hyper_accelerator.accelerate_mode": "Режим Ускорения",
-  "block.hypertube.hyper_accelerator.brake_mode": "Режим Торможения"
+  "block.hypertube.hyper_accelerator.brake_mode": "Режим Торможения",
+    "item.create_hypertube.redstone_detector_tube_attachment": "Трубный датчик редстоуна",
+    "item.create_hypertube.tube_scanner_attachment": "Трубный сканер"
 }

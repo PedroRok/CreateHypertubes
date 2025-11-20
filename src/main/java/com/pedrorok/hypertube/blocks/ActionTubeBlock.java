@@ -1,14 +1,22 @@
 package com.pedrorok.hypertube.blocks;
 
 import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
+import com.pedrorok.hypertube.core.smarttube.ITubeAttachment;
+import com.pedrorok.hypertube.registry.ModBlocks;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -32,6 +40,9 @@ public abstract class ActionTubeBlock extends TubeBlock {
     public ActionTubeBlock(Properties properties) {
         super(properties);
     }
+
+    protected abstract BooleanProperty propertyToUpdate();
+
 
     @Override
     protected boolean isSignalSource(@NotNull BlockState state) {
@@ -82,7 +93,11 @@ public abstract class ActionTubeBlock extends TubeBlock {
     public boolean canConnectRedstone(BlockState state, BlockGetter world, BlockPos pos, Direction side) {
         ActionTubeBlockEntity tubeBlockEntity = (ActionTubeBlockEntity) world.getBlockEntity(pos);
         if (tubeBlockEntity == null) return false;
-        return side != null && side != state.getValue(FACING) && side != state.getValue(FACING).getOpposite() && tubeBlockEntity.getAttachmentDirections().contains(side);
+        return side != null && side != state.getValue(FACING) && side != state.getValue(FACING).getOpposite() && tubeBlockEntity.getAttachmentDirections().contains(side.getOpposite());
+    }
+
+    public static boolean canPlaceAttachment(BlockState state, BlockGetter world, BlockPos pos, Direction side) {
+        return side != null && side != state.getValue(FACING) && side != state.getValue(FACING).getOpposite();
     }
 
     @Override
@@ -102,10 +117,39 @@ public abstract class ActionTubeBlock extends TubeBlock {
         }
     }
 
-    protected abstract BooleanProperty propertyToUpdate();
+    @Override
+    void dropBlockToPlayer(boolean isWrenched, Level level, BlockPos pos, Player player, BlockEntity blockEntity, int amount) {
+        super.dropBlockToPlayer(isWrenched, level, pos, player, blockEntity, amount);
+        if (player.isCreative()) return;
+        if (!(blockEntity instanceof ActionTubeBlockEntity actionTubeBlock)) return;
+        actionTubeBlock.getTubeAttachments().forEach((dir, attachment) -> {
+            ItemStack stack = attachment.getItemStack();
+            if (isWrenched) player.getInventory().placeItemBackInInventory(stack);
+            else Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
+        });
+    }
+
+    @Override
+    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+
+        BlockPos clickedPos = context.getClickedPos();
+        Direction clickedFace = context.getClickedFace();
+        Level level = context.getLevel();
+        BlockEntity blockEntity = level.getBlockEntity(clickedPos);
+
+        if (!(blockEntity instanceof ActionTubeBlockEntity action)) return InteractionResult.PASS;
+        if (!action.hasTubeAttachment(clickedFace)) return InteractionResult.PASS;
 
 
-    public boolean canPlaceAttachment(BlockState state, BlockGetter world, BlockPos pos, Direction side) {
-        return side != null && side != state.getValue(FACING) && side != state.getValue(FACING).getOpposite();
+
+        ITubeAttachment iTubeAttachment = action.removeTubeAttachment(clickedFace);
+        if (iTubeAttachment == null) return InteractionResult.SUCCESS;
+        Player player = context.getPlayer();
+        if (!player.isCreative()) {
+            ItemStack stack = iTubeAttachment.getItemStack();
+            player.getInventory().placeItemBackInInventory(stack);
+        }
+        IWrenchable.playRemoveSound(context.getLevel(), context.getClickedPos());
+        return InteractionResult.SUCCESS;
     }
 }

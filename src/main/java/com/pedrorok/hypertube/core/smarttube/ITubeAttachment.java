@@ -1,11 +1,10 @@
 package com.pedrorok.hypertube.core.smarttube;
 
-import com.pedrorok.hypertube.blocks.ActionTubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,6 +29,7 @@ public interface ITubeAttachment {
     }
 
     PartialModel getPartialModel(BlockState blockState, ActionTubeBlockEntity blockEntity, Direction facing);
+    ItemStack getItemStack();
 
     static void register(@NotNull ITubeAttachment smartTube) {
         if (REGISTRY.containsKey(smartTube.getId())) {
@@ -45,6 +45,6 @@ public interface ITubeAttachment {
 
     static void init() {
         register(new RedstoneDetectorAttachment());
-        register(new TubeSensorAttachment());
+        register(new TubeScannerAttachment());
     }
 }

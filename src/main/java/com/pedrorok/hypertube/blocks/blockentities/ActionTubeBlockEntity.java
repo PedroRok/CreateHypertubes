@@ -89,6 +89,7 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
         smartTubeAttachments.put(direction, smartTube);
         setChanged();
         if (level != null && !level.isClientSide) {
+            level.updateNeighborsAt(worldPosition, getBlockState().getBlock());
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
     }
@@ -102,13 +103,17 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
         }
     }
 
-    public void removeTubeAttachment(Direction direction) {
-        if (smartTubeAttachments.remove(direction) != null) {
+    public ITubeAttachment removeTubeAttachment(Direction direction) {
+        ITubeAttachment removedAttachment = smartTubeAttachments.remove(direction);
+        if (removedAttachment != null) {
             setChanged();
             if (level != null && !level.isClientSide) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+                level.updateNeighborsAt(worldPosition, getBlockState().getBlock());
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 4);
+                return removedAttachment;
             }
         }
+        return null;
     }
 
     @Nullable
