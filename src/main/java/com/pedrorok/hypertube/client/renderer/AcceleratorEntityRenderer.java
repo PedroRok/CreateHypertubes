@@ -6,6 +6,7 @@ import com.pedrorok.hypertube.blocks.blockentities.HyperAcceleratorBlockEntity;
 import com.pedrorok.hypertube.client.BezierTextureRenderer;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.registry.ModPartialModels;
+import com.pedrorok.hypertube.utils.RenderUtils;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SuperByteBuffer;
@@ -40,12 +41,18 @@ public class AcceleratorEntityRenderer extends KineticBlockEntityRenderer<HyperA
         }
 
         Direction facing = blockState.getValue(HyperAcceleratorBlock.FACING);
+        boolean isTubeOnVertical = facing.getAxis().isVertical();
+        for (Direction attachmentDirection : be.getAttachmentDirections()) {
+            SuperByteBuffer smartTubeModel =
+                    isTubeOnVertical ?
+                    CachedBuffers.partialFacingVertical(ModPartialModels.REDSTONE_DETECTOR, blockState, Direction.NORTH) :
+                    CachedBuffers.partialFacing(ModPartialModels.REDSTONE_DETECTOR, blockState, Direction.NORTH);
 
+            smartTubeModel.renderInto(ms, buffer.getBuffer(RenderType.translucent()));
+            RenderUtils.rotateToFace(smartTubeModel, facing, attachmentDirection, isTubeOnVertical);
 
-        SuperByteBuffer smartTubeModel = CachedBuffers.partialFacingVertical(ModPartialModels.SMART_TUBE_DETECTOR, blockState, facing);
-
-        smartTubeModel.renderInto(ms, buffer.getBuffer(RenderType.translucent()));
-        smartTubeModel.light(light);
+            smartTubeModel.light(light);
+        }
 
         SuperByteBuffer cogwheelModel = CachedBuffers.partialFacingVertical(ModPartialModels.COGWHEEL_HOLE, blockState, facing);
 

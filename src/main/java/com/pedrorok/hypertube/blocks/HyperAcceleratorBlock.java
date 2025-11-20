@@ -36,7 +36,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -56,11 +55,9 @@ import java.util.List;
  */
 public class HyperAcceleratorBlock extends ActionTubeBlock implements EntityBlock, ICogWheel, ITubeActionPoint {
 
-    public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
     public static final BooleanProperty ACCELERATE = BooleanProperty.create("accelerate");
-    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
 
     public HyperAcceleratorBlock(Properties properties) {
@@ -194,27 +191,10 @@ public class HyperAcceleratorBlock extends ActionTubeBlock implements EntityBloc
     }
     // ------------- END -------------
 
-    // ------- Redstone Things -------
     @Override
-    public boolean canConnectRedstone(BlockState state, BlockGetter world, BlockPos pos, Direction side) {
-        return side != null && side != state.getValue(FACING) && side != state.getValue(FACING).getOpposite();
+    protected BooleanProperty propertyToUpdate() {
+        return ACCELERATE;
     }
-
-    @Override
-    protected void neighborChanged(BlockState state, Level level, @NotNull BlockPos pos, @NotNull Block block, @NotNull BlockPos fromPos, boolean isMoving) {
-        boolean neighborHasSignal = level.hasNeighborSignal(pos) || level.hasNeighborSignal(pos.above());
-        boolean actualState = state.getValue(POWERED);
-        if (neighborHasSignal && !actualState) {
-            level.scheduleTick(pos, this, 4);
-            level.setBlock(pos, state.setValue(POWERED, true).setValue(ACCELERATE, !state.getValue(ACCELERATE)), 2);
-            IWrenchable.playRotateSound(level, pos);
-
-        } else if (!neighborHasSignal && actualState) {
-            level.setBlock(pos, state.setValue(POWERED, false).setValue(ACCELERATE, !state.getValue(ACCELERATE)), 2);
-            IWrenchable.playRotateSound(level, pos);
-        }
-    }
-    // ------------ END -------------
 
     // ------- Other Methods -------
     @Override

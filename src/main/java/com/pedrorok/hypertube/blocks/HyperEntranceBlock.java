@@ -17,7 +17,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -32,7 +31,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -49,11 +47,9 @@ import java.util.List;
  */
 public class HyperEntranceBlock extends ActionTubeBlock implements EntityBlock, ICogWheel {
 
-    public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
     public static final BooleanProperty LOCKED = BlockStateProperties.LOCKED;
     public static final BooleanProperty IN_FRONT = BooleanProperty.create("has_block_in_front");
-    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
     private static final VoxelShape SHAPE_NORTH = Block.box(0D, 0D, 0D, 16D, 16D, 23D);
     private static final VoxelShape SHAPE_SOUTH = Block.box(0D, 0D, -7D, 16D, 16D, 16D);
@@ -226,28 +222,8 @@ public class HyperEntranceBlock extends ActionTubeBlock implements EntityBlock, 
         return InteractionResult.SUCCESS;
     }
 
-    // ------- Redstone Things -------
     @Override
-    public boolean canConnectRedstone(BlockState state, BlockGetter world, BlockPos pos, Direction side) {
-        return side != null && side != state.getValue(FACING) && side != state.getValue(FACING).getOpposite();
+    protected BooleanProperty propertyToUpdate() {
+        return LOCKED;
     }
-
-
-    @Override
-    protected void neighborChanged(BlockState state, Level level, @NotNull BlockPos pos, @NotNull Block block, @NotNull BlockPos fromPos, boolean isMoving) {
-        boolean neighborHasSignal = level.hasNeighborSignal(pos) || level.hasNeighborSignal(pos.above());
-        boolean actualState = state.getValue(POWERED);
-        if (neighborHasSignal && !actualState) {
-            level.scheduleTick(pos, this, 4);
-            level.setBlock(pos, state.setValue(POWERED, true).setValue(LOCKED, !state.getValue(LOCKED)), 2);
-            IWrenchable.playRotateSound(level, pos);
-
-        } else if (!neighborHasSignal && actualState) {
-            level.setBlock(pos, state.setValue(POWERED, false).setValue(LOCKED, !state.getValue(LOCKED)), 2);
-            IWrenchable.playRotateSound(level, pos);
-        }
-        BlockState blockState = level.getBlockState(pos);
-        updateInFrontProperty(level, pos, blockState);
-    }
-    // ------------ END -------------
 }

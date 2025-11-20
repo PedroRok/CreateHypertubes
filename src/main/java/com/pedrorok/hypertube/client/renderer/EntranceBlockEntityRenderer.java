@@ -1,11 +1,13 @@
 package com.pedrorok.hypertube.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.pedrorok.hypertube.blocks.HyperAcceleratorBlock;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
 import com.pedrorok.hypertube.client.BezierTextureRenderer;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.registry.ModPartialModels;
+import com.pedrorok.hypertube.utils.RenderUtils;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SuperByteBuffer;
@@ -38,17 +40,23 @@ public class EntranceBlockEntityRenderer extends KineticBlockEntityRenderer<Hype
         if (!(blockState.getBlock() instanceof HyperEntranceBlock)) {
             return;
         }
-        Direction facing = blockState.getValue(HyperEntranceBlock.FACING);
+        Direction facing = blockState.getValue(HyperAcceleratorBlock.FACING);
+        boolean isTubeOnVertical = facing.getAxis().isVertical();
+        for (Direction attachmentDirection : be.getAttachmentDirections()) {
+            SuperByteBuffer smartTubeModel =
+                    isTubeOnVertical ?
+                            CachedBuffers.partialFacingVertical(ModPartialModels.REDSTONE_DETECTOR, blockState, Direction.NORTH) :
+                            CachedBuffers.partialFacing(ModPartialModels.REDSTONE_DETECTOR, blockState, Direction.NORTH);
 
-        SuperByteBuffer smartTubeModel = CachedBuffers.partialFacingVertical(ModPartialModels.SMART_TUBE_DETECTOR, blockState, facing);
+            smartTubeModel.renderInto(ms, buffer.getBuffer(RenderType.translucent()));
+            RenderUtils.rotateToFace(smartTubeModel, facing, attachmentDirection, isTubeOnVertical);
 
-        smartTubeModel.renderInto(ms, buffer.getBuffer(RenderType.translucent()));
-            //smartTubeModel.translate(0, 1, 0);
-        rotateAroundCenterHorizontal(smartTubeModel, 0);
-        smartTubeModel.light(light);
+            smartTubeModel.light(light);
+        }
 
 
-        SuperByteBuffer cogwheelModel = CachedBuffers.partialFacingVertical(ModPartialModels.COGWHEEL_HOLE, blockState, facing);
+
+        SuperByteBuffer cogwheelModel = CachedBuffers.partialFacingVertical(ModPartialModels.COGWHEEL_HOLE, blockState, Direction.NORTH);
 
         float angle = getAngleForBe(be, be.getBlockPos(), facing.getAxis());
         Direction.Axis rotationAxisOf = getRotationAxisOf(be);
@@ -62,17 +70,7 @@ public class EntranceBlockEntityRenderer extends KineticBlockEntityRenderer<Hype
         }
     }
 
-    private void rotateAroundCenterVertical(SuperByteBuffer buffer, int degreaseRotated) {
-        buffer.translate(0.5f, 0.5f, 0.5f);
-        buffer.rotateY((float) Math.toRadians(degreaseRotated));
-        buffer.translate(-0.5f, -0.5f, -0.5f);
-    }
 
-    private void rotateAroundCenterHorizontal(SuperByteBuffer buffer, int degreaseRotated) {
-        buffer.translate(0.5f, 0.5f, 0.5f);
-        buffer.rotateX((float) Math.toRadians(degreaseRotated));
-        buffer.translate(-0.5f, -0.5f, -0.5f);
-    }
 
     @Override
     public boolean shouldRenderOffScreen(HyperEntranceBlockEntity p_112306_) {

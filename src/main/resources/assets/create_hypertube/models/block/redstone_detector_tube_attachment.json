@@ -4,8 +4,8 @@
 	"parent": "block/block",
 	"texture_size": [32, 32],
 	"textures": {
-		"7": "create_hypertube:block/smart_tube_detector",
-		"particle": "create_hypertube:block/hypertube_entrance"
+		"7": "create_hypertube:block/redstone_detector_tube_attachment",
+		"particle": "create_hypertube:block/redstone_detector_tube_attachment"
 	},
 	"elements": [
 		{

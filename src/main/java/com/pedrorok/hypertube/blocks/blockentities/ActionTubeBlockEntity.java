@@ -2,11 +2,10 @@ package com.pedrorok.hypertube.blocks.blockentities;
 
 import com.mojang.serialization.Codec;
 import com.pedrorok.hypertube.HypertubeMod;
-import com.pedrorok.hypertube.blocks.ActionTubeBlock;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.config.ServerConfig;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.core.smarttube.ISmartTubeAttachment;
-import com.pedrorok.hypertube.core.smarttube.SmartRedstoneTubeAttachment;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelPathMover;
 import com.pedrorok.hypertube.registry.ModParticles;
@@ -33,9 +32,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 11/08/2025
@@ -62,18 +59,15 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
         for (Map.Entry<Direction, ISmartTubeAttachment> entry : smartTubeAttachments.entrySet()) {
             smartTubesTag.put(entry.getKey().getSerializedName(), Codec.STRING.write(NbtOps.INSTANCE, entry.getValue().getId()));
         }
-        compound.put("smart_tubes", smartTubesTag);
+        compound.put("attachments", smartTubesTag);
     }
 
     @Override
     protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(compound, registries, clientPacket);
+        if (!compound.contains("attachments", Tag.TAG_COMPOUND)) return;
 
-        smartTubeAttachments.clear();
-
-        if (!compound.contains("SmartTubes", Tag.TAG_COMPOUND)) return;
-
-        CompoundTag smartTubesTag = compound.getCompound("SmartTubes");
+        CompoundTag smartTubesTag = compound.getCompound("attachments");
         for (Direction direction : Direction.values()) {
             String directionKey = direction.getSerializedName();
             if (!smartTubesTag.contains(directionKey, Tag.TAG_STRING)) continue;
@@ -91,7 +85,7 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
         }
     }
 
-    public void addSmartTubeAttachment(Direction direction, ISmartTubeAttachment smartTube) {
+    public void addTubeAttachment(Direction direction, ISmartTubeAttachment smartTube) {
         smartTubeAttachments.put(direction, smartTube);
         setChanged();
         if (level != null && !level.isClientSide) {
@@ -99,14 +93,16 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
         }
     }
 
-    public void activateAllSmartTubeAttachments(LivingEntity entity, TravelPathMover travelPathMover, BlockPos pos) {
+    public void activateAllTubeAttachments(LivingEntity entity, TravelPathMover travelPathMover, BlockPos pos) {
         for (Map.Entry<Direction, ISmartTubeAttachment> attachmentEntry : smartTubeAttachments.entrySet()) {
             ISmartTubeAttachment value = attachmentEntry.getValue();
-            value.getActionPoint(attachmentEntry.getKey()).handleTravelPath(entity, travelPathMover, pos);
+            ITubeActionPoint actionPoint = value.getActionPoint(attachmentEntry.getKey());
+            if (actionPoint == null) continue;
+            actionPoint.handleTravelPath(entity, travelPathMover, pos);
         }
     }
 
-    public void removeSmartTubeAttachment(Direction direction) {
+    public void removeTubeAttachment(Direction direction) {
         if (smartTubeAttachments.remove(direction) != null) {
             setChanged();
             if (level != null && !level.isClientSide) {
@@ -116,21 +112,37 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
     }
 
     @Nullable
-    public ISmartTubeAttachment getSmartTubeAttachment(Direction direction) {
+    public ISmartTubeAttachment getTubeAttachment(Direction direction) {
         return smartTubeAttachments.get(direction);
     }
 
-    public boolean hasSmartTubeAttachment(Direction direction) {
+    public boolean hasTubeAttachment(Direction direction) {
         return smartTubeAttachments.containsKey(direction);
     }
 
-    public boolean hasAnySmartTubeAttachment() {
+    public boolean hasAnyTubeAttachment() {
         return !smartTubeAttachments.isEmpty();
     }
 
-    public Map<Direction, ISmartTubeAttachment> getSmartTubeAttachments() {
+    public Map<Direction, ISmartTubeAttachment> getTubeAttachments() {
         return Map.copyOf(smartTubeAttachments);
     }
+
+    public List<Direction> getAttachmentDirectionsNoEmit() {
+        return smartTubeAttachments.entrySet().stream().filter(attach -> !attach.getValue().emitRedstoneSignal()).map(Map.Entry::getKey).toList();
+    }
+
+    public Set<Direction> getAttachmentDirections() {
+        return smartTubeAttachments.keySet();
+    }
+
+    public boolean canEmitTo(Direction direction) {
+        ISmartTubeAttachment attachment = smartTubeAttachments.get(direction);
+        if (attachment == null) return false;
+        return attachment.emitRedstoneSignal();
+    }
+
+
     // --------------------------------------
 
 

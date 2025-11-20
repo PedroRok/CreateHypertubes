@@ -34,11 +34,12 @@ public class HypertubeMod {
         modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC, MOD_ID + "-server.toml");
 
         REGISTRATE.registerEventListeners(modEventBus);
-        
+
         ModPartialModels.init();
 
         ModBlocks.register();
         ModBlockEntities.register();
+        ModItems.register();
 
         ModCreativeTab.register(modEventBus);
         ModDataComponent.register(modEventBus);

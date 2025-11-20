@@ -95,8 +95,8 @@ public class TravelPathMover {
                 travelAction.handleTravelPath(entity, this, actionPos);
             }
             BlockEntity be = entity.level().getBlockEntity(actionPos);
-            if (be instanceof ActionTubeBlockEntity actionTubeBlockEntity && actionTubeBlockEntity.hasAnySmartTubeAttachment()) {
-                actionTubeBlockEntity.activateAllSmartTubeAttachments(entity, this, actionPos);
+            if (be instanceof ActionTubeBlockEntity actionTubeBlockEntity && actionTubeBlockEntity.hasAnyTubeAttachment()) {
+                actionTubeBlockEntity.activateAllTubeAttachments(entity, this, actionPos);
             }
         }
 
