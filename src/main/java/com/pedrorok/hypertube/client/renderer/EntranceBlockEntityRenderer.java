@@ -1,11 +1,13 @@
 package com.pedrorok.hypertube.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.pedrorok.hypertube.blocks.HyperAcceleratorBlock;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
 import com.pedrorok.hypertube.client.BezierTextureRenderer;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.registry.ModPartialModels;
+import com.pedrorok.hypertube.utils.RenderUtils;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SuperByteBuffer;
@@ -39,7 +41,17 @@ public class EntranceBlockEntityRenderer extends KineticBlockEntityRenderer<Hype
             return;
         }
 
-        Direction facing = blockState.getValue(HyperEntranceBlock.FACING);
+        Direction facing = blockState.getValue(HyperAcceleratorBlock.FACING);
+        boolean isTubeOnVertical = facing.getAxis().isVertical();
+        be.getTubeAttachments().forEach((direct, attachment) -> {
+            SuperByteBuffer smartTubeModel = CachedBuffers.partial(attachment.getPartialModel(blockState, be, direct), blockState);
+
+            RenderUtils.rotateToFace(smartTubeModel, facing, direct.getOpposite(), isTubeOnVertical);
+            smartTubeModel.light(light);
+            smartTubeModel.renderInto(ms, buffer.getBuffer(RenderType.translucent()));
+        });
+
+
         SuperByteBuffer cogwheelModel = CachedBuffers.partialFacingVertical(ModPartialModels.COGWHEEL_HOLE, blockState, facing);
 
         float angle = getAngleForBe(be, be.getBlockPos(), facing.getAxis());
@@ -53,6 +65,8 @@ public class EntranceBlockEntityRenderer extends KineticBlockEntityRenderer<Hype
             tubeRenderer.renderBezierConnection(be.getBlockPos(), bezierConnection, ms, buffer, light, overlay);
         }
     }
+
+
 
     @Override
     public boolean shouldRenderOffScreen(HyperEntranceBlockEntity p_112306_) {

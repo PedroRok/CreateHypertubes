@@ -138,10 +138,16 @@ public abstract class TubeBlock extends KineticBlock implements ITubeConnection,
             }
         }
 
+        dropBlockToPlayer(wrenched, level, pos, player, blockEntity, toDrop);
+
+        return super.playerWillDestroy(level, pos, state, player);
+    }
+
+    void dropBlockToPlayer(boolean isWrenched, Level level, BlockPos pos, Player player, BlockEntity blockEntity, int amount) {
         if (!player.isCreative()) {
-            if (toDrop != 0 || wrenched) {
-                ItemStack stack = new ItemStack(ModBlocks.HYPERTUBE.get(), toDrop);
-                if (wrenched) player.getInventory().placeItemBackInInventory(stack);
+            if (amount != 0 || isWrenched) {
+                ItemStack stack = new ItemStack(ModBlocks.HYPERTUBE.get(), amount);
+                if (isWrenched) player.getInventory().placeItemBackInInventory(stack);
                 else Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
             }
         }

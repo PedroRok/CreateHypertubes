@@ -6,6 +6,7 @@ import com.tterrag.registrate.util.entry.RegistryEntry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -44,6 +45,7 @@ public class ModCreativeTab {
             for (RegistryEntry<Block> entry : REGISTRATE.getAll(Registries.BLOCK)) {
                 var block = entry.get();
                 if (block.asItem() == Items.AIR) continue;
+                if (ModItems.TUBE_SCANNER_UNFINISHED.is(item.asItem())) return;
                 event.accept(block);
             }
         }

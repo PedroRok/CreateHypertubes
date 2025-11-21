@@ -12,6 +12,7 @@ import net.createmod.catnip.theme.Color;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -270,6 +271,9 @@ public class BezierConnection implements IConnection {
     @Override
     public void updateTubeSegments(Level level) {
         tubeSegments = tubeSegments == 1 ? 2 : 1;
+        BlockState state = level.getBlockState(fromPos.pos());
+        level.updateNeighborsAt(fromPos.pos(), state.getBlock());
+        level.sendBlockUpdated(fromPos.pos(), state, state, 3);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.blocks;
 
+import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.blocks.blockentities.HyperAcceleratorBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
@@ -26,7 +27,10 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -34,7 +38,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -52,13 +55,12 @@ import java.util.List;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICogWheel, ITubeActionPoint {
+public class HyperAcceleratorBlock extends ActionTubeBlock implements EntityBlock, ICogWheel, ITubeActionPoint {
 
-    public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
     public static final BooleanProperty ACCELERATE = BooleanProperty.create("accelerate");
-    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
+
 
     public HyperAcceleratorBlock(Properties properties) {
         super(properties);
@@ -66,6 +68,7 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
                 .setValue(FACING, Direction.NORTH)
                 .setValue(OPEN, false)
                 .setValue(WATERLOGGED, false)
+                .setValue(POWER, 0)
                 .setValue(ACTIVE, false)
                 .setValue(ACCELERATE, true)
                 .setValue(POWERED, false));
@@ -73,7 +76,7 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, OPEN, WATERLOGGED, ACTIVE, ACCELERATE, POWERED);
+        builder.add(FACING, OPEN, WATERLOGGED, POWER, ACTIVE, ACCELERATE, POWERED);
         super.createBlockStateDefinition(builder);
     }
 
@@ -129,7 +132,7 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> type) {
-        return (level1, pos, state1, be) -> ((HyperAcceleratorBlockEntity) be).tick();
+        return (level1, pos, state1, be) -> ((ActionTubeBlockEntity) be).tick();
     }
 
     @Override
@@ -139,6 +142,9 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
 
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        if (context.getLevel().isClientSide) return InteractionResult.SUCCESS;
+        if (super.onWrenched(state, context) == InteractionResult.SUCCESS) return InteractionResult.SUCCESS;
+
         BlockEntity blockEntity = context.getLevel().getBlockEntity(context.getClickedPos());
         if (blockEntity instanceof HyperAcceleratorBlockEntity entrance) {
             if (entrance.wrenchClicked(context.getClickedFace())) {
@@ -191,28 +197,10 @@ public class HyperAcceleratorBlock extends TubeBlock implements EntityBlock, ICo
     }
     // ------------- END -------------
 
-    // ------- Redstone Things -------
     @Override
-    public boolean canConnectRedstone(BlockState state, BlockGetter world, BlockPos pos, Direction side) {
-        return side != null && side != state.getValue(FACING) && side != state.getValue(FACING).getOpposite();
+    protected BooleanProperty propertyToUpdate() {
+        return ACCELERATE;
     }
-
-
-    @Override
-    public void neighborChanged(BlockState state, Level level, @NotNull BlockPos pos, @NotNull Block block, @NotNull BlockPos fromPos, boolean isMoving) {
-        boolean neighborHasSignal = level.hasNeighborSignal(pos) || level.hasNeighborSignal(pos.above());
-        boolean actualState = state.getValue(POWERED);
-        if (neighborHasSignal && !actualState) {
-            level.scheduleTick(pos, this, 4);
-            level.setBlock(pos, state.setValue(POWERED, true).setValue(ACCELERATE, !state.getValue(ACCELERATE)), 2);
-            IWrenchable.playRotateSound(level, pos);
-
-        } else if (!neighborHasSignal && actualState) {
-            level.setBlock(pos, state.setValue(POWERED, false).setValue(ACCELERATE, !state.getValue(ACCELERATE)), 2);
-            IWrenchable.playRotateSound(level, pos);
-        }
-    }
-    // ------------ END -------------
 
     // ------- Other Methods -------
     @Override

@@ -25,5 +25,8 @@
   "block.hypertube.hyper_entrance.automatic_lock": "Automatic Lock Mode",
   "hypertube.travel.too_short": "Your tube is too short to travel",
   "block.hypertube.hyper_accelerator.accelerate_mode": "Accelerate Mode",
-  "block.hypertube.hyper_accelerator.brake_mode": "Brake Mode"
+  "block.hypertube.hyper_accelerator.brake_mode": "Brake Mode",
+  "item.create_hypertube.redstone_detector_tube_attachment": "Redstone Detector Tube Attachment",
+  "item.create_hypertube.tube_scanner_attachment": "Tube Scanner Attachment",
+  "item.create_hypertube.tube_scanner_unfinished": "Unfinished Tube Scanner"
 }

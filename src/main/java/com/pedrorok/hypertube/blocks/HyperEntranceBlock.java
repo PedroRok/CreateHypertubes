@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.blocks;
 
+import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
@@ -17,7 +18,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -32,7 +32,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -47,13 +46,11 @@ import java.util.List;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperEntranceBlock extends TubeBlock implements EntityBlock, ICogWheel {
+public class HyperEntranceBlock extends ActionTubeBlock implements EntityBlock, ICogWheel {
 
-    public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
     public static final BooleanProperty LOCKED = BlockStateProperties.LOCKED;
     public static final BooleanProperty IN_FRONT = BooleanProperty.create("has_block_in_front");
-    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
     private static final VoxelShape SHAPE_NORTH = Block.box(0D, 0D, 0D, 16D, 16D, 23D);
     private static final VoxelShape SHAPE_SOUTH = Block.box(0D, 0D, -7D, 16D, 16D, 16D);
@@ -71,12 +68,13 @@ public class HyperEntranceBlock extends TubeBlock implements EntityBlock, ICogWh
                 .setValue(LOCKED, true)
                 .setValue(IN_FRONT, false)
                 .setValue(WATERLOGGED, false)
+                .setValue(POWER, 0)
                 .setValue(POWERED, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, OPEN, IN_FRONT, LOCKED, WATERLOGGED, POWERED);
+        builder.add(FACING, OPEN, IN_FRONT, LOCKED, WATERLOGGED, POWER, POWERED);
         super.createBlockStateDefinition(builder);
     }
 
@@ -157,7 +155,7 @@ public class HyperEntranceBlock extends TubeBlock implements EntityBlock, ICogWh
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> type) {
-        return (level1, pos, state1, be) -> ((HyperEntranceBlockEntity) be).tick();
+        return (level1, pos, state1, be) -> ((ActionTubeBlockEntity) be).tick();
     }
 
     public boolean canTravelConnect(LevelAccessor world, BlockPos pos, Direction facing) {
@@ -195,6 +193,8 @@ public class HyperEntranceBlock extends TubeBlock implements EntityBlock, ICogWh
 
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        if (context.getLevel().isClientSide) return InteractionResult.SUCCESS;
+        if (super.onWrenched(state, context) == InteractionResult.SUCCESS) return InteractionResult.SUCCESS;
 
         BlockEntity blockEntity = context.getLevel().getBlockEntity(context.getClickedPos());
         if (blockEntity instanceof HyperEntranceBlockEntity entrance) {
@@ -225,10 +225,9 @@ public class HyperEntranceBlock extends TubeBlock implements EntityBlock, ICogWh
         return InteractionResult.SUCCESS;
     }
 
-    // ------- Redstone Things -------
     @Override
-    public boolean canConnectRedstone(BlockState state, BlockGetter world, BlockPos pos, Direction side) {
-        return side != null && side != state.getValue(FACING) && side != state.getValue(FACING).getOpposite();
+    protected BooleanProperty propertyToUpdate() {
+        return LOCKED;
     }
 
 

@@ -1,0 +1,7 @@
+{
+	"textures": {
+		"0": "create_hypertube:block/redstone_detector_tube_attachment_active",
+		"particle": "create_hypertube:block/redstone_detector_tube_attachment_active"
+	},
+	"parent": "create_hypertube:block/redstone_detector_tube_attachment"
+}

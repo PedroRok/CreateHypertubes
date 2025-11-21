@@ -48,7 +48,10 @@ public class CameraMixin {
     }
 
     @Inject(method = "setup", at = @At("HEAD"), cancellable = true)
-    private void onSetup(BlockGetter p_90576_, Entity renderViewEntity, boolean isFrontView, boolean flipped, float PartialTicks, CallbackInfo ci) {
+    private void createHypertube$onSetup(BlockGetter p_90576_, Entity renderViewEntity, boolean isFrontView, boolean flipped, float PartialTicks, CallbackInfo ci) {
+        if (this.getEntity() == null) {
+            return;
+        }
         Options options = Minecraft.getInstance().options;
         Player player = Minecraft.getInstance().player;
         if (renderViewEntity != player) return;

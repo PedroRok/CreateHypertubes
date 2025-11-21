@@ -25,5 +25,8 @@
   "block.hypertube.hyper_entrance.automatic_lock": "自动关闭模式",
   "hypertube.travel.too_short": "你的管道太短，无法通行",
   "block.hypertube.hyper_accelerator.accelerate_mode": "加速模式",
-  "block.hypertube.hyper_accelerator.brake_mode": "制动模式"
+  "block.hypertube.hyper_accelerator.brake_mode": "制动模式",
+  "item.create_hypertube.redstone_detector_tube_attachment": "红石检测管道附件",
+  "item.create_hypertube.tube_scanner_attachment": "管道扫描器附件",
+  "item.create_hypertube.tube_scanner_unfinished": "未完成的管道扫描器"
 }

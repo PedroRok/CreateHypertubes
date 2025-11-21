@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_hypertube_entrance": {
+      "conditions": {
+        "items": [
+          {
+            "items": "create_hypertube:hypertube_entrance"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "create_hypertube:redstone_detector_tube_attachment"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_hypertube_entrance"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "create_hypertube:redstone_detector_tube_attachment"
+    ]
+  }
+}

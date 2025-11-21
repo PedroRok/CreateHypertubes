@@ -1,5 +1,8 @@
 package com.pedrorok.hypertube.core.travel;
 
+import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
+import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
+import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
@@ -62,6 +65,10 @@ public class TravelPathData {
 
     private void addTravelPoint(BlockPos pos, Level level) {
         BlockState blockState = level.getBlockState(pos);
+        if (level.getBlockState(pos).getBlock() instanceof ITubeActionPoint ||
+            (level.getBlockEntity(pos) instanceof ActionTubeBlockEntity tubeEntity && tubeEntity.hasAnyTubeAttachment())) {
+            actionPoints.add(pos);
+        }
 
         if (addCurvedTravelPoint(pos, level)) return;
         Block block = blockState.getBlock();
@@ -76,9 +83,6 @@ public class TravelPathData {
                 continue;
             travelPoints.add(nextPipe.getCenter());
             blockConnections.add(nextPipe);
-            if (level.getBlockState(nextPipe).getBlock() instanceof ITubeActionPoint) {
-                actionPoints.add(nextPipe);
-            }
             addTravelPoint(nextPipe, level);
             break;
         }
@@ -120,13 +124,15 @@ public class TravelPathData {
 
             if (!blockConnections.contains(fromPosFinal)) {
                 blockConnections.add(fromPosFinal);
-                if (level.getBlockState(fromPosFinal).getBlock() instanceof ITubeActionPoint) {
+                if (level.getBlockState(fromPosFinal).getBlock() instanceof ITubeActionPoint ||
+                    (level.getBlockEntity(fromPosFinal) instanceof ActionTubeBlockEntity tubeEntity && tubeEntity.hasAnyTubeAttachment())) {
                     actionPoints.add(fromPosFinal);
                 }
             }
             if (!blockConnections.contains(toPosFinal)) {
                 blockConnections.add(toPosFinal);
-                if (level.getBlockState(toPosFinal).getBlock() instanceof ITubeActionPoint) {
+                if (level.getBlockState(toPosFinal).getBlock() instanceof ITubeActionPoint ||
+                    (level.getBlockEntity(toPosFinal) instanceof ActionTubeBlockEntity tubeEntity && tubeEntity.hasAnyTubeAttachment())) {
                     actionPoints.add(toPosFinal);
                 }
             }

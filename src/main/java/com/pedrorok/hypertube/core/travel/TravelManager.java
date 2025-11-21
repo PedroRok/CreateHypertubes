@@ -79,6 +79,7 @@ public class TravelManager {
         float finalSpeed = (speed * TravelConstants.DEFAULT_SPEED_MULTIPLIER);
 
         TravelPathMover pathMover = new TravelPathMover(
+                pos,
                 entity,
                 travelPathData.getTravelPoints(),
                 travelPathData.getActionPoints(),
@@ -145,7 +146,7 @@ public class TravelManager {
         //if (level.isClientSide) return;
         TravelPathMover pathMover = travelDataMap.get(entity.getUUID());
         travelDataMap.remove(entity.getUUID());
-        
+
         // test to fix a bug
         removeDismountedData(entity);
 

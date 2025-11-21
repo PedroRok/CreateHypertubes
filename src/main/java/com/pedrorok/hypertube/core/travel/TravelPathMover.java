@@ -1,6 +1,8 @@
 package com.pedrorok.hypertube.core.travel;
 
 import com.pedrorok.hypertube.network.NetworkHandler;
+import com.pedrorok.hypertube.blocks.ActionTubeBlock;
+import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.network.packets.EntityTravelDirDataPacket;
 import com.pedrorok.hypertube.network.packets.SyncEntityPosPacket;
@@ -10,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.PacketDistributor;
 
@@ -42,11 +45,14 @@ public class TravelPathMover {
     private final LivingEntity entity;
     private Vec3 lastDirection;
 
-    public TravelPathMover(LivingEntity entity, List<Vec3> points, Set<BlockPos> actionPoints, float travelSpeed, Vec3 lastDirection, BlockPos lastPos, BiConsumer<LivingEntity, Boolean> onFinishCallback) {
+    public TravelPathMover(BlockPos firstBlockEntrance, LivingEntity entity, List<Vec3> points, Set<BlockPos> actionPoints, float travelSpeed, Vec3 lastDirection, BlockPos lastPos, BiConsumer<LivingEntity, Boolean> onFinishCallback) {
         this.entity = entity;
         this.pathPoints = points;
         this.actionPoints = actionPoints;
-        this.activeActionPoints = new HashSet<>();
+        this.activeActionPoints = new HashSet<>() {{
+            add(firstBlockEntrance);
+        }};
+        actionPoints.add(lastPos);
         this.travelSpeed = travelSpeed;
         this.lastPos = lastPos;
 
@@ -77,13 +83,6 @@ public class TravelPathMover {
             currentEnd = pathPoints.get(currentSegment).subtract(0, 0.25, 0);
             totalDistance = currentStart.distanceTo(currentEnd);
             traveled = 0;
-            //if (actionPoints.contains(entity.getOnPos())) {
-            //    BlockPos actionPos = entity.getOnPos();
-            //    Block block = entity.level().getBlockState(actionPos).getBlock();
-            //    if (block instanceof ITubeActionPoint travelAction) {
-            //        travelAction.handleTravelPath(entity, this, actionPos);
-            //    }
-            //}
         }
 
         if (!activeActionPoints.isEmpty()) {
@@ -92,6 +91,10 @@ public class TravelPathMover {
             Block block = entity.level().getBlockState(actionPos).getBlock();
             if (block instanceof ITubeActionPoint travelAction) {
                 travelAction.handleTravelPath(entity, this, actionPos);
+            }
+            BlockEntity be = entity.level().getBlockEntity(actionPos);
+            if (be instanceof ActionTubeBlockEntity actionTubeBlockEntity && actionTubeBlockEntity.hasAnyTubeAttachment()) {
+                actionTubeBlockEntity.activateAllTubeAttachments(entity, this, actionPos);
             }
         }
 
