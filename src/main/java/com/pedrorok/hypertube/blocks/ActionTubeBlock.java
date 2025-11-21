@@ -45,17 +45,17 @@ public abstract class ActionTubeBlock extends TubeBlock {
 
 
     @Override
-    protected boolean isSignalSource(@NotNull BlockState state) {
+    public boolean isSignalSource(@NotNull BlockState state) {
         return super.isSignalSource(state);
     }
 
     @Override
-    protected int getDirectSignal(@NotNull BlockState blockState, @NotNull BlockGetter blockAccess, @NotNull BlockPos pos, @NotNull Direction side) {
+    public int getDirectSignal(@NotNull BlockState blockState, @NotNull BlockGetter blockAccess, @NotNull BlockPos pos, @NotNull Direction side) {
         return getSignal(blockState, blockAccess, pos, side);
     }
 
     @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         super.tick(state, level, pos, random);
 
         int currentPower = state.getValue(POWER);
@@ -67,7 +67,7 @@ public abstract class ActionTubeBlock extends TubeBlock {
     }
 
     @Override
-    protected int getSignal(@NotNull BlockState blockState, @NotNull BlockGetter blockAccess, @NotNull BlockPos pos, @NotNull Direction side) {
+    public int getSignal(@NotNull BlockState blockState, @NotNull BlockGetter blockAccess, @NotNull BlockPos pos, @NotNull Direction side) {
         if (!(blockAccess.getBlockEntity(pos) instanceof ActionTubeBlockEntity action)) {
             return 0;
         }
@@ -101,7 +101,7 @@ public abstract class ActionTubeBlock extends TubeBlock {
     }
 
     @Override
-    protected void neighborChanged(BlockState state, Level level, @NotNull BlockPos pos, @NotNull Block block, @NotNull BlockPos fromPos, boolean isMoving) {
+    public void neighborChanged(BlockState state, Level level, @NotNull BlockPos pos, @NotNull Block block, @NotNull BlockPos fromPos, boolean isMoving) {
         ActionTubeBlockEntity tubeBlockEntity = (ActionTubeBlockEntity) level.getBlockEntity(pos);
         if (tubeBlockEntity == null) return;
         boolean neighborHasSignal = getSignalSide(level, pos, tubeBlockEntity.getAttachmentDirectionsNoEmit());

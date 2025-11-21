@@ -17,7 +17,7 @@
     "AHA"
   ],
   "result": {
-    "count": 1,
-    "id": "create_hypertube:redstone_detector_tube_attachment"
-  }
+    "item": "create_hypertube:redstone_detector_tube_attachment"
+  },
+  "show_notification": true
 }

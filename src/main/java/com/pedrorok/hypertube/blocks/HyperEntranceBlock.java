@@ -229,23 +229,4 @@ public class HyperEntranceBlock extends ActionTubeBlock implements EntityBlock, 
     protected BooleanProperty propertyToUpdate() {
         return LOCKED;
     }
-
-
-    @Override
-    public void neighborChanged(BlockState state, Level level, @NotNull BlockPos pos, @NotNull Block block, @NotNull BlockPos fromPos, boolean isMoving) {
-        boolean neighborHasSignal = level.hasNeighborSignal(pos) || level.hasNeighborSignal(pos.above());
-        boolean actualState = state.getValue(POWERED);
-        if (neighborHasSignal && !actualState) {
-            level.scheduleTick(pos, this, 4);
-            level.setBlock(pos, state.setValue(POWERED, true).setValue(LOCKED, !state.getValue(LOCKED)), 2);
-            IWrenchable.playRotateSound(level, pos);
-
-        } else if (!neighborHasSignal && actualState) {
-            level.setBlock(pos, state.setValue(POWERED, false).setValue(LOCKED, !state.getValue(LOCKED)), 2);
-            IWrenchable.playRotateSound(level, pos);
-        }
-        BlockState blockState = level.getBlockState(pos);
-        updateInFrontProperty(level, pos, blockState);
-    }
-    // ------------ END -------------
 }

@@ -140,7 +140,7 @@ public abstract class TubeBlock extends KineticBlock implements ITubeConnection,
 
         dropBlockToPlayer(wrenched, level, pos, player, blockEntity, toDrop);
 
-        return super.playerWillDestroy(level, pos, state, player);
+        super.playerWillDestroy(level, pos, state, player);
     }
 
     void dropBlockToPlayer(boolean isWrenched, Level level, BlockPos pos, Player player, BlockEntity blockEntity, int amount) {
@@ -151,7 +151,6 @@ public abstract class TubeBlock extends KineticBlock implements ITubeConnection,
                 else Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
             }
         }
-        super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override

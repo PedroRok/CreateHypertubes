@@ -42,11 +42,11 @@ public class ModCreativeTab {
     public static void addCreative(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey().equals(TUBE_TAB.getKey())) {
             CreateRegistrate REGISTRATE = HypertubeMod.get();
-            for (RegistryEntry<Block> entry : REGISTRATE.getAll(Registries.BLOCK)) {
-                var block = entry.get();
-                if (block.asItem() == Items.AIR) continue;
+            for (RegistryEntry<Item> entry : REGISTRATE.getAll(Registries.ITEM)) {
+                var item = entry.get();
+                if (item.asItem() == Items.AIR) continue;
                 if (ModItems.TUBE_SCANNER_UNFINISHED.is(item.asItem())) return;
-                event.accept(block);
+                event.accept(item);
             }
         }
     }

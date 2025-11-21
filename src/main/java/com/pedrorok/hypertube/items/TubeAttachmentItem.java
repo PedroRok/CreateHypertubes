@@ -61,7 +61,7 @@ public class TubeAttachmentItem extends Item {
             throw new NoSuchElementException("SmartTube attachment " + attachmentKey + " not found");
         }
         actionTubeBE.addTubeAttachment(direction, smartTube);
-        pContext.getItemInHand().consume(1, player);
+        pContext.getItemInHand().setCount(pContext.getItemInHand().getCount() - 1);
         IWrenchable.playRotateSound(level, pos);
         return super.useOn(pContext);
     }

@@ -54,8 +54,8 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
 
     // --------- Smart Tube Methods ---------
     @Override
-    protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
-        super.write(compound, registries, clientPacket);
+    protected void write(CompoundTag compound, boolean clientPacket) {
+        super.write(compound, clientPacket);
 
         if (smartTubeAttachments.isEmpty()) return;
         CompoundTag smartTubesTag = new CompoundTag();
@@ -66,8 +66,8 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
     }
 
     @Override
-    protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
-        super.read(compound, registries, clientPacket);
+    protected void read(CompoundTag compound, boolean clientPacket) {
+        super.read(compound, clientPacket);
 
         smartTubeAttachments.clear();
 

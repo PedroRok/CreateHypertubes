@@ -7,7 +7,7 @@
   "results": [
     {
       "chance": 100.0,
-      "id": "create_hypertube:tube_scanner_attachment"
+      "item": "create_hypertube:tube_scanner_attachment"
     }
   ],
   "sequence": [
@@ -23,7 +23,7 @@
       ],
       "results": [
         {
-          "id": "create_hypertube:tube_scanner_unfinished"
+          "item": "create_hypertube:tube_scanner_unfinished"
         }
       ]
     },
@@ -39,7 +39,7 @@
       ],
       "results": [
         {
-          "id": "create_hypertube:tube_scanner_unfinished"
+          "item": "create_hypertube:tube_scanner_unfinished"
         }
       ]
     },
@@ -55,12 +55,12 @@
       ],
       "results": [
         {
-          "id": "create_hypertube:tube_scanner_unfinished"
+          "item": "create_hypertube:tube_scanner_unfinished"
         }
       ]
     }
   ],
-  "transitional_item": {
-    "id": "create_hypertube:tube_scanner_unfinished"
+  "transitionalItem": {
+    "item": "create_hypertube:tube_scanner_unfinished"
   }
 }
