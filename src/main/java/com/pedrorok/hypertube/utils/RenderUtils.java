@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.utils;
 
+import com.mojang.math.Axis;
 import com.simibubi.create.foundation.render.SuperByteBuffer;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -13,13 +14,13 @@ public class RenderUtils {
 
     public static void rotateAroundCenterVertical(SuperByteBuffer buffer, int degreesRotated) {
         buffer.translate(0.5f, 0.5f, 0.5f);
-        buffer.rotateY((float) Math.toRadians(degreesRotated));
+        buffer.rotateY(degreesRotated);
         buffer.translate(-0.5f, -0.5f, -0.5f);
     }
 
     public static void rotateAroundCenterHorizontalZ(SuperByteBuffer buffer, int degreesRotated) {
         buffer.translate(0.5f, 0.5f, 0.5f);
-        buffer.rotateZ((float) Math.toRadians(degreesRotated));
+        buffer.rotateZ(degreesRotated);
         buffer.translate(-0.5f, -0.5f, -0.5f);
     }
 
@@ -36,8 +37,7 @@ public class RenderUtils {
 
         if (!isTubeVertical) {
             if ((attachmentDirection == Direction.UP || attachmentDirection == Direction.DOWN) && tubeFacing != Direction.NORTH && tubeFacing != Direction.SOUTH) return;
-            model.rotateXCenteredDegrees(90);
-
+            model.rotateCentered(Axis.XP.rotationDegrees(90));
         }
     }
 }
