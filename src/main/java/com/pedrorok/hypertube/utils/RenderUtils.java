@@ -1,7 +1,9 @@
 package com.pedrorok.hypertube.utils;
 
-import net.createmod.catnip.render.SuperByteBuffer;
+import com.simibubi.create.foundation.render.SuperByteBuffer;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
+import org.joml.Quaternionf;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 19/11/2025

@@ -1,11 +1,11 @@
 package com.pedrorok.hypertube.core.smarttube;
 
+import com.jozufozu.flywheel.core.PartialModel;
 import com.pedrorok.hypertube.blocks.ActionTubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.registry.ModItems;
 import com.pedrorok.hypertube.registry.ModPartialModels;
-import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;

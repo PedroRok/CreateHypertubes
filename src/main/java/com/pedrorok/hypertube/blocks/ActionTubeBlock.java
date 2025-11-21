@@ -109,11 +109,11 @@ public abstract class ActionTubeBlock extends TubeBlock {
         if (neighborHasSignal && !actualState) {
             level.scheduleTick(pos, this, 4);
             level.setBlock(pos, state.setValue(POWERED, true).setValue(propertyToUpdate(), !state.getValue(propertyToUpdate())), 2);
-            IWrenchable.playRotateSound(level, pos);
+            playRotateSound(level, pos);
 
         } else if (!neighborHasSignal && actualState) {
             level.setBlock(pos, state.setValue(POWERED, false).setValue(propertyToUpdate(), !state.getValue(propertyToUpdate())), 2);
-            IWrenchable.playRotateSound(level, pos);
+            playRotateSound(level, pos);
         }
     }
 
@@ -149,7 +149,7 @@ public abstract class ActionTubeBlock extends TubeBlock {
             ItemStack stack = iTubeAttachment.getItemStack();
             player.getInventory().placeItemBackInInventory(stack);
         }
-        IWrenchable.playRemoveSound(context.getLevel(), context.getClickedPos());
+        playRemoveSound(level, clickedPos);
         return InteractionResult.SUCCESS;
     }
 }

@@ -3,6 +3,8 @@ package com.pedrorok.hypertube.items;
 import com.pedrorok.hypertube.blocks.ActionTubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.core.smarttube.ITubeAttachment;
+import com.simibubi.create.AllSoundEvents;
+import com.simibubi.create.Create;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -62,7 +64,7 @@ public class TubeAttachmentItem extends Item {
         }
         actionTubeBE.addTubeAttachment(direction, smartTube);
         pContext.getItemInHand().setCount(pContext.getItemInHand().getCount() - 1);
-        IWrenchable.playRotateSound(level, pos);
+        AllSoundEvents.WRENCH_ROTATE.playOnServer(level, pos, 1, Create.RANDOM.nextFloat() + .5f);
         return super.useOn(pContext);
     }
 }

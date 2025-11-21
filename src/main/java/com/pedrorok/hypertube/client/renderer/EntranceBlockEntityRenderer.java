@@ -44,7 +44,7 @@ public class EntranceBlockEntityRenderer extends KineticBlockEntityRenderer<Hype
         Direction facing = blockState.getValue(HyperEntranceBlock.FACING);
         boolean isTubeOnVertical = facing.getAxis().isVertical();
         be.getTubeAttachments().forEach((direct, attachment) -> {
-            SuperByteBuffer smartTubeModel = CachedBuffers.partial(attachment.getPartialModel(blockState, be, direct), blockState);
+            SuperByteBuffer smartTubeModel = CachedBufferer.partial(attachment.getPartialModel(blockState, be, direct), blockState);
 
             RenderUtils.rotateToFace(smartTubeModel, facing, direct.getOpposite(), isTubeOnVertical);
             smartTubeModel.light(light);
