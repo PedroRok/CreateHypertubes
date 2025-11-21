@@ -290,6 +290,7 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
 
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        if (context.getLevel().isClientSide) return InteractionResult.SUCCESS;
         if (context.getPlayer() == null) return InteractionResult.PASS;
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();

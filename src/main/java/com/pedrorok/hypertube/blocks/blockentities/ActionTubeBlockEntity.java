@@ -18,18 +18,22 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -65,6 +69,9 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
     @Override
     protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(compound, registries, clientPacket);
+
+        smartTubeAttachments.clear();
+
         if (!compound.contains("attachments", Tag.TAG_COMPOUND)) return;
 
         CompoundTag smartTubesTag = compound.getCompound("attachments");
@@ -108,12 +115,11 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
         if (removedAttachment != null) {
             setChanged();
             if (level != null && !level.isClientSide) {
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
                 level.updateNeighborsAt(worldPosition, getBlockState().getBlock());
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 4);
-                return removedAttachment;
             }
         }
-        return null;
+        return removedAttachment;
     }
 
     @Nullable
