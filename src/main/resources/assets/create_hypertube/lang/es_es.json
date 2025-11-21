@@ -27,5 +27,6 @@
   "block.hypertube.hyper_accelerator.accelerate_mode": "Modo: Aceleración",
   "block.hypertube.hyper_accelerator.brake_mode": "Modo: Frenado",
   "item.create_hypertube.redstone_detector_tube_attachment": "Accesorio de tubo detector de redstone",
-  "item.create_hypertube.tube_scanner_attachment": "Accesorio de tubo escáner"
+  "item.create_hypertube.tube_scanner_attachment": "Accesorio de tubo escáner",
+  "item.create_hypertube.tube_scanner_unfinished": "Tubo escáner inacabado"
 }

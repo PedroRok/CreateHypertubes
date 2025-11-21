@@ -26,6 +26,7 @@
   "hypertube.travel.too_short": "チューブ間の距離が短すぎて移動できません",
   "block.hypertube.hyper_accelerator.accelerate_mode": "加速モード",
   "block.hypertube.hyper_accelerator.brake_mode": "減速モード",
-    "item.create_hypertube.redstone_detector_tube_attachment": "レッドストーン検出チューブアタッチメント",
-    "item.create_hypertube.tube_scanner_attachment": "チューブスキャナーアタッチメント"
+  "item.create_hypertube.redstone_detector_tube_attachment": "レッドストーン検出チューブアタッチメント",
+  "item.create_hypertube.tube_scanner_attachment": "チューブスキャナーアタッチメント",
+  "item.create_hypertube.tube_scanner_unfinished": "未完成のチューブスキャナー"
 }
