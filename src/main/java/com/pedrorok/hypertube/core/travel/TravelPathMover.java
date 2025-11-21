@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.core.travel;
 
+import com.pedrorok.hypertube.blocks.ActionTubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.network.packets.EntityTravelDirDataPacket;
@@ -44,10 +45,13 @@ public class TravelPathMover {
 
     private Vec3 lastDirection;
 
-    public TravelPathMover(Vec3 entityPos, List<Vec3> points, Set<BlockPos> actionPoints, float travelSpeed, Vec3 lastDirection, BlockPos lastPos, BiConsumer<LivingEntity, Boolean> onFinishCallback) {
+    public TravelPathMover(BlockPos firstBlockEntrance, Vec3 entityPos, List<Vec3> points, Set<BlockPos> actionPoints, float travelSpeed, Vec3 lastDirection, BlockPos lastPos, BiConsumer<LivingEntity, Boolean> onFinishCallback) {
         this.pathPoints = points;
         this.actionPoints = actionPoints;
-        this.activeActionPoints = new HashSet<>();
+        this.activeActionPoints = new HashSet<>() {{
+            add(firstBlockEntrance);
+        }};
+        actionPoints.add(lastPos);
         this.travelSpeed = travelSpeed;
         this.lastPos = lastPos;
 
@@ -78,13 +82,6 @@ public class TravelPathMover {
             currentEnd = pathPoints.get(currentSegment).subtract(0, 0.25, 0);
             totalDistance = currentStart.distanceTo(currentEnd);
             traveled = 0;
-            //if (actionPoints.contains(entity.getOnPos())) {
-            //    BlockPos actionPos = entity.getOnPos();
-            //    Block block = entity.level().getBlockState(actionPos).getBlock();
-            //    if (block instanceof ITubeActionPoint travelAction) {
-            //        travelAction.handleTravelPath(entity, this, actionPos);
-            //    }
-            //}
         }
 
         if (!activeActionPoints.isEmpty()) {

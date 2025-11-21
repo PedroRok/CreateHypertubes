@@ -76,6 +76,7 @@ public class TravelManager {
         float finalSpeed = (speed * TravelConstants.DEFAULT_SPEED_MULTIPLIER);
 
         TravelPathMover pathMover = new TravelPathMover(
+                pos,
                 entity.position(),
                 travelPathData.getTravelPoints(),
                 travelPathData.getActionPoints(),
