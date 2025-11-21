@@ -1,0 +1,7 @@
+{
+	"textures": {
+		"0": "create_hypertube:item/tube_scanner_unfinished_attachment",
+		"particle": "create_hypertube:item/tube_scanner_unfinished_attachment"
+	},
+	"parent": "create_hypertube:block/tube_scanner_attachment"
+}

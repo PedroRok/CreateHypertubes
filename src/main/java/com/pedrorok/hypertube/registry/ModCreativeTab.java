@@ -46,6 +46,7 @@ public class ModCreativeTab {
             for (RegistryEntry<Item, Item> entry : REGISTRATE.getAll(Registries.ITEM)) {
                 var item = entry.get();
                 if (item == Items.AIR) continue;
+                if (ModItems.TUBE_SCANNER_UNFINISHED.is(item)) return;
                 event.accept(item);
             }
         }
