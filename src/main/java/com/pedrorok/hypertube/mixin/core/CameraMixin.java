@@ -8,6 +8,8 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -46,7 +48,10 @@ public class CameraMixin {
     }
 
     @Inject(method = "setup", at = @At("HEAD"), cancellable = true)
-    private void onSetup(BlockGetter p_90576_, Entity renderViewEntity, boolean isFrontView, boolean flipped, float PartialTicks, CallbackInfo ci) {
+    private void createHypertube$onSetup(BlockGetter p_90576_, Entity renderViewEntity, boolean isFrontView, boolean flipped, float PartialTicks, CallbackInfo ci) {
+        if (renderViewEntity == null) {
+            return;
+        }
         Options options = Minecraft.getInstance().options;
         Player player = Minecraft.getInstance().player;
         if (renderViewEntity != player) return;
@@ -73,13 +78,17 @@ public class CameraMixin {
             this.createHypertube$setDetachedExternal(true);
         }
         long currentTime = System.nanoTime();
-        if (currentTime - createHypertube$lastTickTime >= createHypertube$TICK_INTERVAL_NS) {
+        boolean doTick = currentTime - createHypertube$lastTickTime >= createHypertube$TICK_INTERVAL_NS;
+        if (doTick) {
             DetachedCameraController.get().tickCamera(renderViewEntity);
             createHypertube$lastTickTime = currentTime;
         }
 
-        camera.callSetRotation(DetachedCameraController.get().getYaw() * (flipped ? -1 : 1), DetachedCameraController.get().getPitch());
+        if (doTick) {
+            createHypertube$doTick(player);
+        }
 
+        camera.callSetRotation(DetachedCameraController.get().getYaw() * (flipped ? -1 : 1), DetachedCameraController.get().getPitch());
 
         camera.callSetPosition(
                 Mth.lerp(PartialTicks, renderViewEntity.xo, renderViewEntity.getX()),
@@ -89,5 +98,40 @@ public class CameraMixin {
         camera.callMove(-camera.callGetMaxZoom(4.0F), 0.0F, 0.0F);
 
         ci.cancel();
+    }
+
+
+    @Unique
+    private void createHypertube$doTick(Player player) {
+        if (!(player.getXRot() > 85) && !(player.getXRot() < -85)) {
+            DetachedCameraController.get().setCheckDirection(null);
+            DetachedCameraController.get().setCameraHorizontalCompensation(0);
+            return;
+        }
+        BlockPos playerBlockPos = new BlockPos((int) player.position().x, (int) player.position().y, (int) player.position().z);
+        BlockPos relative = playerBlockPos.relative(Direction.EAST);
+        boolean air = Minecraft.getInstance().level.getBlockState(relative).isAir();
+
+        if (!air) {
+            BlockPos relativeBlock = playerBlockPos.relative(Direction.WEST);
+            boolean relativeAir = Minecraft.getInstance().level.getBlockState(relativeBlock).isAir();
+            if (relativeAir) {
+                DetachedCameraController.get().setCameraHorizontalCompensation(180);
+                return;
+            }
+            relativeBlock = playerBlockPos.relative(Direction.NORTH);
+            relativeAir = Minecraft.getInstance().level.getBlockState(relativeBlock).isAir();
+            if (relativeAir) {
+                DetachedCameraController.get().setCameraHorizontalCompensation(-90);
+                return;
+            }
+            relativeBlock = playerBlockPos.relative(Direction.SOUTH);
+            relativeAir = Minecraft.getInstance().level.getBlockState(relativeBlock).isAir();
+            if (!relativeAir) return;
+            DetachedCameraController.get().setCameraHorizontalCompensation(90);
+            return;
+        }
+        DetachedCameraController.get().setCameraHorizontalCompensation(0);
+        DetachedCameraController.get().setCheckDirection(null);
     }
 }

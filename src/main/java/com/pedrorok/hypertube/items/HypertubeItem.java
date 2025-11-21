@@ -118,8 +118,8 @@ public class HypertubeItem extends BlockItem {
     }
 
     public static void clearConnection(ItemStack stack) {
-        ModDataComponent.removeSimpleConnection(stack);
         stack.getTag().remove("foil");
+        ModDataComponent.removeSimpleConnection(stack);
     }
 
     @Override

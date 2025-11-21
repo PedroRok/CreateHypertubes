@@ -7,6 +7,7 @@ import com.pedrorok.hypertube.network.NetworkHandler;
 import com.pedrorok.hypertube.network.packets.FinishPathPacket;
 import com.pedrorok.hypertube.network.packets.MovePathPacket;
 import com.pedrorok.hypertube.network.packets.SpeedChangePacket;
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -29,7 +30,7 @@ import java.util.*;
  */
 @Mod.EventBusSubscriber(value = Dist.CLIENT)
 public class ClientTravelPathMover {
-    private static final Map<Integer, PathData> ACTIVE_PATHS = new HashMap<>();
+    private static final Int2ObjectArrayMap<PathData> ACTIVE_PATHS = new Int2ObjectArrayMap<>();
 
     public static void startMoving(MovePathPacket packet) {
         boolean isPlayer = Minecraft.getInstance().player.getId() == packet.entityId();
@@ -118,7 +119,11 @@ public class ClientTravelPathMover {
         }
     }
 
-    private static class PathData {
+    public static PathData getData(int entityId) {
+        return ACTIVE_PATHS.get(entityId);
+    }
+
+    public static class PathData {
         private final List<Vec3> points;
         private final Set<BlockPos> actionPoints;
         private double travelSpeed;
@@ -127,6 +132,8 @@ public class ClientTravelPathMover {
 
         private Vec3 currentLogicalPos;
         private Vec3 previousLogicalPos;
+
+        private float previousPitch = 0;
 
         @Getter
         private boolean clientPlayer;
@@ -172,6 +179,14 @@ public class ClientTravelPathMover {
                 Vec3 direction = target.subtract(currentLogicalPos).normalize().scale(travelSpeed);
                 currentLogicalPos = currentLogicalPos.add(direction);
             }
+        }
+
+        public float getPitch() {
+            Vec3 dir = getCurrentDirection();
+            if (dir.equals(Vec3.ZERO) && previousPitch != -1) return previousPitch;
+            float degrees = (float) Math.toDegrees(Math.atan2(-dir.y, Math.sqrt(dir.x * dir.x + dir.z * dir.z)));
+            previousPitch = degrees;
+            return degrees;
         }
 
         public void handleActionPoint(LivingEntity entity) {

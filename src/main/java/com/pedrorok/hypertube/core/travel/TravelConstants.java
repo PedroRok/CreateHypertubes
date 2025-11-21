@@ -1,12 +1,15 @@
 package com.pedrorok.hypertube.core.travel;
 
+import com.pedrorok.hypertube.HypertubeMod;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 15/06/2025
@@ -30,24 +33,19 @@ public class TravelConstants {
     public static final float NEEDED_SPEED = 16;
 
 
-    public static final Set<EntityType<?>> TRAVELLER_ENTITIES = new HashSet<>(Set.of(
-            EntityType.PLAYER,
-            EntityType.VILLAGER,
-            EntityType.WANDERING_TRADER,
-            EntityType.SALMON,
-            EntityType.COD,
-            EntityType.TROPICAL_FISH
-    ));
+    public static final TagKey<EntityType<?>> TRAVELLER_ENTITIES =
+            TagKey.create(Registries.ENTITY_TYPE, new ResourceLocation(HypertubeMod.MOD_ID, "traveller_entities"));
 
     @OnlyIn(Dist.CLIENT)
     public static class Client {
-        public static final Map<EntityType<?>, TravellerEntity> ENTITIES_RENDER = Map.of(
-                EntityType.PLAYER, TravellerEntity.ofBiped(-0.5f),
-                EntityType.VILLAGER, TravellerEntity.ofBiped(-0.8f),
-                EntityType.WANDERING_TRADER, TravellerEntity.ofBiped(-0.8f),
-                EntityType.SALMON, TravellerEntity.ofFish(0.9f),
-                EntityType.COD, TravellerEntity.ofFish(1f),
-                EntityType.TROPICAL_FISH, TravellerEntity.ofFish(1f)
-        );
+        public static final Map<EntityType<?>, TravellerEntity> ENTITIES_RENDER = new HashMap<>() {{
+            put(EntityType.PLAYER, TravellerEntity.ofBiped(-0.5f));
+            put(EntityType.VILLAGER, TravellerEntity.ofBiped(-0.8f));
+            put(EntityType.WANDERING_TRADER, TravellerEntity.ofBiped(-0.8f));
+            put(EntityType.SALMON, TravellerEntity.ofFish(0.9f));
+            put(EntityType.COD, TravellerEntity.ofFish(1f));
+            put(EntityType.TROPICAL_FISH, TravellerEntity.ofFish(1f));
+        }};
+
     }
 }

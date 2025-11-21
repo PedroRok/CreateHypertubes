@@ -1,20 +1,32 @@
 package com.pedrorok.hypertube.blocks.blockentities;
 
+import com.mojang.serialization.Codec;
+import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
+import com.pedrorok.hypertube.config.ServerConfig;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
+import com.pedrorok.hypertube.core.smarttube.ITubeAttachment;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
-import com.pedrorok.hypertube.core.travel.TravelConstants;
+import com.pedrorok.hypertube.core.travel.TravelPathMover;
 import com.pedrorok.hypertube.registry.ModParticles;
 import com.pedrorok.hypertube.registry.ModSounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -23,7 +35,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 11/08/2025
@@ -34,10 +46,114 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
     private static final float RADIUS = 1.0f;
     protected final UUID tubeSoundId = UUID.randomUUID();
 
+    private final Map<Direction, ITubeAttachment> smartTubeAttachments = new HashMap<>();
 
     public ActionTubeBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
     }
+
+    // --------- Smart Tube Methods ---------
+    @Override
+    protected void write(CompoundTag compound, boolean clientPacket) {
+        super.write(compound, clientPacket);
+
+        if (smartTubeAttachments.isEmpty()) return;
+        CompoundTag smartTubesTag = new CompoundTag();
+        for (Map.Entry<Direction, ITubeAttachment> entry : smartTubeAttachments.entrySet()) {
+            smartTubesTag.put(entry.getKey().getSerializedName(), Codec.STRING.write(NbtOps.INSTANCE, entry.getValue().getId()));
+        }
+        compound.put("attachments", smartTubesTag);
+    }
+
+    @Override
+    protected void read(CompoundTag compound, boolean clientPacket) {
+        super.read(compound, clientPacket);
+
+        smartTubeAttachments.clear();
+
+        if (!compound.contains("attachments", Tag.TAG_COMPOUND)) return;
+
+        CompoundTag smartTubesTag = compound.getCompound("attachments");
+        for (Direction direction : Direction.values()) {
+            String directionKey = direction.getSerializedName();
+            if (!smartTubesTag.contains(directionKey, Tag.TAG_STRING)) continue;
+
+            String smartTubeId = smartTubesTag.getString(directionKey);
+            ITubeAttachment smartTube = ITubeAttachment.get(smartTubeId);
+
+            if (smartTube == null) {
+                HypertubeMod.LOGGER.error("Failed to load smart tube attachment with id: {} for direction: {}",
+                        smartTubeId, direction);
+                continue;
+            }
+
+            smartTubeAttachments.put(direction, smartTube);
+        }
+    }
+
+    public void addTubeAttachment(Direction direction, ITubeAttachment smartTube) {
+        smartTubeAttachments.put(direction, smartTube);
+        setChanged();
+        if (level != null && !level.isClientSide) {
+            level.updateNeighborsAt(worldPosition, getBlockState().getBlock());
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    public void activateAllTubeAttachments(LivingEntity entity, TravelPathMover travelPathMover, BlockPos pos) {
+        for (Map.Entry<Direction, ITubeAttachment> attachmentEntry : smartTubeAttachments.entrySet()) {
+            ITubeAttachment value = attachmentEntry.getValue();
+            ITubeActionPoint actionPoint = value.getActionPoint(attachmentEntry.getKey());
+            if (actionPoint == null) continue;
+            actionPoint.handleTravelPath(entity, travelPathMover, pos);
+        }
+    }
+
+    public ITubeAttachment removeTubeAttachment(Direction direction) {
+        ITubeAttachment removedAttachment = smartTubeAttachments.remove(direction);
+        if (removedAttachment != null) {
+            setChanged();
+            if (level != null && !level.isClientSide) {
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+                level.updateNeighborsAt(worldPosition, getBlockState().getBlock());
+            }
+        }
+        return removedAttachment;
+    }
+
+    @Nullable
+    public ITubeAttachment getTubeAttachment(Direction direction) {
+        return smartTubeAttachments.get(direction);
+    }
+
+    public boolean hasTubeAttachment(Direction direction) {
+        return smartTubeAttachments.containsKey(direction);
+    }
+
+    public boolean hasAnyTubeAttachment() {
+        return !smartTubeAttachments.isEmpty();
+    }
+
+    public Map<Direction, ITubeAttachment> getTubeAttachments() {
+        return smartTubeAttachments;
+    }
+
+    public List<Direction> getAttachmentDirectionsNoEmit() {
+        return smartTubeAttachments.entrySet().stream().filter(attach -> !attach.getValue().emitRedstoneSignal()).map(Map.Entry::getKey).toList();
+    }
+
+    public Set<Direction> getAttachmentDirections() {
+        return smartTubeAttachments.keySet();
+    }
+
+    public boolean canEmitTo(Direction direction) {
+        ITubeAttachment attachment = smartTubeAttachments.get(direction);
+        if (attachment == null) return false;
+        return attachment.emitRedstoneSignal();
+    }
+
+
+    // --------------------------------------
 
 
     protected void spawnSuctionParticle(Level level, BlockPos blockPos, Direction face) {
@@ -121,7 +237,7 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
         return level.getNearestEntity(
                 level.getEntitiesOfClass(LivingEntity.class,
                         AABB.ofSize(checkPos, (RADIUS - 0.25) * 2, (RADIUS - 0.25) * 2, (RADIUS - 0.25) * 2),
-                        (entity) -> TravelConstants.TRAVELLER_ENTITIES.contains(entity.getType())),
+                        (entity) -> ServerConfig.canEntityTravel(entity.getType())),
                 TargetingConditions.forNonCombat().ignoreLineOfSight(),
                 null,
                 centerPos.x, centerPos.y, centerPos.z);
@@ -132,7 +248,7 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
         return level.getNearestEntity(
                 level.getEntitiesOfClass(LivingEntity.class,
                         AABB.ofSize(centerPos, RADIUS * 6, RADIUS * 6, RADIUS * 6),
-                        (entity) -> TravelConstants.TRAVELLER_ENTITIES.contains(entity.getType())),
+                        (entity) -> ServerConfig.canEntityTravel(entity.getType())),
                 TargetingConditions.forNonCombat().ignoreLineOfSight(),
                 null,
                 centerPos.x, centerPos.y, centerPos.z);

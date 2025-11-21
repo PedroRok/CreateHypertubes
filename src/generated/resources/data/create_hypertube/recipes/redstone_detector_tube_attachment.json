@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "create:andesite_alloy"
+    },
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "H": {
+      "item": "create:brass_hand"
+    }
+  },
+  "pattern": [
+    "ACA",
+    "AHA"
+  ],
+  "result": {
+    "item": "create_hypertube:redstone_detector_tube_attachment"
+  },
+  "show_notification": true
+}

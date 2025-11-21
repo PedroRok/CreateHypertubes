@@ -2,8 +2,11 @@ package com.pedrorok.hypertube.core.data;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.registry.ModBlocks;
+import com.pedrorok.hypertube.registry.ModItems;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
+import com.simibubi.create.content.kinetics.deployer.DeployerApplicationRecipe;
+import com.simibubi.create.content.processing.sequenced.SequencedAssemblyRecipeBuilder;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
@@ -64,5 +67,24 @@ public class HypertubeRecipeGen extends RecipeProvider {
                 .define('C', AllBlocks.LARGE_COGWHEEL)
                 .unlockedBy("has_precision_mechanism", has(AllItems.PRECISION_MECHANISM))
                 .save(consumer, new ResourceLocation(HypertubeMod.MOD_ID, "hyper_accelerator_large_cogwheel"));
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.REDSTONE_DETECTOR.get())
+                .pattern( "ACA")
+                .pattern("AHA")
+                .define('A', AllItems.ANDESITE_ALLOY)
+                .define('C', Items.COMPARATOR)
+                .define('H', AllItems.BRASS_HAND)
+                .unlockedBy("has_hypertube_entrance", has(ModBlocks.HYPERTUBE_ENTRANCE))
+                .save(consumer, new ResourceLocation(HypertubeMod.MOD_ID, "redstone_detector_tube_attachment"));
+
+        new SequencedAssemblyRecipeBuilder(new ResourceLocation(HypertubeMod.MOD_ID, "tube_scanner"))
+                .transitionTo(ModItems.TUBE_SCANNER_UNFINISHED)
+                .addOutput(ModItems.TUBE_SCANNER, 100)
+                .addStep(DeployerApplicationRecipe::new, rb -> rb.require(AllItems.BRASS_SHEET))
+                .addStep(DeployerApplicationRecipe::new, rb -> rb.require(AllItems.ELECTRON_TUBE))
+                .addStep(DeployerApplicationRecipe::new, rb -> rb.require(AllItems.BRASS_SHEET))
+                .require(ModItems.REDSTONE_DETECTOR)
+                .loops(1)
+                .build(consumer);
     }
 }
