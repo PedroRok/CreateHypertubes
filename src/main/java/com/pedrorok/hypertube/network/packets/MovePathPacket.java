@@ -1,16 +1,17 @@
 package com.pedrorok.hypertube.network.packets;
 
 import com.pedrorok.hypertube.core.travel.ClientTravelPathMover;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.core.BlockPos;
+import com.pedrorok.hypertube.network.ClientBoundPacket;
 import com.pedrorok.hypertube.network.Packet;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.NetworkEvent;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.Set;
 
 /**
@@ -18,7 +19,7 @@ import java.util.Set;
  * @project Create Hypertube
  */
 public record MovePathPacket(int entityId, List<Vec3> pathPoints, Set<BlockPos> actionPoints,
-                             double travelSpeed) implements Packet<MovePathPacket> {
+                             double travelSpeed) implements Packet<MovePathPacket>, ClientBoundPacket {
 
 
     public MovePathPacket(FriendlyByteBuf buf) {
@@ -42,11 +43,9 @@ public record MovePathPacket(int entityId, List<Vec3> pathPoints, Set<BlockPos> 
     }
 
     @Override
-    public void execute(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            ClientTravelPathMover.startMoving(this);
-        });
-        ctx.get().setPacketHandled(true);
+    @Environment(EnvType.CLIENT)
+    public void executeOnClient() {
+        ClientTravelPathMover.startMoving(this);
     }
 
     private static List<Vec3> readPathPoints(FriendlyByteBuf buf) {

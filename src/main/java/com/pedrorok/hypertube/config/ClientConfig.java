@@ -1,37 +1,27 @@
 package com.pedrorok.hypertube.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
-import org.apache.commons.lang3.tuple.Pair;
+import com.mojang.serialization.Codec;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.minecraft.client.Minecraft;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 05/06/2025
  * @project Create Hypertube
  */
 public class ClientConfig {
-    public static final ForgeConfigSpec SPEC;
-    private static final ClientConfig INSTANCE;
+    private static ClientConfig INSTANCE = new ClientConfig();
 
-    public final ForgeConfigSpec.BooleanValue ALLOW_FPV_INSIDE_TUBE;
+    public boolean ALLOW_FPV_INSIDE_TUBE = false;
 
-    private ClientConfig(ForgeConfigSpec.Builder builder) {
-        builder.comment("Change these settings to customize the client-side behavior of the mod.")
-                .push("Gameplay");
-
-        ALLOW_FPV_INSIDE_TUBE = builder
-                .comment("Allow first-person view inside the tube. Default is false for better experience.")
-                .translation("hypertube.config.client.allowFPVInsideTube")
-                .define("allowFPVInsideTheTube", false);
-
-        builder.pop();
-    }
-
-    static {
-        Pair<ClientConfig, ForgeConfigSpec> pair = new ForgeConfigSpec.Builder().configure(ClientConfig::new);
-        INSTANCE = pair.getLeft();
-        SPEC = pair.getRight();
+    private ClientConfig() {
     }
 
     public static ClientConfig get() {
         return INSTANCE;
+    }
+
+    public static void init() {
+        // Configuração será carregada do arquivo de configuração
+        // Por enquanto, valores padrão são usados
     }
 }

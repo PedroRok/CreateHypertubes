@@ -21,7 +21,7 @@ public abstract class PlayerMovementMixin {
     private void onTravel(Vec3 pTravelVector, CallbackInfo ci) {
         Player player = (Player) (Object) this;
 
-        if (!player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
+        if (!((EntityPersistentData)player).getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
         ci.cancel();
         player.resetFallDistance();
         player.move(MoverType.SELF, player.getDeltaMovement());

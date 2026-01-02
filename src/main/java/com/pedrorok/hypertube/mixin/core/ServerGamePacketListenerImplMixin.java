@@ -22,7 +22,7 @@ public class ServerGamePacketListenerImplMixin {
             )
     )
     private boolean redirectIsChangingDimension(ServerPlayer player) {
-        if (player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return true;
+        if (((EntityPersistentData)player).getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return true;
         return player.isChangingDimension();
     }
 }

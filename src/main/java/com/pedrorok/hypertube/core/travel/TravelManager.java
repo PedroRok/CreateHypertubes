@@ -29,7 +29,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.PacketDistributor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -90,8 +89,7 @@ public class TravelManager {
         travelDataMap.put(entity.getUUID(), pathMover);
 
         MovePathPacket movePathPacket = new MovePathPacket(entity.getId(), travelPathData.getTravelPoints(), travelPathData.getActionPoints(), finalSpeed);
-        NetworkHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
-                movePathPacket);
+        NetworkHandler.sendToTrackingEntityAndSelf(entity, movePathPacket);
 
         Vec3 center = pos.getCenter();
         TubeSoundManager.playTubeSuctionSound(entity, center);
@@ -225,8 +223,11 @@ public class TravelManager {
     private static void syncPersistentData(LivingEntity entity) {
         PlayerSyncEvents.syncPlayerStateToAll(entity, true);
         if (entity instanceof ServerPlayer player)
-            NetworkHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
-                    new SyncPersistentDataPacket(player.getId(), player.getPersistentData())
-            );
+            // Enviar para todos os jogadores conectados
+            for (var otherPlayer : player.getServer().getPlayerList().getPlayers()) {
+                NetworkHandler.sendToClient(otherPlayer,
+                        new SyncPersistentDataPacket(player.getId(), player.getPersistentData())
+                );
+            }
     }
 }

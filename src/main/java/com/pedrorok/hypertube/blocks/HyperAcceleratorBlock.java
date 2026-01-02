@@ -44,7 +44,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -180,7 +179,7 @@ public class HyperAcceleratorBlock extends ActionTubeBlock implements EntityBloc
         float newSpeed = mover.getTravelSpeed() + speed * (tube.getBlockState().getValue(ACCELERATE) ? 1 : -1);
         newSpeed = Math.max(0.4333f, newSpeed);
         mover.setTravelSpeed(newSpeed);
-        NetworkHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
+        NetworkHandler.sendToTrackingEntityAndSelf(entity,
                 new SpeedChangePacket(entity.getId(), newSpeed));
         TubeSoundManager.playTubeSuctionSound(entity, entity.position());
     }

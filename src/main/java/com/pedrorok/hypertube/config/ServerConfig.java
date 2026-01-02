@@ -4,10 +4,7 @@ import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.utils.TubeUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraftforge.common.ForgeConfigSpec;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashSet;
 import java.util.List;
@@ -18,82 +15,28 @@ import java.util.Set;
  * @project Create Hypertube
  */
 public class ServerConfig {
-    public static final ForgeConfigSpec SPEC;
-    private static final ServerConfig INSTANCE;
+    private static final ServerConfig INSTANCE = new ServerConfig();
 
-    public final ForgeConfigSpec.EnumValue<EntityListMode> ENTITY_LIST_MODE;
-    public final ForgeConfigSpec.ConfigValue<List<? extends String>> ENTITY_WHITELIST;
-    public final ForgeConfigSpec.ConfigValue<List<? extends String>> ENTITY_BLACKLIST;
+    public EntityListMode ENTITY_LIST_MODE = EntityListMode.BLACKLIST;
+    public List<String> ENTITY_WHITELIST = List.of(
+            "minecraft:player",
+            "minecraft:villager",
+            "minecraft:wandering_trader",
+            "create:package"
+    );
+    public List<String> ENTITY_BLACKLIST = List.of(
+            "minecraft:wither",
+            "minecraft:ender_dragon"
+    );
 
-    public final ForgeConfigSpec.DoubleValue SPEED_MULTIPLIER;
-    public final ForgeConfigSpec.DoubleValue STRESS_IMPACT_ENTRANCE;
-    public final ForgeConfigSpec.DoubleValue STRESS_IMPACT_ACCELERATOR;
+    public double SPEED_MULTIPLIER = 1.0;
+    public double STRESS_IMPACT_ENTRANCE = 4.0;
+    public double STRESS_IMPACT_ACCELERATOR = 4.0;
 
     private final Set<EntityType<?>> cachedWhitelist = new HashSet<>();
     private final Set<EntityType<?>> cachedBlacklist = new HashSet<>();
 
-    private ServerConfig(ForgeConfigSpec.Builder builder) {
-        builder.comment("Change these settings to customize the server-side behavior of the mod.")
-                .push("Travel Settings");
-
-        ENTITY_LIST_MODE = builder
-                .comment("How to handle entity travel permissions:",
-                        "TAG_ONLY - Use only the 'create_hypertube:traveller_entities' tag from datapacks",
-                        "WHITELIST - Only entities in the whitelist can travel (ignores tag)",
-                        "BLACKLIST - All entities can travel except those in the blacklist",
-                        "TAG_WITH_BLACKLIST - Use tag but exclude entities in the blacklist")
-                .defineEnum("entityListMode", EntityListMode.BLACKLIST);
-
-        ENTITY_WHITELIST = builder
-                .comment("Entities that CAN travel (only used when mode is WHITELIST).",
-                        "Use entity registry names like 'minecraft:villager' or 'create:package'")
-                .defineListAllowEmpty(
-                        List.of("entityWhitelist"),
-                        () -> List.of(
-                                "minecraft:player",
-                                "minecraft:villager",
-                                "minecraft:wandering_trader",
-                                "create:package"
-                        ),
-                        obj -> obj instanceof String
-                );
-
-        ENTITY_BLACKLIST = builder
-                .comment("Entities that CANNOT travel (used in BLACKLIST and TAG_WITH_BLACKLIST modes).",
-                        "Use entity registry names like 'minecraft:creeper' or 'minecraft:wither'")
-                .defineListAllowEmpty(
-                        List.of("entityBlacklist"),
-                        () -> List.of(
-                                "minecraft:wither",
-                                "minecraft:ender_dragon"
-                        ),
-                        obj -> obj instanceof String
-                );
-
-        SPEED_MULTIPLIER = builder
-                .comment("Multiplier for the speed of the tubes. Default is 1.0, which is normal speed. (THIS IS HIGHLY EXPERIMENTAL)")
-                .defineInRange("speedMultiplier", 1.0, 0.5, 99.0);
-
-        builder.pop();
-
-        builder.comment("Stress Settings")
-                .push("Stress Settings");
-
-        STRESS_IMPACT_ENTRANCE = builder
-                .comment("Stress impact of the Hyper Entrance block.")
-                .defineInRange("entranceStressImpact", 4.0, 0.0, 100.0);
-
-        STRESS_IMPACT_ACCELERATOR = builder
-                .comment("Stress impact of the Hyper Accelerator block.")
-                .defineInRange("acceleratorStressImpact", 4.0, 0.0, 100.0);
-
-        builder.pop();
-    }
-
-    static {
-        Pair<ServerConfig, ForgeConfigSpec> pair = new ForgeConfigSpec.Builder().configure(ServerConfig::new);
-        INSTANCE = pair.getLeft();
-        SPEC = pair.getRight();
+    private ServerConfig() {
     }
 
     public static ServerConfig get() {
@@ -101,13 +44,13 @@ public class ServerConfig {
     }
 
     public void init() {
-        loadEntityList(ENTITY_WHITELIST.get(), cachedWhitelist);
-        loadEntityList(ENTITY_BLACKLIST.get(), cachedBlacklist);
+        loadEntityList(ENTITY_WHITELIST, cachedWhitelist);
+        loadEntityList(ENTITY_BLACKLIST, cachedBlacklist);
 
-        TubeUtils.SPEED_MULTIPLIER = SPEED_MULTIPLIER.get().floatValue();
+        TubeUtils.SPEED_MULTIPLIER = (float) SPEED_MULTIPLIER;
     }
 
-    private void loadEntityList(List<? extends String> entityIds, Set<EntityType<?>> targetSet) {
+    private void loadEntityList(List<String> entityIds, Set<EntityType<?>> targetSet) {
         targetSet.clear();
         for (String entityId : entityIds) {
             try {
@@ -131,7 +74,7 @@ public class ServerConfig {
     }
 
     public boolean canEntityTravel(EntityType<?> entityType, boolean isInTag) {
-        return switch (ENTITY_LIST_MODE.get()) {
+        return switch (ENTITY_LIST_MODE) {
             case TAG_ONLY -> isInTag;
             case WHITELIST -> cachedWhitelist.contains(entityType);
             case BLACKLIST -> !cachedBlacklist.contains(entityType);

@@ -1,24 +1,23 @@
 package com.pedrorok.hypertube.network.packets;
 
 import com.pedrorok.hypertube.HypertubeMod;
+import com.pedrorok.hypertube.network.ClientBoundPacket;
 import com.pedrorok.hypertube.network.Packet;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkEvent;
 
 import java.util.HashSet;
-import java.util.function.Supplier;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 18/06/2025
  * @project Create Hypertube
  */
-public record SyncPersistentDataPacket(int entityId, CompoundTag readData) implements Packet<SyncPersistentDataPacket> {
+public record SyncPersistentDataPacket(int entityId, CompoundTag readData) implements Packet<SyncPersistentDataPacket>, ClientBoundPacket {
 
     public SyncPersistentDataPacket(FriendlyByteBuf buf) {
         this(
@@ -34,21 +33,21 @@ public record SyncPersistentDataPacket(int entityId, CompoundTag readData) imple
         );
     }
 
-    @OnlyIn(Dist.CLIENT)
-    private static void handleClient(SyncPersistentDataPacket packet) {
+    @Environment(EnvType.CLIENT)
+    private void handleClient() {
         try {
-            Entity entityByID = Minecraft.getInstance().level.getEntity(packet.entityId);
+            Entity entityByID = Minecraft.getInstance().level.getEntity(this.entityId);
             if (entityByID == null) {
                 return;
             }
             CompoundTag data = entityByID.getPersistentData();
             new HashSet<>(data.getAllKeys()).forEach(data::remove);
-            data.merge(packet.readData);
+            data.merge(this.readData);
             if (!(entityByID instanceof ISyncPersistentData))
                 return;
             ((ISyncPersistentData) entityByID).onPersistentDataUpdated();
         } catch (Exception e) {
-            HypertubeMod.LOGGER.error("Failed to handle SyncPersistentDataPacket for entity ID: {}", packet.entityId, e);
+            HypertubeMod.LOGGER.error("Failed to handle SyncPersistentDataPacket for entity ID: {}", this.entityId, e);
         }
     }
 
@@ -59,10 +58,8 @@ public record SyncPersistentDataPacket(int entityId, CompoundTag readData) imple
     }
 
     @Override
-    public void execute(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            handleClient(this);
-        });
-        ctx.get().setPacketHandled(true);
+    @Environment(EnvType.CLIENT)
+    public void executeOnClient() {
+        handleClient();
     }
 }

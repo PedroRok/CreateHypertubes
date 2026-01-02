@@ -1,22 +1,10 @@
-buildscript {
-    repositories {
-        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
-    }
-}
-
 plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'fabric-loom' version '1.2.7'
+    id 'org.ajoberstar.grgit' version '5.2.0'
 }
-
-apply plugin: 'org.spongepowered.mixin'
-
 
 version = mod_version
 group = mod_group_id
@@ -28,53 +16,37 @@ base {
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
-minecraft {
-    mappings channel: mapping_channel, version: mapping_version
-    copyIdeResources = true
+
+loom {
     runs {
-        configureEach {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-
-            mods {
-                "${mod_id}" {
-                    source sourceSets.main
-                }
-            }
-        }
-
         client {
-            property 'forge.enabledGameTestNamespaces', mod_id
+            setConfigName("Fabric Client")
+            ideConfigGenerated(true)
+            runDir("run")
         }
-
         server {
-            property 'forge.enabledGameTestNamespaces', mod_id
-            args '--nogui'
+            setConfigName("Fabric Server")
+            ideConfigGenerated(true)
+            runDir("run")
         }
-
-        gameTestServer {
-            property 'forge.enabledGameTestNamespaces', mod_id
-        }
-
-        data {
-            workingDirectory project.file('run-data')
-            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+        datagen {
+            inherit server
+            name "Data Generation"
+            vmArg "-Dfabric-api.datagen"
+            vmArg "-Dfabric-api.datagen.output-dir=${file("src/generated/resources")}"
+            vmArg "-Dfabric-api.datagen.modid=${mod_id}"
+            runDir "build/datagen"
         }
     }
-}
-
-mixin {
-    add sourceSets.main, "${mod_id}.refmap.json"
-    config "${mod_id}.mixins.json"
-    config "conflict_fix.mixins.json"
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
     maven { url = "https://maven.createmod.net" }
+    maven { url = "https://mvn.devos.one/releases" }
     maven { url = "https://mvn.devos.one/snapshots" }
+    maven { url = "https://maven.jamieswhiteshirt.com/libs-release" }
     maven { url = "https://maven.tterrag.com" }
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" }
     maven {
@@ -86,44 +58,55 @@ repositories {
         name = "CurseMaven"
         url = "https://cursemaven.com"
     }
+    
+    maven {
+        name = "ParchmentMC"
+        url = "https://maven.parchmentmc.org"
+    }
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings loom.officialMojangMappings()
+    
+    modImplementation "net.fabricmc:fabric-loader:${loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
 
     compileOnly 'org.projectlombok:lombok:1.18.32'
     annotationProcessor 'org.projectlombok:lombok:1.18.32'
 
-    implementation fg.deobf("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
-    //implementation fg.deobf("net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_version}")
-    compileOnly fg.deobf("com.jozufozu.flywheel:flywheel-forge-${minecraft_version}:${flywheel_version}")
-    runtimeOnly fg.deobf("com.jozufozu.flywheel:flywheel-forge-${minecraft_version}:${flywheel_version}")
-    implementation fg.deobf("com.tterrag.registrate:Registrate:${registrate_version}")
+    modImplementation("com.simibubi.create:create-fabric:${create_version}")
+    modImplementation("dev.engine-room.flywheel:flywheel-fabric-${minecraft_version}")
+    modImplementation("dev.engine-room.flywheel:flywheel-fabric-api-${minecraft_version}")
+    modImplementation("com.tterrag.registrate_fabric:Registrate:${registrate_version}")
+    modImplementation("net.createmod.ponder:Ponder-Fabric-${minecraft_version}:${ponder_version}")
+    modImplementation("net.createmod.ponder:Ponder-Common-${minecraft_version}:${ponder_version}")
+    modImplementation("fuzs.forgeconfigapiport:forgeconfigapiport-fabric")
+    modImplementation("io.github.tropheusj:milk-lib")
+    modImplementation("io.github.tropheusj:dripstone-fluid-lib")
 
-    // MixinExtras a great Mixin addition
+    // MixinExtras
     compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.3.5"))
-    implementation fg.deobf("io.github.llamalad7:mixinextras-forge:0.3.5") {
+    implementation("io.github.llamalad7:mixinextras-fabric:0.3.5") {
         exclude group: 'org.spongepowered', module: 'mixin'
     }
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
     // Fix better third person
-    compileOnly fg.deobf("curse.maven:betterthirdperson-435044:4596768")
-    //runtimeOnly fg.deobf("curse.maven:betterthirdperson-435044:4596768")
+    modCompileOnly("curse.maven:betterthirdperson-435044:4596768")
 }
 
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
             minecraft_version   : minecraft_version, minecraft_version_range: minecraft_version_range,
-            forge_version       : forge_version, forge_version_range: forge_version_range,
-            loader_version_range: loader_version_range,
+            loader_version      : loader_version,
             mod_id              : mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
             mod_authors         : mod_authors, mod_description: mod_description,
     ]
     inputs.properties replaceProperties
 
-    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+    filesMatching(['fabric.mod.json', 'pack.mcmeta']) {
         expand replaceProperties + [project: project]
     }
 }
@@ -142,8 +125,6 @@ tasks.named('jar', Jar).configure {
                 'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
-
-    finalizedBy 'reobfJar'
 }
 
 

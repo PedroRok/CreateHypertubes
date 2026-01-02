@@ -1,20 +1,18 @@
 package com.pedrorok.hypertube.network.packets;
 
 import com.pedrorok.hypertube.core.travel.ClientTravelPathMover;
+import com.pedrorok.hypertube.network.ClientBoundPacket;
 import com.pedrorok.hypertube.network.Packet;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 15/07/2025
  * @project Create Hypertube
  */
-public record SyncEntityPosPacket(int entityId, int segment) implements Packet<SyncEntityPosPacket> {
+public record SyncEntityPosPacket(int entityId, int segment) implements Packet<SyncEntityPosPacket>, ClientBoundPacket {
 
     public SyncEntityPosPacket(FriendlyByteBuf buf) {
         this(
@@ -37,16 +35,9 @@ public record SyncEntityPosPacket(int entityId, int segment) implements Packet<S
     }
 
     @Override
-    public void execute(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            handleClient(this);
-        });
-        ctx.get().setPacketHandled(true);
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    private static void handleClient(SyncEntityPosPacket packet) {
-        ClientTravelPathMover.updateSegment(packet.entityId, packet.segment);
+    @Environment(EnvType.CLIENT)
+    public void executeOnClient() {
+        ClientTravelPathMover.updateSegment(this.entityId, this.segment);
     }
 
 }

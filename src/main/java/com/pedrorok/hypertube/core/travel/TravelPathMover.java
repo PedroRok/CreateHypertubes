@@ -14,7 +14,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.PacketDistributor;
 
 import java.util.HashSet;
 import java.util.List;
@@ -112,7 +111,7 @@ public class TravelPathMover {
                 player.stopFallFlying();
             return;
         }
-        NetworkHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(() -> entity),
+        NetworkHandler.sendToTrackingEntity(entity,
                 SyncEntityPosPacket.create(entity, currentSegment)
         );
     }
@@ -129,7 +128,7 @@ public class TravelPathMover {
         entity.setYRot(yaw);
         entity.setXRot(pitch);
         if (entity.level().isClientSide) return;
-        NetworkHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(() -> entity),
+        NetworkHandler.sendToTrackingEntity(entity,
                 EntityTravelDirDataPacket.create(entity)
         );
     }

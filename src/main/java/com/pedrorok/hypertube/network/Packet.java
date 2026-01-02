@@ -1,9 +1,6 @@
 package com.pedrorok.hypertube.network;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 19/05/2025
@@ -11,6 +8,12 @@ import java.util.function.Supplier;
  */
 public interface Packet<T extends Packet<T>> {
     void toBytes(FriendlyByteBuf buf);
+}
 
-    void execute(Supplier<NetworkEvent.Context> ctx);
+public interface ClientBoundPacket {
+    void executeOnClient();
+}
+
+public interface ServerBoundPacket {
+    void executeOnServer(net.minecraft.server.level.ServerPlayer player);
 }

@@ -1,7 +1,7 @@
 package com.pedrorok.hypertube.utils;
 
 import com.mojang.math.Axis;
-import com.simibubi.create.foundation.render.SuperByteBuffer;
+import net.createmod.catnip.render.SuperByteBuffer;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import org.joml.Quaternionf;

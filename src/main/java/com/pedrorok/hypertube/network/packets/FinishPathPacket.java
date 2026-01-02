@@ -2,17 +2,17 @@ package com.pedrorok.hypertube.network.packets;
 
 import com.pedrorok.hypertube.core.travel.TravelManager;
 import com.pedrorok.hypertube.network.Packet;
+import com.pedrorok.hypertube.network.ServerBoundPacket;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.UUID;
-import java.util.function.Supplier;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 03/07/2025
  * @project Create Hypertube
  */
-public record FinishPathPacket(UUID entityUuid) implements Packet<FinishPathPacket> {
+public record FinishPathPacket(UUID entityUuid) implements Packet<FinishPathPacket>, ServerBoundPacket {
 
     @Override
     public void toBytes(FriendlyByteBuf buf) {
@@ -24,10 +24,7 @@ public record FinishPathPacket(UUID entityUuid) implements Packet<FinishPathPack
     }
 
     @Override
-    public void execute(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            TravelManager.finishTravel(entityUuid);
-        });
-        ctx.get().setPacketHandled(true);
+    public void executeOnServer(ServerPlayer player) {
+        TravelManager.finishTravel(entityUuid);
     }
 }

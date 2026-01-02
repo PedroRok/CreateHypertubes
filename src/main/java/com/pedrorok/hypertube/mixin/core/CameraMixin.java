@@ -57,7 +57,7 @@ public class CameraMixin {
         if (renderViewEntity != player) return;
         boolean hasHypertubeData = !TravelManager.hasHyperTubeData(renderViewEntity);
         if (hasHypertubeData || (
-                options.getCameraType().isFirstPerson() && ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get())) {
+                options.getCameraType().isFirstPerson() && ClientConfig.get().ALLOW_FPV_INSIDE_TUBE)) {
             DetachedCameraController.get().setDetached(false);
             if (hasHypertubeData) {
                 DetachedPlayerDirController.get().setDetached(false);
@@ -65,7 +65,7 @@ public class CameraMixin {
             return;
         }
 
-        if (!ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get()) {
+        if (!ClientConfig.get().ALLOW_FPV_INSIDE_TUBE) {
             options.setCameraType(CameraType.THIRD_PERSON_BACK);
         }
 

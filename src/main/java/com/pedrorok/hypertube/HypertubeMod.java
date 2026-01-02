@@ -1,17 +1,16 @@
 package com.pedrorok.hypertube;
 
 import com.pedrorok.hypertube.config.ClientConfig;
+import com.pedrorok.hypertube.events.ModClientEvents;
+import com.pedrorok.hypertube.events.ModServerEvents;
+import com.pedrorok.hypertube.events.PlayerSyncEvents;
 import com.pedrorok.hypertube.network.NetworkHandler;
 import com.pedrorok.hypertube.config.ServerConfig;
 import com.pedrorok.hypertube.core.smarttube.ITubeAttachment;
 import com.pedrorok.hypertube.registry.*;
 import com.simibubi.create.foundation.data.CreateRegistrate;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,26 +18,15 @@ import org.apache.logging.log4j.Logger;
  * @author Rok, Pedro Lucas nmm. Created on 17/04/2025
  * @project Create Hypertube
  */
-@Mod(HypertubeMod.MOD_ID)
-public class HypertubeMod {
+public class HypertubeMod implements ModInitializer {
     public static final String MOD_ID = "create_hypertube";
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
     public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(HypertubeMod.MOD_ID);
     //.defaultCreativeTab((ResourceKey<CreativeModeTab>) null);
 
-    public HypertubeMod() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-
-        modEventBus.addListener(this::commonSetup);
-
-        ModLoadingContext.get()
-                .registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC, MOD_ID + "-client.toml");
-        ModLoadingContext.get()
-                .registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC, MOD_ID + "-server.toml");
-
-        REGISTRATE.registerEventListeners(modEventBus);
-
+    @Override
+    public void onInitialize() {
         NetworkHandler.init();
         ModPartialModels.init();
 
@@ -46,18 +34,25 @@ public class HypertubeMod {
         ModBlockEntities.register();
         ModItems.register();
 
-        ModCreativeTab.register(modEventBus);
+        ModCreativeTab.register();
 
-        ModParticles.register(modEventBus);
+        ModParticles.register();
 
-        ModSounds.register(modEventBus);
+        ModSounds.register();
 
         ITubeAttachment.init();
 
-    }
+        ServerLifecycleEvents.SERVER_STARTING.register(server -> {
+            ServerConfig.get().init();
+        });
 
-    private void commonSetup(final FMLCommonSetupEvent event) {
-
+        ModServerEvents.init();
+        PlayerSyncEvents.init();
+        
+        // Registrar eventos do cliente
+        if (net.fabricmc.loader.api.FabricLoader.getInstance().getEnvironmentType() == net.fabricmc.api.EnvType.CLIENT) {
+            new ModClientEvents().onInitializeClient();
+        }
     }
 
     public static CreateRegistrate get() {

@@ -18,28 +18,28 @@ public class EntityTravelingMixin {
     @Inject(method = "getPose", at = @At("HEAD"), cancellable = true)
     private void cancelPose(CallbackInfoReturnable<Pose> cir) {
         if (!(((Entity) (Object) this) instanceof LivingEntity player)
-            || !player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
+            || !((EntityPersistentData) player).getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
         cir.setReturnValue(Pose.STANDING);
     }
 
     @Inject(method = "getEyeHeight()F", at = @At("HEAD"), cancellable = true)
     private void cancelEyeHeight(CallbackInfoReturnable<Float> cir) {
         if (!(((Entity) (Object) this) instanceof Player player)
-            || !player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
+            || !((EntityPersistentData) player).getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
         cir.setReturnValue(0.25F);
     }
 
     @Inject(method = "hurt", at = @At("HEAD"), cancellable = true)
     private void createHypertube$cancelHurt(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (!(((Entity) (Object) this) instanceof LivingEntity entity)
-            || !entity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
+            || !((EntityPersistentData) entity).getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
         cir.setReturnValue(false);
     }
 
     @Inject(method = "isInvulnerableTo", at = @At("HEAD"), cancellable = true)
     private void createHypertube$cancelInvulnerableTo(DamageSource source, CallbackInfoReturnable<Boolean> cir) {
         if (!(((Entity) (Object) this) instanceof LivingEntity entity)
-            || !entity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
+            || !((EntityPersistentData) entity).getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
         cir.setReturnValue(true);
     }
 }
