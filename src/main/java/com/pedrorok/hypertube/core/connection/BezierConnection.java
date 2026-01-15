@@ -49,6 +49,7 @@ public class BezierConnection implements IConnection {
     );
 
 
+    private final static float MAX_REASONABLE_DISTANCE = 1000F;
     public static final float MAX_DISTANCE = 40.0f;
     public static final float MAX_ANGLE = 0.6f;
 
@@ -157,6 +158,9 @@ public class BezierConnection implements IConnection {
         if (bezierPoints == null) {
             bezierPoints = getBezierPoints();
         }
+
+        if (distance() > MAX_REASONABLE_DISTANCE) return 0;
+
         // THIS IS TO PREVENT FROM PLACING BACK
         Vec3 first = getBezierPoints().getFirst();
         Vec3 second = getBezierPoints().get(1);
@@ -223,6 +227,8 @@ public class BezierConnection implements IConnection {
 
     @OnlyIn(Dist.CLIENT)
     public void drawPath(LerpedFloat animation, boolean isValid) {
+        if (distance() > MAX_REASONABLE_DISTANCE) return;
+
         Vec3 pos1 = fromPos.pos().getCenter();
         int id = 0;
         for (Vec3 bezierPoint : getBezierPoints()) {

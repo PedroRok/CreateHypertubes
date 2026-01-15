@@ -115,15 +115,15 @@ public class BezierTextureRenderer {
                 float uStart = current.uCoordinate();
 
                 Vector3f corner_j_movement = new Vector3f(
-                        (float) (next.center().x + nextOffsets.get(j).x) - (float) (current.center().x + currentOffsets.get(j).x),
-                        (float) (next.center().y + nextOffsets.get(j).y) - (float) (current.center().y + currentOffsets.get(j).y),
-                        (float) (next.center().z + nextOffsets.get(j).z) - (float) (current.center().z + currentOffsets.get(j).z)
+                        (float) ((next.center().x + nextOffsets.get(j).x) - (current.center().x + currentOffsets.get(j).x)),
+                        (float) ((next.center().y + nextOffsets.get(j).y) - (current.center().y + currentOffsets.get(j).y)),
+                        (float) ((next.center().z + nextOffsets.get(j).z) - (current.center().z + currentOffsets.get(j).z))
                 );
                 float uEnd_j = uStart + (corner_j_movement.dot(tangent) / TILING_UNIT);
                 Vector3f corner_nextJ_movement = new Vector3f(
-                        (float) (next.center().x + nextOffsets.get(nextJ).x) - (float) (current.center().x + currentOffsets.get(nextJ).x),
-                        (float) (next.center().y + nextOffsets.get(nextJ).y) - (float) (current.center().y + currentOffsets.get(nextJ).y),
-                        (float) (next.center().z + nextOffsets.get(nextJ).z) - (float) (current.center().z + currentOffsets.get(nextJ).z)
+                        (float) ((next.center().x + nextOffsets.get(nextJ).x) - (current.center().x + currentOffsets.get(nextJ).x)),
+                        (float) ((next.center().y + nextOffsets.get(nextJ).y) - (current.center().y + currentOffsets.get(nextJ).y)),
+                        (float) ((next.center().z + nextOffsets.get(nextJ).z) - (current.center().z + currentOffsets.get(nextJ).z))
                 );
                 float uEnd_nextJ = uStart + (corner_nextJ_movement.dot(tangent) / TILING_UNIT);
 
