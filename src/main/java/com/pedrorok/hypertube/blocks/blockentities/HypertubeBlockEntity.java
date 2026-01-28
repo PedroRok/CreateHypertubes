@@ -35,17 +35,17 @@ public class HypertubeBlockEntity extends TubeBlockEntity {
     protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(compound, registries, clientPacket);
         if (compound.contains("ConnectionTo")) {
-            this.connectionOne = getConnection(compound, "ConnectionTo");
+            this.connectionOne = getConnectionRelative(compound, "ConnectionTo", worldPosition);
         }
         if (compound.contains("ConnectionFrom")) {
-            this.connectionTwo = getConnection(compound, "ConnectionFrom");
+            this.connectionTwo = getConnectionRelative(compound, "ConnectionFrom", worldPosition);
         }
     }
 
     @Override
     protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(compound, registries, clientPacket);
-        writeConnection(compound, new Tuple<>(connectionOne, "ConnectionTo"), new Tuple<>(connectionTwo, "ConnectionFrom"));
+        writeConnectionRelative(compound, worldPosition, new Tuple<>(connectionOne, "ConnectionTo"), new Tuple<>(connectionTwo, "ConnectionFrom"));
     }
     // --------- Nbt Methods ---------
 

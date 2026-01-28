@@ -23,7 +23,6 @@ import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,14 +36,14 @@ public class BezierConnection implements IConnection {
             SimpleConnection.CODEC.fieldOf("fromPos").forGetter(BezierConnection::getFromPos),
             SimpleConnection.CODEC.fieldOf("toPos").forGetter(BezierConnection::getToPos),
             Codec.INT.fieldOf("tubeSegments").forGetter(BezierConnection::getTubeSegments),
-            Vec3.CODEC.listOf().fieldOf("curvePoints").forGetter(BezierConnection::getBezierPoints)
+            Vec3.CODEC.listOf().fieldOf("curvePoints").forGetter(BezierConnection::getCachedRelativeBezierPoints)
     ).apply(i, BezierConnection::new));
 
     public static final StreamCodec<ByteBuf, BezierConnection> STREAM_CODEC = StreamCodec.composite(
             SimpleConnection.STREAM_CODEC, BezierConnection::getFromPos,
             SimpleConnection.STREAM_CODEC, BezierConnection::getToPos,
             CodecUtils.INTEGER, BezierConnection::getTubeSegments,
-            CodecUtils.VEC3_LIST, BezierConnection::getBezierPoints,
+            CodecUtils.VEC3_LIST, BezierConnection::getCachedRelativeBezierPoints,
             BezierConnection::new
     );
 
@@ -63,52 +62,105 @@ public class BezierConnection implements IConnection {
     @Getter
     private int tubeSegments;
 
-    private List<Vec3> bezierPoints;
+    @Getter
+    private final List<Vec3> cachedRelativeBezierPoints;
 
     private ResponseDTO valid;
     private final int detailLevel;
 
-    private BezierConnection(SimpleConnection fromPos, SimpleConnection toPos, int tubeSegments, List<Vec3> bezierPoints) {
-        this(fromPos, toPos, tubeSegments, (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter())));
-        this.bezierPoints = bezierPoints;
+    public BezierConnection(SimpleConnection fromPos, SimpleConnection toPos, int tubeSegments, List<Vec3> cachedPoints) {
+        this.fromPos = fromPos;
+        this.toPos = toPos;
+        this.tubeSegments = tubeSegments;
+        this.detailLevel = toPos != null ? (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter())) : 0;
+        this.cachedRelativeBezierPoints = cachedPoints != null ? cachedPoints : calculateRelativeBezierPoints();
     }
 
     public BezierConnection(SimpleConnection fromPos, @Nullable SimpleConnection toPos) {
         this(fromPos, toPos, 1, toPos != null ? (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter())) : 0);
     }
 
-    public BezierConnection(SimpleConnection fromPos, SimpleConnection toPos, int tubeSegments, int detailLevel) {
+    public BezierConnection(SimpleConnection fromPos, @Nullable SimpleConnection toPos, int tubeSegments, int detailLevel) {
         this.fromPos = fromPos;
         this.toPos = toPos;
         this.detailLevel = detailLevel;
         this.tubeSegments = tubeSegments;
+        this.cachedRelativeBezierPoints = calculateRelativeBezierPoints();
     }
 
-    public List<Vec3> getBezierPoints() {
-        if (bezierPoints != null) return bezierPoints;
+    private List<Vec3> calculateRelativeBezierPoints() {
         if (toPos == null) return List.of();
-        Vec3 fromPos = this.fromPos.pos().getCenter();
-        Vec3 toPos = new Vec3(this.toPos.pos().getX() + 0.5, this.toPos.pos().getY() + 0.5, this.toPos.pos().getZ() + 0.5);
-        bezierPoints = calculateBezierCurve(fromPos, this.fromPos.direction(), toPos, detailLevel, getToPos().direction());
-        return bezierPoints;
-    }
 
-    private List<Vec3> calculateBezierCurve(Vec3 from, Direction direction, Vec3 toVec, int detailLevel, @Nullable Direction finalDirection) {
-        valid = null;
-        double distance = from.distanceTo(toVec);
+        // Calculate offset between from and to positions
+        BlockPos storedFromPos = fromPos.pos();
+        BlockPos storedToPos = toPos.pos();
+        BlockPos offset = storedToPos.subtract(storedFromPos);
 
-        Vec3 controlPoint1 = createFirstControlPoint(from, direction, distance);
-        Vec3 controlPoint2 = createSecondControlPoint(toVec, direction, distance, Vec3.atLowerCornerOf(finalDirection.getNormal()));
+        // Create relative positions (fromPos is at origin 0,0,0)
+        Vec3 fromRelative = new Vec3(0.5, 0.5, 0.5); // Center of origin block
+        Vec3 toRelative = new Vec3(offset.getX() + 0.5, offset.getY() + 0.5, offset.getZ() + 0.5);
+
+        // Calculate bezier curve in relative space
+        double distance = fromRelative.distanceTo(toRelative);
+        Vec3 controlPoint1 = createFirstControlPoint(fromRelative, fromPos.direction(), distance);
+        Vec3 controlPoint2 = createSecondControlPoint(toRelative, fromPos.direction(), distance,
+                toPos.direction() != null ? Vec3.atLowerCornerOf(toPos.direction().getNormal()) : null);
 
         List<Vec3> curvePoints = new ArrayList<>();
-
         for (int i = 0; i <= detailLevel; i++) {
             double t = (double) i / detailLevel;
-            Vec3 point = cubicBezier(from, controlPoint1, controlPoint2, toVec, t);
+            Vec3 point = cubicBezier(fromRelative, controlPoint1, controlPoint2, toRelative, t);
             curvePoints.add(point);
         }
 
         return curvePoints;
+    }
+
+    @Deprecated
+    public List<Vec3> getBezierPoints() {
+        if (cachedRelativeBezierPoints.isEmpty()) return List.of();
+
+        // Convert cached relative points to absolute using stored fromPos
+        Vec3 originAbsolute = Vec3.atLowerCornerOf(fromPos.pos());
+        List<Vec3> absolutePoints = new ArrayList<>(cachedRelativeBezierPoints.size());
+        for (Vec3 relativePoint : cachedRelativeBezierPoints) {
+            absolutePoints.add(originAbsolute.add(relativePoint));
+        }
+        return absolutePoints;
+    }
+
+    public List<Vec3> getBezierPoints(Level level, BlockPos currentFromPos) {
+        if (cachedRelativeBezierPoints.isEmpty()) return List.of();
+
+        // Convert cached relative points to absolute using CURRENT block position
+        Vec3 originAbsolute = Vec3.atLowerCornerOf(currentFromPos);
+        List<Vec3> absolutePoints = new ArrayList<>(cachedRelativeBezierPoints.size());
+        for (Vec3 relativePoint : cachedRelativeBezierPoints) {
+            absolutePoints.add(originAbsolute.add(relativePoint));
+        }
+        return absolutePoints;
+    }
+
+    public List<Vec3> getRelativeBezierPoints(BlockPos originPos) {
+        if (cachedRelativeBezierPoints.isEmpty()) return List.of();
+
+        // If originPos matches fromPos, return cached points directly
+        if (originPos.equals(fromPos.pos())) {
+            return new ArrayList<>(cachedRelativeBezierPoints);
+        }
+
+        // Otherwise, calculate offset and adjust cached points
+        BlockPos offset = fromPos.pos().subtract(originPos);
+        Vec3 offsetVec = new Vec3(offset.getX(), offset.getY(), offset.getZ());
+        List<Vec3> adjustedPoints = new ArrayList<>(cachedRelativeBezierPoints.size());
+        for (Vec3 point : cachedRelativeBezierPoints) {
+            adjustedPoints.add(point.add(offsetVec));
+        }
+        return adjustedPoints;
+    }
+
+    public List<Vec3> getRelativeBezierPoints(Level level, BlockPos originPos) {
+        return new ArrayList<>(cachedRelativeBezierPoints);
     }
 
     private Vec3 createFirstControlPoint(Vec3 from, Direction direction, double distance) {
@@ -155,15 +207,13 @@ public class BezierConnection implements IConnection {
     }
 
     public float getMaxAngleBezierAngle() {
-        if (bezierPoints == null) {
-            bezierPoints = getBezierPoints();
-        }
+        List<Vec3> points = getBezierPoints();
 
         if (distance() > MAX_REASONABLE_DISTANCE) return 0;
 
         // THIS IS TO PREVENT FROM PLACING BACK
-        Vec3 first = getBezierPoints().getFirst();
-        Vec3 second = getBezierPoints().get(1);
+        Vec3 first = points.getFirst();
+        Vec3 second = points.get(1);
         Direction direction = fromPos.direction();
         Vec3 firstDirection = new Vec3(direction.getStepX(), direction.getStepY(), direction.getStepZ());
         Vec3 secondDirection = second.subtract(first).normalize();
@@ -173,15 +223,15 @@ public class BezierConnection implements IConnection {
         }
         // END OF PREVENTION
 
-        return getMaxAngle();
+        return getMaxAngle(points);
     }
 
-    private float getMaxAngle() {
+    private float getMaxAngle(List<Vec3> points) {
         float maxAngle = 0;
-        Vec3 lastPoint = bezierPoints.get(0);
-        for (int i = 1; i < bezierPoints.size() - 1; i++) {
-            Vec3 currentPoint = bezierPoints.get(i);
-            Vec3 nextPoint = bezierPoints.get(i + 1);
+        Vec3 lastPoint = points.getFirst();
+        for (int i = 1; i < points.size() - 1; i++) {
+            Vec3 currentPoint = points.get(i);
+            Vec3 nextPoint = points.get(i + 1);
 
             Vec3 vector1 = currentPoint.subtract(lastPoint);
             Vec3 vector2 = nextPoint.subtract(currentPoint);
@@ -263,9 +313,12 @@ public class BezierConnection implements IConnection {
 
 
     public BezierConnection invert() {
-        List<Vec3> newBezier = new ArrayList<>(bezierPoints);
-        Collections.reverse(newBezier);
-        return new BezierConnection(new SimpleConnection(toPos.pos(), toPos.direction().getOpposite()), fromPos, tubeSegments, newBezier);
+        return new BezierConnection(
+            new SimpleConnection(toPos.pos(), toPos.direction().getOpposite()),
+            new SimpleConnection(fromPos.pos(), fromPos.direction().getOpposite()),
+            tubeSegments,
+            detailLevel
+        );
     }
 
     @Override
@@ -305,3 +358,4 @@ public class BezierConnection implements IConnection {
                '}';
     }
 }
+

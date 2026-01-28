@@ -49,14 +49,14 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
     protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(compound, registries, clientPacket);
         if (compound.contains("Connection")) {
-            connection = getConnection(compound, "Connection");
+            connection = getConnectionRelative(compound, "Connection", worldPosition);
         }
     }
 
     @Override
     protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(compound, registries, clientPacket);
-        writeConnection(compound, new Tuple<>(connection, "Connection"));
+        writeConnectionRelative(compound, worldPosition, new Tuple<>(connection, "Connection"));
     }
     // --------- Nbt Methods ---------
 

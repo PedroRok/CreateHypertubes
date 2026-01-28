@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
-import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -12,7 +11,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -49,24 +47,23 @@ public class BezierTextureRenderer {
     }
 
     public void renderBezierConnection(BlockPos blockPosInitial, BezierConnection connection, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
-        if (connection == null || !connection.getValidation().valid()) {
-            return;
-        }
-        List<Vec3> bezierPoints = connection.getBezierPoints();
-        if (bezierPoints.size() < 2) {
+        if (connection == null) {
             return;
         }
 
         Level level = Minecraft.getInstance().level;
-        BlockEntity blockEntity = level.getBlockEntity(blockPosInitial);
-        if (!(blockEntity instanceof ITubeConnectionEntity)) {
+        if (level == null) {
             return;
         }
+
+        List<Vec3> bezierPoints = connection.getRelativeBezierPoints(level, blockPosInitial);
+        if (bezierPoints.size() < 2) {
+            return;
+        }
+        
         int segmentDistance = connection.getTubeSegments();
 
         poseStack.pushPose();
-        Vec3 blockPos = Vec3.atLowerCornerOf(blockPosInitial);
-        poseStack.translate(-blockPos.x, -blockPos.y, -blockPos.z);
         Matrix4f pose = poseStack.last().pose();
 
         List<TubeRing> tubeGeometry = calculateAndCacheGeometry(bezierPoints);
