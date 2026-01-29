@@ -16,6 +16,6 @@ public class HypertubesPonderScenes {
     public static void register(PonderSceneRegistrationHelper<ResourceLocation> helper) {
         PonderSceneRegistrationHelper<ItemProviderEntry<?, ?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
         HELPER.forComponents(ModBlocks.HYPERTUBE)
-                .addStoryBoard("tube_simple", TubeScenes::simpleTube);
+                .addStoryBoard("simple_tube", TubeScenes::simpleTube);
     }
 }

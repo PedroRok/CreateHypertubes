@@ -28,5 +28,11 @@
   "block.hypertube.hyper_accelerator.brake_mode": "Brake Mode",
   "item.create_hypertube.redstone_detector_tube_attachment": "Redstone Detector Tube Attachment",
   "item.create_hypertube.tube_scanner_attachment": "Tube Scanner Attachment",
-  "item.create_hypertube.tube_scanner_unfinished": "Unfinished Tube Scanner"
+  "item.create_hypertube.tube_scanner_unfinished": "Unfinished Tube Scanner",
+  "create_hypertube.ponder.simple_tube.header": "Creating a Hypertube",
+  "create_hypertube.ponder.simple_tube.text_1": "To create a Hypertube connection, Just Right Click the tube while holding another tube.",
+  "create_hypertube.ponder.simple_tube.text_2": "Than place the second tube.",
+  "create_hypertube.ponder.simple_tube.text_3": "And you have a Hypertube connection!",
+  "create_hypertube.ponder.simple_tube.text_4": "You can connect already placed tubes.",
+  "create_hypertube.ponder.simple_tube.text_5": "You can change tube segment count with the wrench."
 }
