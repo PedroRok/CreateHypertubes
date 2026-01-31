@@ -1,16 +1,21 @@
 package com.pedrorok.hypertube.ponder.scenes;
 
+import com.jcraft.jorbis.Block;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.simibubi.create.foundation.ponder.CreateSceneBuilder;
 import net.createmod.ponder.api.PonderPalette;
+import net.createmod.ponder.api.element.ElementLink;
+import net.createmod.ponder.api.element.ParrotElement;
+import net.createmod.ponder.api.element.ParrotPose;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.createmod.ponder.api.scene.Selection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * @author Rok, Pedro Lucas nmm. 29/01/2026
@@ -63,10 +68,37 @@ public class EntranceScenes {
         scene.overlay()
                 .showText(70)
                 .colored(PonderPalette.GREEN)
+                .attachKeyFrame()
                 .pointAt(util.vector().of(2, 1, 3.3))
                 .placeNearTarget()
                 .text("To be able to enter the Hypertube, you need to power with at least 16 RPM.");
-        scene.idle(60);
+        scene.idle(20);
+
+        // PARROT TRAVELLING
+        ElementLink<ParrotElement> birb = scene.special()
+                .createBirb(new Vec3(1, 1, 2.5), ParrotPose.DancePose::new);
+
+        scene.idle(40);
+        scene.special().moveParrot(birb, new Vec3(0, 0.1, 0), 5);
+        scene.special().changeBirbPose(birb, ParrotPose.FlappyPose::new);
+        scene.idle(3);
+        scene.special().moveParrot(birb, new Vec3(5.5, 0, 0), 20);
+        scene.idle(5);
+        scene.special().hideElement(birb, Direction.EAST);
+
+        scene.idle(30);
+        scene.overlay()
+                .showText(70)
+                .colored(PonderPalette.GREEN)
+                .attachKeyFrame()
+                .pointAt(util.vector().of(2, 1, 3.3))
+                .placeNearTarget()
+                .text("The faster it spins, the faster you can travel.");
+        scene.world().multiplyKineticSpeed(util.select().everywhere(), 4);
+        scene.effects().rotationSpeedIndicator(util.grid().at(5, 1, 4));
+        scene.idle(30);
+
+        scene.idle(80);
         setSystemSpeed(util, scene, 32);
     }
 
@@ -85,8 +117,6 @@ public class EntranceScenes {
 
     public static void changeOpenCloseEntrance(SceneBuilder builder, BlockPos p1, boolean open) {
         builder.world()
-                .modifyBlockEntity(p1, HyperEntranceBlockEntity.class, be -> {
-                    be.getBlockState().setValue(HyperEntranceBlock.OPEN, open);
-                });
+                .modifyBlock(p1, blockState -> blockState.setValue(HyperEntranceBlock.OPEN, open), false);
     }
 }
