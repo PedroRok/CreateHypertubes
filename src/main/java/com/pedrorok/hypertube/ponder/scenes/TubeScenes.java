@@ -34,7 +34,6 @@ public class TubeScenes {
 
         scene.title("simple_tube", "Creating a Hypertube");
         scene.configureBasePlate(0, 0, 7);
-        scene.scaleSceneView(1.2f);
         scene.setSceneOffsetY(0);
 
         // Show base

@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.ponder;
 
+import com.pedrorok.hypertube.ponder.scenes.EntranceScenes;
 import com.pedrorok.hypertube.ponder.scenes.TubeScenes;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.tterrag.registrate.util.entry.ItemProviderEntry;
@@ -17,5 +18,7 @@ public class HypertubesPonderScenes {
         PonderSceneRegistrationHelper<ItemProviderEntry<?, ?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
         HELPER.forComponents(ModBlocks.HYPERTUBE)
                 .addStoryBoard("simple_tube", TubeScenes::simpleTube);
+        HELPER.forComponents(ModBlocks.HYPERTUBE_ENTRANCE)
+                .addStoryBoard("entrance", EntranceScenes::entranceScene);
     }
 }
