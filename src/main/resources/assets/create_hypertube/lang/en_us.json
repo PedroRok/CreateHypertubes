@@ -34,5 +34,10 @@
   "create_hypertube.ponder.simple_tube.text_2": "Than place the second tube.",
   "create_hypertube.ponder.simple_tube.text_3": "And you have a Hypertube connection!",
   "create_hypertube.ponder.simple_tube.text_4": "You can connect already placed tubes.",
-  "create_hypertube.ponder.simple_tube.text_5": "You can change tube segment count with the wrench."
+  "create_hypertube.ponder.simple_tube.text_5": "You can change tube segment count with the wrench.",
+  "create_hypertube.ponder.entrance.header": "Hypertube Entrances",
+  "create_hypertube.ponder.entrance.text_1": "Hypertube Entrances connect to the Hypertube network, allowing high-speed travel.",
+  "create_hypertube.ponder.entrance.text_2": "To be able to enter the Hypertube, you need to power with at least 16 RPM.",
+  "create_hypertube.ponder.entrance.text_3": "The faster it spins, the faster you can travel.",
+  "create_hypertube.ponder.entrance.text_4": "You can change the entrance mode with Right Clicking it with a Wrench."
 }
