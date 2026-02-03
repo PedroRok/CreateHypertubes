@@ -26,6 +26,6 @@ public class HypertubesPonderScenes {
         HELPER.forComponents(ModBlocks.HYPER_ACCELERATOR)
                 .addStoryBoard("accelerator", AcceleratorScenes::acceleratorScene);
         HELPER.forComponents(ModItems.REDSTONE_DETECTOR, ModItems.TUBE_SCANNER)
-                .addStoryBoard("attachments", AttachmentScenes::attachmentScene);
+                .addStoryBoard("attachment", AttachmentScenes::attachmentScene);
     }
 }
