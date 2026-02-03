@@ -196,11 +196,11 @@ public class AttachmentScenes {
                 .createBirb(new Vec3(0, 1.1, 2.5), ParrotPose.FlappyPose::new);
         scene.special().moveParrot(birb3, new Vec3(3, 0, 0), 15);
         scene.idle(10);
-        changeOpenCloseEntrance(scene, entrancePos, true);
+        changeOpenCloseEntrance(scene, acceleratorPos, true);
         scene.idle(5);
         scene.special().moveParrot(birb3, new Vec3(10, 0, 0), 80);
         scene.idle(30);
-        changeOpenCloseEntrance(scene, entrancePos, false);
+        changeOpenCloseEntrance(scene, acceleratorPos, false);
         scene.idle(40);
         scene.special().hideElement(birb3, Direction.EAST);
     }
