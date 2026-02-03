@@ -83,7 +83,7 @@ public class AttachmentScenes {
                 .attachKeyFrame()
                 .pointAt(util.vector().of(3.5, 1.0, 2.5))
                 .placeNearTarget()
-                .text("The Hyper Accelerator increases the speed of entities traveling the Hypertube.");
+                .text("The Scanner Attachment allows you to detect entities traveling the Hypertube.");
         scene.idle(60);
 
         // REDSTONE THING
@@ -135,7 +135,7 @@ public class AttachmentScenes {
                 .colored(PonderPalette.OUTPUT)
                 .pointAt(util.vector().of(3.5, 1.0, 2.5))
                 .placeNearTarget()
-                .text("You can change to BRAKE mode by Right Clicking the Accelerator.");
+                .text("You can place in accelerators too, in any side at the same time");
         scene.idle(40);
 
         // PARROT TRAVELLING
