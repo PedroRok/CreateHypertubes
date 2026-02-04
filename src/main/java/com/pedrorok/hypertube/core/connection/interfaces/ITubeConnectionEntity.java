@@ -56,8 +56,6 @@ public interface ITubeConnectionEntity {
             BezierConnection connection = BezierConnection.CODEC.parse(NbtOps.INSTANCE, tag.get(key))
                     .getOrThrow();
 
-            System.out.println(isNewFormat ? "New format" : "Old");
-
             if (isNewFormat) {
                 SimpleConnection fromAbsolute = new SimpleConnection(
                         connection.getFromPos().pos().offset(referencePos),
