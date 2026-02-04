@@ -56,6 +56,8 @@ public interface ITubeConnectionEntity {
             BezierConnection connection = BezierConnection.CODEC.parse(NbtOps.INSTANCE, tag.get(key))
                     .getOrThrow();
 
+            System.out.println(isNewFormat ? "New format" : "Old");
+
             if (isNewFormat) {
                 SimpleConnection fromAbsolute = new SimpleConnection(
                         connection.getFromPos().pos().offset(referencePos),
@@ -67,7 +69,13 @@ public interface ITubeConnectionEntity {
                 ) : null;
                 return new BezierConnection(fromAbsolute, toAbsolute, connection.getTubeSegments(), connection.getCachedRelativeBezierPoints());
             }
-            return connection;
+            // Old format: coordinates are absolute, points need full recalculation
+            // Use constructor with detailLevel to force complete recalculation
+            SimpleConnection fromPos = connection.getFromPos();
+            SimpleConnection toPos = connection.getToPos();
+            int tubeSegments = connection.getTubeSegments();
+            int detailLevel = toPos != null ? (int) Math.max(3, fromPos.pos().getCenter().distanceTo(toPos.pos().getCenter())) : 0;
+            return new BezierConnection(fromPos, toPos, tubeSegments, detailLevel);
         } catch (Exception ignored) {
             try {
                 SimpleConnection connection = SimpleConnection.CODEC.parse(NbtOps.INSTANCE, tag.get(key))
