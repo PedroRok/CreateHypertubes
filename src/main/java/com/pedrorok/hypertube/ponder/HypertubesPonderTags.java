@@ -4,10 +4,8 @@ import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModItems;
 import com.tterrag.registrate.util.entry.RegistryEntry;
-import net.createmod.catnip.registry.RegisteredObjectsHelper;
 import net.createmod.ponder.api.registration.PonderTagRegistrationHelper;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.ItemLike;
 
 /**
  * @author Rok, Pedro Lucas nmm. 04/02/2026
@@ -20,15 +18,12 @@ public class HypertubesPonderTags {
             HYPERTUBE_SYSTEMS = loc("hypertube_systems");
 
     private static ResourceLocation loc(String id) {
-        return ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, id);
+        return new ResourceLocation(HypertubeMod.MOD_ID, id);
     }
 
     public static void register(PonderTagRegistrationHelper<ResourceLocation> helper) {
 
-        PonderTagRegistrationHelper<RegistryEntry<?, ?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
-
-        PonderTagRegistrationHelper<ItemLike> itemHelper = helper.withKeyFunction(
-                RegisteredObjectsHelper::getKeyOrThrow);
+        PonderTagRegistrationHelper<RegistryEntry> HELPER = helper.withKeyFunction(RegistryEntry::getId);
 
         helper.registerTag(HYPERTUBE_SYSTEMS)
                 .addToIndex()
