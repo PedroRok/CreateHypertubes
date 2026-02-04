@@ -4,7 +4,6 @@ package com.pedrorok.hypertube.core.smarttube;
 import com.jozufozu.flywheel.core.PartialModel;
 import com.pedrorok.hypertube.blocks.ActionTubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
-import com.pedrorok.hypertube.ponder.HypertubesPonderPlugin;
 import com.pedrorok.hypertube.registry.ModItems;
 import com.pedrorok.hypertube.registry.ModPartialModels;
 import net.minecraft.core.Direction;
