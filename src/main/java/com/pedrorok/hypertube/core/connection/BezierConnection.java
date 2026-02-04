@@ -217,7 +217,7 @@ public class BezierConnection implements IConnection {
 
     private float getMaxAngle(List<Vec3> points) {
         float maxAngle = 0;
-        Vec3 lastPoint = points.getFirst();
+        Vec3 lastPoint = points.get(0);
         for (int i = 1; i < points.size() - 1; i++) {
             Vec3 currentPoint = points.get(i);
             Vec3 nextPoint = points.get(i + 1);

@@ -58,7 +58,7 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
     @Override
     protected void write(CompoundTag compound, boolean clientPacket) {
         super.write(compound, clientPacket);
-        writeConnectionRelative(compound, worldPosition, "Connection"));
+        writeConnectionRelative(compound, worldPosition, new Tuple<>(connection, "Connection"));
     }
     // --------- Nbt Methods ---------
 

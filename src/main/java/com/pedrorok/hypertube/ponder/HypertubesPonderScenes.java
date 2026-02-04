@@ -18,7 +18,7 @@ import net.minecraft.resources.ResourceLocation;
 public class HypertubesPonderScenes {
 
     public static void register(PonderSceneRegistrationHelper<ResourceLocation> helper) {
-        PonderSceneRegistrationHelper<ItemProviderEntry<?, ?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
+        PonderSceneRegistrationHelper<ItemProviderEntry> HELPER = helper.withKeyFunction(RegistryEntry::getId);
         HELPER.forComponents(ModBlocks.HYPERTUBE)
                 .addStoryBoard("simple_tube", TubeScenes::simpleTube);
         HELPER.forComponents(ModBlocks.HYPERTUBE_ENTRANCE)

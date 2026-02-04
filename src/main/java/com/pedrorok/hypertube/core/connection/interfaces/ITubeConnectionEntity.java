@@ -54,7 +54,7 @@ public interface ITubeConnectionEntity {
 
         try {
             BezierConnection connection = BezierConnection.CODEC.parse(NbtOps.INSTANCE, tag.get(key))
-                    .getOrThrow();
+                    .get().orThrow();
 
             if (isNewFormat) {
                 SimpleConnection fromAbsolute = new SimpleConnection(
@@ -71,7 +71,7 @@ public interface ITubeConnectionEntity {
         } catch (Exception ignored) {
             try {
                 SimpleConnection connection = SimpleConnection.CODEC.parse(NbtOps.INSTANCE, tag.get(key))
-                        .getOrThrow();
+                        .get().orThrow();
 
                 if (isNewFormat) {
                     return new SimpleConnection(
@@ -94,14 +94,16 @@ public interface ITubeConnectionEntity {
     }
 
     default void writeConnectionRelativeSingle(CompoundTag tag, BlockPos referencePos, IConnection connection, String key) {
-        if (connection instanceof SimpleConnection(BlockPos pos, Direction direction)) {
+        if (connection instanceof SimpleConnection simpleConn) {
             // Convert absolute position to relative
+            BlockPos pos = simpleConn.pos();
+            Direction direction = simpleConn.direction();
             SimpleConnection relative = new SimpleConnection(
                     pos.subtract(referencePos),
                     direction
             );
             tag.put(key, SimpleConnection.CODEC.encodeStart(NbtOps.INSTANCE, relative)
-                    .getOrThrow());
+                    .get().orThrow());
         } else if (connection instanceof BezierConnection bezierConnection) {
             // Convert absolute positions to relative
             SimpleConnection fromRelative = new SimpleConnection(
@@ -114,7 +116,7 @@ public interface ITubeConnectionEntity {
             ) : null;
             BezierConnection relative = new BezierConnection(fromRelative, toRelative, bezierConnection.getTubeSegments(), bezierConnection.getCachedRelativeBezierPoints());
             tag.put(key, BezierConnection.CODEC.encodeStart(NbtOps.INSTANCE, relative)
-                    .getOrThrow());
+                    .get().orThrow());
         }
     }
 
