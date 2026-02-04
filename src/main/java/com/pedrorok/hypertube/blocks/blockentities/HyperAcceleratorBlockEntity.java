@@ -52,17 +52,17 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
     protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         if (compound.contains("ConnectionOne")) {
-            connectionOne = getConnection(compound, "ConnectionOne");
+            connectionOne = getConnectionRelative(compound, "ConnectionOne", worldPosition);
         }
         if (compound.contains("ConnectionTwo")) {
-            connectionTwo = getConnection(compound, "ConnectionTwo");
+            connectionTwo = getConnectionRelative(compound, "ConnectionTwo", worldPosition);
         }
     }
 
     @Override
     protected void write(CompoundTag compound, boolean clientPacket) {
         super.write(compound, clientPacket);
-        writeConnection(compound, new Tuple<>(connectionOne, "ConnectionOne"), new Tuple<>(connectionTwo, "ConnectionTwo"));
+        writeConnectionRelative(compound, worldPosition, new Tuple<>(connectionOne, "ConnectionOne"), new Tuple<>(connectionTwo, "ConnectionTwo"));
     }
     // --------- Nbt Methods ---------
 

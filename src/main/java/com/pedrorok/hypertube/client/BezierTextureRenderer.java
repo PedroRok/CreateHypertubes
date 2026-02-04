@@ -4,15 +4,17 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
-import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
+import net.createmod.ponder.Ponder;
+import net.createmod.ponder.api.level.PonderLevel;
+import net.createmod.ponder.foundation.ui.PonderUI;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -49,24 +51,23 @@ public class BezierTextureRenderer {
     }
 
     public void renderBezierConnection(BlockPos blockPosInitial, BezierConnection connection, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
-        if (connection == null || !connection.getValidation().valid()) {
-            return;
-        }
-        List<Vec3> bezierPoints = connection.getBezierPoints();
-        if (bezierPoints.size() < 2) {
+        if (connection == null) {
             return;
         }
 
         Level level = Minecraft.getInstance().level;
-        BlockEntity blockEntity = level.getBlockEntity(blockPosInitial);
-        if (!(blockEntity instanceof ITubeConnectionEntity)) {
+        if (level == null) {
             return;
         }
+
+        List<Vec3> bezierPoints = connection.getRelativeBezierPoints(level, blockPosInitial);
+        if (bezierPoints.size() < 2) {
+            return;
+        }
+
         int segmentDistance = connection.getTubeSegments();
 
         poseStack.pushPose();
-        Vec3 blockPos = Vec3.atLowerCornerOf(blockPosInitial);
-        poseStack.translate(-blockPos.x, -blockPos.y, -blockPos.z);
         Matrix4f pose = poseStack.last().pose();
 
         List<TubeRing> tubeGeometry = calculateAndCacheGeometry(bezierPoints);
@@ -115,31 +116,32 @@ public class BezierTextureRenderer {
                 float uStart = current.uCoordinate();
 
                 Vector3f corner_j_movement = new Vector3f(
-                        (float) (next.center().x + nextOffsets.get(j).x) - (float) (current.center().x + currentOffsets.get(j).x),
-                        (float) (next.center().y + nextOffsets.get(j).y) - (float) (current.center().y + currentOffsets.get(j).y),
-                        (float) (next.center().z + nextOffsets.get(j).z) - (float) (current.center().z + currentOffsets.get(j).z)
+                        (float) ((next.center().x + nextOffsets.get(j).x) - (current.center().x + currentOffsets.get(j).x)),
+                        (float) ((next.center().y + nextOffsets.get(j).y) - (current.center().y + currentOffsets.get(j).y)),
+                        (float) ((next.center().z + nextOffsets.get(j).z) - (current.center().z + currentOffsets.get(j).z))
                 );
                 float uEnd_j = uStart + (corner_j_movement.dot(tangent) / TILING_UNIT);
                 Vector3f corner_nextJ_movement = new Vector3f(
-                        (float) (next.center().x + nextOffsets.get(nextJ).x) - (float) (current.center().x + currentOffsets.get(nextJ).x),
-                        (float) (next.center().y + nextOffsets.get(nextJ).y) - (float) (current.center().y + currentOffsets.get(nextJ).y),
-                        (float) (next.center().z + nextOffsets.get(nextJ).z) - (float) (current.center().z + currentOffsets.get(nextJ).z)
+                        (float) ((next.center().x + nextOffsets.get(nextJ).x) - (current.center().x + currentOffsets.get(nextJ).x)),
+                        (float) ((next.center().y + nextOffsets.get(nextJ).y) - (current.center().y + currentOffsets.get(nextJ).y)),
+                        (float) ((next.center().z + nextOffsets.get(nextJ).z) - (current.center().z + currentOffsets.get(nextJ).z))
                 );
                 float uEnd_nextJ = uStart + (corner_nextJ_movement.dot(tangent) / TILING_UNIT);
 
+                boolean invertNormal = Minecraft.getInstance().screen instanceof PonderUI;
                 float vStart = 0, vEnd = 1;
                 if (doubleSided) {
-                    addVertex(builder, pose, current.center(), currentOffsets.get(nextJ), uStart, vEnd, packedLight, packedOverlay, false);
-                    addVertex(builder, pose, next.center(), nextOffsets.get(nextJ), uEnd_nextJ, vEnd, packedLight, packedOverlay, false);
-                    addVertex(builder, pose, next.center(), nextOffsets.get(j), uEnd_j, vStart, packedLight, packedOverlay, false);
-                    addVertex(builder, pose, current.center(), currentOffsets.get(j), uStart, vStart, packedLight, packedOverlay, false);
+                    addVertex(builder, pose, current.center(), currentOffsets.get(nextJ), uStart, vEnd, packedLight, packedOverlay, invertNormal);
+                    addVertex(builder, pose, next.center(), nextOffsets.get(nextJ), uEnd_nextJ, vEnd, packedLight, packedOverlay, invertNormal);
+                    addVertex(builder, pose, next.center(), nextOffsets.get(j), uEnd_j, vStart, packedLight, packedOverlay, invertNormal);
+                    addVertex(builder, pose, current.center(), currentOffsets.get(j), uStart, vStart, packedLight, packedOverlay, invertNormal);
                 }
 
                 if (interiorTube) {
-                    addVertex(builder, pose, current.center(), currentOffsets.get(nextJ), uStart, vEnd, packedLight, packedOverlay, true);
-                    addVertex(builder, pose, next.center(), nextOffsets.get(nextJ), uEnd_nextJ, vEnd, packedLight, packedOverlay, true);
-                    addVertex(builder, pose, next.center(), nextOffsets.get(j), uEnd_j, vStart, packedLight, packedOverlay, true);
-                    addVertex(builder, pose, current.center(), currentOffsets.get(j), uStart, vStart, packedLight, packedOverlay, true);
+                    addVertex(builder, pose, current.center(), currentOffsets.get(nextJ), uStart, vEnd, packedLight, packedOverlay, !invertNormal);
+                    addVertex(builder, pose, next.center(), nextOffsets.get(nextJ), uEnd_nextJ, vEnd, packedLight, packedOverlay, !invertNormal);
+                    addVertex(builder, pose, next.center(), nextOffsets.get(j), uEnd_j, vStart, packedLight, packedOverlay, !invertNormal);
+                    addVertex(builder, pose, current.center(), currentOffsets.get(j), uStart, vStart, packedLight, packedOverlay, !invertNormal);
                 } else {
                     addVertex(builder, pose, current.center(), currentOffsets.get(j), uStart, vStart, packedLight, packedOverlay, doubleSided);
                     addVertex(builder, pose, next.center(), nextOffsets.get(j), uEnd_j, vStart, packedLight, packedOverlay, doubleSided);
