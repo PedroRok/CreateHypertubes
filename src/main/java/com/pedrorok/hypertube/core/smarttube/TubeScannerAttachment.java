@@ -45,7 +45,7 @@ public class TubeScannerAttachment implements ITubeAttachment {
 
             if (currentState.hasProperty(ActionTubeBlock.POWER)) {
                 int currentPower = currentState.getValue(ActionTubeBlock.POWER);
-                int newPower = entity.isBaby() ? 8 : 15;
+                int newPower = entity != null && entity.isBaby() ? 8 : 15;
 
                 if (newPower >= currentPower) {
                     if (newPower != currentPower) {

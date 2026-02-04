@@ -1,8 +1,6 @@
 package com.pedrorok.hypertube.core.travel;
 
-import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
-import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
@@ -66,7 +64,7 @@ public class TravelPathData {
     private void addTravelPoint(BlockPos pos, Level level) {
         BlockState blockState = level.getBlockState(pos);
         if (level.getBlockState(pos).getBlock() instanceof ITubeActionPoint ||
-            (level.getBlockEntity(pos) instanceof ActionTubeBlockEntity tubeEntity && tubeEntity.hasAnyTubeAttachment())) {
+                (level.getBlockEntity(pos) instanceof ActionTubeBlockEntity tubeEntity && tubeEntity.hasAnyTubeAttachment())) {
             actionPoints.add(pos);
         }
 
@@ -79,7 +77,7 @@ public class TravelPathData {
             if (blockConnections.contains(nextPipe)) continue;
             if (!(level.getBlockState(nextPipe).getBlock() instanceof ITubeConnection connection)) continue;
             if (!connection.canTravelConnect(level, nextPipe, direction)
-                && (level.getBlockEntity(nextPipe) instanceof ITubeConnectionEntity tubeEntity && !tubeEntity.isConnected()))
+                    && (level.getBlockEntity(nextPipe) instanceof ITubeConnectionEntity tubeEntity && !tubeEntity.isConnected()))
                 continue;
             travelPoints.add(nextPipe.getCenter());
             blockConnections.add(nextPipe);
@@ -95,6 +93,8 @@ public class TravelPathData {
         for (IConnection connection : hypertubeBlockEntity.getConnections()) {
             BezierConnection bezier;
             boolean inverse = false;
+            BlockPos currentFromPos;
+
             if (connection instanceof SimpleConnection simple) {
                 BlockEntity blockEntity = level.getBlockEntity(simple.pos());
                 if (!(blockEntity instanceof ITubeConnectionEntity fromTube)) continue;
@@ -102,13 +102,15 @@ public class TravelPathData {
                 if (!(fromTubeConn instanceof BezierConnection fromTubeBezier)) continue;
                 bezier = fromTubeBezier;
                 inverse = true;
+                currentFromPos = simple.pos();
             } else {
                 if (!(connection instanceof BezierConnection bezierConnection)) continue;
                 bezier = bezierConnection;
+                currentFromPos = pos;
             }
             if (bezierConnections.contains(bezier.getUuid())) continue;
 
-            List<Vec3> bezierPoints = new ArrayList<>(bezier.getBezierPoints());
+            List<Vec3> bezierPoints = new ArrayList<>(bezier.getBezierPoints(level, currentFromPos));
             if (inverse) {
                 Collections.reverse(bezierPoints);
             }
@@ -116,23 +118,28 @@ public class TravelPathData {
             bezierPoints.remove(0);
             travelPoints.addAll(bezierPoints);
             bezierConnections.add(bezier.getUuid());
-            BlockPos toPos = bezier.getToPos().pos();
-            BlockPos fromPos = bezier.getFromPos().pos();
 
-            final BlockPos toPosFinal = inverse ? fromPos : toPos;
-            final BlockPos fromPosFinal = inverse ? toPos : fromPos;
+            BlockPos storedFromPos = bezier.getFromPos().pos();
+            SimpleConnection toConnection = bezier.getToPos();
+            if (toConnection == null) continue;
+            BlockPos storedToPos = toConnection.pos();
+            BlockPos offset = storedToPos.subtract(storedFromPos);
+            BlockPos currentToPos = currentFromPos.offset(offset);
+
+            final BlockPos toPosFinal = inverse ? currentFromPos : currentToPos;
+            final BlockPos fromPosFinal = inverse ? currentToPos : currentFromPos;
 
             if (!blockConnections.contains(fromPosFinal)) {
                 blockConnections.add(fromPosFinal);
                 if (level.getBlockState(fromPosFinal).getBlock() instanceof ITubeActionPoint ||
-                    (level.getBlockEntity(fromPosFinal) instanceof ActionTubeBlockEntity tubeEntity && tubeEntity.hasAnyTubeAttachment())) {
+                        (level.getBlockEntity(fromPosFinal) instanceof ActionTubeBlockEntity tubeEntity && tubeEntity.hasAnyTubeAttachment())) {
                     actionPoints.add(fromPosFinal);
                 }
             }
             if (!blockConnections.contains(toPosFinal)) {
                 blockConnections.add(toPosFinal);
                 if (level.getBlockState(toPosFinal).getBlock() instanceof ITubeActionPoint ||
-                    (level.getBlockEntity(toPosFinal) instanceof ActionTubeBlockEntity tubeEntity && tubeEntity.hasAnyTubeAttachment())) {
+                        (level.getBlockEntity(toPosFinal) instanceof ActionTubeBlockEntity tubeEntity && tubeEntity.hasAnyTubeAttachment())) {
                     actionPoints.add(toPosFinal);
                 }
             }

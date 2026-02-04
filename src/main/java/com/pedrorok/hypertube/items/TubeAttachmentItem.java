@@ -50,7 +50,7 @@ public class TubeAttachmentItem extends Item {
         if (!(state.getBlock() instanceof ActionTubeBlock)) return InteractionResult.FAIL;
 
         BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof ActionTubeBlockEntity actionTubeBE)) return  InteractionResult.FAIL;
+        if (!(blockEntity instanceof ActionTubeBlockEntity actionTubeBE)) return InteractionResult.FAIL;
         if (actionTubeBE.hasTubeAttachment(direction)) {
             return InteractionResult.FAIL;
         }
@@ -58,7 +58,7 @@ public class TubeAttachmentItem extends Item {
             return InteractionResult.FAIL;
         }
 
-        ITubeAttachment smartTube = ITubeAttachment.get(attachmentKey);
+        ITubeAttachment smartTube = getTubeAttachment();
         if (smartTube == null) {
             throw new NoSuchElementException("SmartTube attachment " + attachmentKey + " not found");
         }
@@ -66,5 +66,9 @@ public class TubeAttachmentItem extends Item {
         pContext.getItemInHand().setCount(pContext.getItemInHand().getCount() - 1);
         AllSoundEvents.WRENCH_ROTATE.playOnServer(level, pos, 1, Create.RANDOM.nextFloat() + .5f);
         return super.useOn(pContext);
+    }
+
+    public ITubeAttachment getTubeAttachment() {
+        return ITubeAttachment.get(attachmentKey);
     }
 }
