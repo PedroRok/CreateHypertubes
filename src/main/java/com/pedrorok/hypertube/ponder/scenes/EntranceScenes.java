@@ -3,9 +3,9 @@ package com.pedrorok.hypertube.ponder.scenes;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.foundation.ponder.*;
+import com.simibubi.create.foundation.ponder.element.InputWindowElement;
 import com.simibubi.create.foundation.ponder.element.ParrotElement;
 import com.simibubi.create.foundation.utility.Pointing;
-import net.createmod.ponder.api.element.ParrotPose;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
@@ -67,11 +67,11 @@ public class EntranceScenes {
 
         // PARROT TRAVELLING
         ElementLink<ParrotElement> birb = scene.special
-                .createBirb(new Vec3(1, 1, 2.5), ParrotPose.DancePose::new);
+                .createBirb(new Vec3(1, 1, 2.5), ParrotElement.DancePose::new);
 
         scene.idle(40);
         scene.special.moveParrot(birb, new Vec3(0, 0.1, 0), 5);
-        scene.special.changeBirbPose(birb, ParrotPose.FlappyPose::new);
+        scene.special.changeBirbPose(birb, ParrotElement.FlappyPose::new);
         scene.idle(3);
         scene.special.moveParrot(birb, new Vec3(5.5, 0, 0), 20);
         scene.idle(8);
@@ -91,9 +91,9 @@ public class EntranceScenes {
 
         // PARROT TRAVELLING
         ElementLink<ParrotElement> birb2 = scene.special
-                .createBirb(new Vec3(1, 1, 2.5), ParrotPose.DancePose::new);
+                .createBirb(new Vec3(1, 1, 2.5), ParrotElement.DancePose::new);
         scene.idle(40);
-        scene.special.changeBirbPose(birb2, ParrotPose.FlappyPose::new);
+        scene.special.changeBirbPose(birb2, ParrotElement.FlappyPose::new);
         scene.special.moveParrot(birb2, new Vec3(0, 0.1, 0), 2);
         scene.idle(3);
         scene.special.moveParrot(birb2, new Vec3(5.5, 0, 0), 7);
@@ -111,9 +111,11 @@ public class EntranceScenes {
         scene.idle(10);
 
         scene.overlay
-                .showControls(entrancePos.getCenter().add(0, 1, 0), Pointing.DOWN, 40)
-                .rightClick()
-                .withItem(AllItems.WRENCH.asStack());
+                .showControls(
+                        new InputWindowElement(entrancePos.getCenter().add(0, 1, 0), Pointing.DOWN)
+                                .rightClick()
+                                .withItem(AllItems.WRENCH.asStack())
+                        , 40);
         changeOpenCloseEntrance(scene, entrancePos, false);
         scene.effects.indicateSuccess(entrancePos);
         scene.idle(50);

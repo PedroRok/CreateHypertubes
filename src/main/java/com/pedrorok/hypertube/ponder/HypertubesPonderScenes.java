@@ -7,14 +7,9 @@ import com.pedrorok.hypertube.ponder.scenes.EntranceScenes;
 import com.pedrorok.hypertube.ponder.scenes.TubeScenes;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModItems;
-import com.simibubi.create.Create;
 import com.simibubi.create.foundation.ponder.PonderRegistrationHelper;
 import com.simibubi.create.foundation.ponder.ui.PonderUI;
-import com.tterrag.registrate.util.entry.ItemProviderEntry;
-import com.tterrag.registrate.util.entry.RegistryEntry;
-import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
 
 /**
  * @author Rok, Pedro Lucas nmm. 27/01/2026

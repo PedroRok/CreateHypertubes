@@ -10,6 +10,7 @@ import com.simibubi.create.foundation.ponder.PonderPalette;
 import com.simibubi.create.foundation.ponder.SceneBuilder;
 import com.simibubi.create.foundation.ponder.SceneBuildingUtil;
 import com.simibubi.create.foundation.ponder.Selection;
+import com.simibubi.create.foundation.ponder.element.InputWindowElement;
 import com.simibubi.create.foundation.utility.Pointing;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -62,16 +63,20 @@ public class TubeScenes {
                 .placeNearTarget();
         scene.idle(20);
         scene.overlay
-                .showControls(block1.getCenter().add(0, 0, 0.3), Pointing.LEFT, 40)
-                .rightClick()
-                .withItem(tubeItem);
+                .showControls(
+                        new InputWindowElement(block1.getCenter().add(0, 0, 0.3), Pointing.LEFT)
+                                .rightClick()
+                                .withItem(tubeItem)
+                        , 40);
         scene.idle(70);
 
 
         scene.overlay
-                .showControls(block2.getCenter().add(0, 0, 0), Pointing.DOWN, 50)
-                .rightClick()
-                .withItem(tubeItem);
+                .showControls(
+                        new InputWindowElement(block2.getCenter().add(0, 0, 0), Pointing.DOWN)
+                                .rightClick()
+                                .withItem(tubeItem)
+                        , 50);
         scene.idle(5);
         scene.overlay
                 .showText(40)
@@ -126,14 +131,18 @@ public class TubeScenes {
         scene.idle(20);
 
         scene.overlay
-                .showControls(blockL2.getCenter().add(0, 0, 0.3), Pointing.LEFT, 15)
-                .rightClick()
-                .withItem(ModBlocks.HYPERTUBE.asStack());
+                .showControls(
+                        new InputWindowElement(blockL2.getCenter().add(0, 0, 0.3), Pointing.LEFT)
+                                .rightClick()
+                                .withItem(ModBlocks.HYPERTUBE.asStack())
+                        , 15);
         scene.idle(25);
         scene.overlay
-                .showControls(blockR1.getCenter().add(0, 0, -0.3), Pointing.RIGHT, 15)
-                .rightClick()
-                .withItem(ModBlocks.HYPERTUBE.asStack());
+                .showControls(
+                        new InputWindowElement(blockR1.getCenter().add(0, 0, -0.3), Pointing.RIGHT)
+                                .rightClick()
+                                .withItem(ModBlocks.HYPERTUBE.asStack())
+                        , 15);
         scene.idle(20);
         setConnection(scene, blockL2, "sec-2-l2", true);
         scene.idle(10);
@@ -146,9 +155,11 @@ public class TubeScenes {
         scene.idle(80);
         scene.addKeyframe();
         scene.overlay
-                .showControls(blockR1.getCenter().add(0, 0.5, 0), Pointing.DOWN, 15)
-                .rightClick()
-                .withItem(AllItems.WRENCH.asStack());
+                .showControls(
+                        new InputWindowElement(blockR1.getCenter().add(0, 0.5, 0), Pointing.DOWN)
+                                .rightClick()
+                                .withItem(AllItems.WRENCH.asStack())
+                        , 15);
         scene.idle(10);
         changeSegmentCount(scene, blockL2, "sec-2-l2");
         changeSegmentCount(scene, blockR2, "sec-2-r2");
@@ -159,9 +170,11 @@ public class TubeScenes {
                 .pointAt(new Vec3(1, 3, 1))
                 .independent();
         scene.overlay
-                .showControls(blockL1.getCenter().add(0, 0, 0.3), Pointing.LEFT, 15)
-                .rightClick()
-                .withItem(AllItems.WRENCH.asStack());
+                .showControls(
+                        new InputWindowElement(blockL1.getCenter().add(0, 0, 0.3), Pointing.LEFT)
+                                .rightClick()
+                                .withItem(AllItems.WRENCH.asStack())
+                        , 15);
         scene.idle(10);
         changeSegmentCount(scene, blockL1, "sec-2-l1");
         scene.idle(70);

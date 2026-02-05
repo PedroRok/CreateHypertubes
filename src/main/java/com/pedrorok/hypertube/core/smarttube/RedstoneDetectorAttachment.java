@@ -4,6 +4,7 @@ package com.pedrorok.hypertube.core.smarttube;
 import com.jozufozu.flywheel.core.PartialModel;
 import com.pedrorok.hypertube.blocks.ActionTubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
+import com.pedrorok.hypertube.ponder.HypertubesPonderScenes;
 import com.pedrorok.hypertube.registry.ModItems;
 import com.pedrorok.hypertube.registry.ModPartialModels;
 import net.minecraft.core.Direction;
@@ -23,7 +24,7 @@ public class RedstoneDetectorAttachment implements ITubeAttachment {
 
     @Override
     public PartialModel getPartialModel(BlockState blockState, ActionTubeBlockEntity blockEntity, Direction facing) {
-        if (HypertubesPonderPlugin.isAnyPonderScreenOpen()) {
+        if (HypertubesPonderScenes.isAnyPonderScreenOpen()) {
             if (blockState.getValue(ActionTubeBlock.POWER) > 0) {
                 return ModPartialModels.REDSTONE_DETECTOR_ACTIVE;
             }

@@ -3,6 +3,7 @@ package com.pedrorok.hypertube.events;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.client.particles.SuctionParticle;
 import com.pedrorok.hypertube.ponder.HypertubesPonderScenes;
+import com.pedrorok.hypertube.ponder.HypertubesPonderTags;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModParticles;
 import com.simibubi.create.infrastructure.ponder.PonderIndex;
@@ -26,6 +27,7 @@ public class ModClientEvents {
     public static void forgeLoad(FMLClientSetupEvent event) {
         event.enqueueWork(ModClientEvents::setupRenderTypes);
         HypertubesPonderScenes.register();
+        HypertubesPonderTags.register();
     }
 
     private static void setupRenderTypes() {

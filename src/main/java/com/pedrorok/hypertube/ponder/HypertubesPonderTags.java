@@ -3,8 +3,8 @@ package com.pedrorok.hypertube.ponder;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModItems;
-import com.tterrag.registrate.util.entry.RegistryEntry;
-import net.createmod.ponder.api.registration.PonderTagRegistrationHelper;
+import com.simibubi.create.foundation.ponder.PonderRegistry;
+import com.simibubi.create.foundation.ponder.PonderTag;
 import net.minecraft.resources.ResourceLocation;
 
 /**
@@ -13,32 +13,28 @@ import net.minecraft.resources.ResourceLocation;
  */
 public class HypertubesPonderTags {
 
-    public static final ResourceLocation
-
-            HYPERTUBE_SYSTEMS = loc("hypertube_systems");
+    public static final PonderTag HYPERTUBE_SYSTEMS = create("hypertube_systems")
+            .item(ModBlocks.HYPERTUBE)
+            .defaultLang("Hypertube Systems", "Blocks and items used in Hypertube transportation systems.")
+            .addToIndex();
 
     private static ResourceLocation loc(String id) {
         return new ResourceLocation(HypertubeMod.MOD_ID, id);
     }
 
-    public static void register(PonderTagRegistrationHelper<ResourceLocation> helper) {
+    public static void register() {
 
-        PonderTagRegistrationHelper<RegistryEntry> HELPER = helper.withKeyFunction(RegistryEntry::getId);
-
-        helper.registerTag(HYPERTUBE_SYSTEMS)
-                .addToIndex()
-                .item(ModBlocks.HYPERTUBE.get(), true, false)
-                .title("Hypertube Systems")
-                .description("Blocks and items used in Hypertube transportation systems.")
-                .register();
-
-        HELPER.addToTag(HYPERTUBE_SYSTEMS)
+        PonderRegistry.TAGS.forTag(HYPERTUBE_SYSTEMS)
                 .add(ModBlocks.HYPERTUBE)
                 .add(ModBlocks.HYPERTUBE_ENTRANCE)
                 .add(ModBlocks.HYPER_ACCELERATOR)
                 .add(ModItems.REDSTONE_DETECTOR)
-                .add(ModItems.TUBE_SCANNER)
-        ;
+                .add(ModItems.TUBE_SCANNER);
+    }
+
+
+    private static PonderTag create(String id) {
+        return new PonderTag(loc(id));
     }
 
 }
