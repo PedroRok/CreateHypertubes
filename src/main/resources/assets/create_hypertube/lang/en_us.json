@@ -46,5 +46,7 @@
   "create_hypertube.ponder.attachments.header": "Hypertube Attachments",
   "create_hypertube.ponder.attachments.text_1": "The Scanner Attachment allows you to detect entities traveling the Hypertube. (8 power for babies and 15 for adults)",
   "create_hypertube.ponder.attachments.text_2": "You can also place attachments in accelerators, in any side at the same time.",
-  "create_hypertube.ponder.attachments.text_3": "The Redstone Detector Attachment allows you to change the Accelerator/Entrance mode with a Redstone signal."
+  "create_hypertube.ponder.attachments.text_3": "The Redstone Detector Attachment allows you to change the Accelerator/Entrance mode with a Redstone signal.",
+  "create_hypertube.ponder.tag.hypertube_systems": "Hypertube Systems",
+  "create_hypertube.ponder.tag.hypertube_systems.description": "Blocks and items used in Hypertube transportation systems."
 }
