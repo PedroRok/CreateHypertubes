@@ -18,7 +18,7 @@ public class HypertubesPonderTags {
             HYPERTUBE_SYSTEMS = loc("hypertube_systems");
 
     private static ResourceLocation loc(String id) {
-        return new ResourceLocation(HypertubeMod.MOD_ID, id);
+        return HypertubeMod.of(id);
     }
 
     public static void register(PonderTagRegistrationHelper<ResourceLocation> helper) {

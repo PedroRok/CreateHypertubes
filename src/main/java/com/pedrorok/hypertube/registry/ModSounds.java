@@ -19,10 +19,10 @@ public class ModSounds {
 
 
     public static final RegistryObject<SoundEvent> HYPERTUBE_SUCTION = SOUNDS.register("suction",
-            () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(HypertubeMod.MOD_ID, "suction")));
+            () -> SoundEvent.createVariableRangeEvent(HypertubeMod.of("suction")));
 
     public static final RegistryObject<SoundEvent> TRAVELING = SOUNDS.register("traveling",
-            () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(HypertubeMod.MOD_ID, "traveling")));
+            () -> SoundEvent.createVariableRangeEvent(HypertubeMod.of("traveling")));
 
     public static final RegistryObject<SoundEvent> HYPERTUBE_ENTRANCE_OPEN = SOUNDS.register("hypertube_entrance_open",
             () -> SoundEvent.createVariableRangeEvent(SoundEvents.IRON_TRAPDOOR_OPEN.getLocation()));
