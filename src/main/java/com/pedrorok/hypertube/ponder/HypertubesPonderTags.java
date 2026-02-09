@@ -19,7 +19,7 @@ public class HypertubesPonderTags {
             .addToIndex();
 
     private static ResourceLocation loc(String id) {
-        return new ResourceLocation(HypertubeMod.MOD_ID, id);
+        return HypertubeMod.of(id);
     }
 
     public static void register() {

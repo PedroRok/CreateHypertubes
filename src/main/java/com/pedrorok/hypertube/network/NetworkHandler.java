@@ -23,7 +23,7 @@ public class NetworkHandler {
         PROTOCOL_VERSION = ModList.get().getModFileById(HypertubeMod.MOD_ID).versionString();
 
         INSTANCE = NetworkRegistry.newSimpleChannel(
-                new ResourceLocation(HypertubeMod.MOD_ID, "connections"), () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
+                HypertubeMod.of("connections"), () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
 
         register(SyncPersistentDataPacket.class);
         register(FinishPathPacket.class);

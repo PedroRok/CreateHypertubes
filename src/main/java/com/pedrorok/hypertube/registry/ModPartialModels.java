@@ -20,7 +20,7 @@ public class ModPartialModels {
     public static PartialModel TUBE_SCANNER_ACTIVE = block("tube_scanner_attachment_active");
 
     private static PartialModel block(String path) {
-        return new PartialModel(new ResourceLocation(HypertubeMod.MOD_ID, "block/" + path));
+        return new PartialModel(HypertubeMod.of("block/" + path));
     }
 
     public static void init() {

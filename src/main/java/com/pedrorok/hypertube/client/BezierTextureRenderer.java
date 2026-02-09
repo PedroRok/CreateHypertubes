@@ -43,8 +43,8 @@ public class BezierTextureRenderer {
     private final ResourceLocation textureLine;
 
     public BezierTextureRenderer() {
-        this.textureTube = new ResourceLocation(HypertubeMod.MOD_ID, "textures/block/tube_base_glass.png");
-        this.textureLine = new ResourceLocation(HypertubeMod.MOD_ID, "textures/block/tube_base_glass_2.png");
+        this.textureTube = HypertubeMod.of("textures/block/tube_base_glass.png");
+        this.textureLine = HypertubeMod.of("textures/block/tube_base_glass_2.png");
     }
 
     public void renderBezierConnection(BlockPos blockPosInitial, BezierConnection connection, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {

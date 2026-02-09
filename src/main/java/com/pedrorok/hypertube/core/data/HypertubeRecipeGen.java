@@ -57,7 +57,7 @@ public class HypertubeRecipeGen extends RecipeProvider {
                 .define('E', ModBlocks.HYPERTUBE_ENTRANCE.get())
                 .define('C', AllBlocks.COGWHEEL)
                 .unlockedBy("has_precision_mechanism", has(AllItems.PRECISION_MECHANISM))
-                .save(consumer, new ResourceLocation(HypertubeMod.MOD_ID, "hyper_accelerator_small_cogwheel"));
+                .save(consumer, HypertubeMod.of("hyper_accelerator_small_cogwheel"));
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.HYPER_ACCELERATOR.get(), 2)
                 .pattern(" P ")
                 .pattern(" E ")
@@ -66,7 +66,7 @@ public class HypertubeRecipeGen extends RecipeProvider {
                 .define('E', ModBlocks.HYPERTUBE_ENTRANCE.get())
                 .define('C', AllBlocks.LARGE_COGWHEEL)
                 .unlockedBy("has_precision_mechanism", has(AllItems.PRECISION_MECHANISM))
-                .save(consumer, new ResourceLocation(HypertubeMod.MOD_ID, "hyper_accelerator_large_cogwheel"));
+                .save(consumer, HypertubeMod.of("hyper_accelerator_large_cogwheel"));
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.REDSTONE_DETECTOR.get())
                 .pattern( "ACA")
@@ -75,9 +75,9 @@ public class HypertubeRecipeGen extends RecipeProvider {
                 .define('C', Items.COMPARATOR)
                 .define('H', AllItems.BRASS_HAND)
                 .unlockedBy("has_hypertube_entrance", has(ModBlocks.HYPERTUBE_ENTRANCE))
-                .save(consumer, new ResourceLocation(HypertubeMod.MOD_ID, "redstone_detector_tube_attachment"));
+                .save(consumer, HypertubeMod.of("redstone_detector_tube_attachment"));
 
-        new SequencedAssemblyRecipeBuilder(new ResourceLocation(HypertubeMod.MOD_ID, "tube_scanner"))
+        new SequencedAssemblyRecipeBuilder(HypertubeMod.of("tube_scanner"))
                 .transitionTo(ModItems.TUBE_SCANNER_UNFINISHED)
                 .addOutput(ModItems.TUBE_SCANNER, 100)
                 .addStep(DeployerApplicationRecipe::new, rb -> rb.require(AllItems.BRASS_SHEET))

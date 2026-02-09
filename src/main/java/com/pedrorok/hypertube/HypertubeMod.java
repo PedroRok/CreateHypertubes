@@ -6,6 +6,7 @@ import com.pedrorok.hypertube.config.ServerConfig;
 import com.pedrorok.hypertube.core.smarttube.ITubeAttachment;
 import com.pedrorok.hypertube.registry.*;
 import com.simibubi.create.foundation.data.CreateRegistrate;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -62,5 +63,9 @@ public class HypertubeMod {
 
     public static CreateRegistrate get() {
         return REGISTRATE;
+    }
+
+    public static ResourceLocation of(String resourceId) {
+        return new ResourceLocation(MOD_ID, resourceId);
     }
 }
