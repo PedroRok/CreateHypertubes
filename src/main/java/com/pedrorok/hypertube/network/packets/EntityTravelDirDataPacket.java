@@ -19,7 +19,7 @@ import org.jetbrains.annotations.NotNull;
 public record EntityTravelDirDataPacket(int entityId, float yaw, float pitch) implements CustomPacketPayload {
 
     public static final Type<EntityTravelDirDataPacket> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "player_travel_dir")
+            HypertubeMod.of("player_travel_dir")
     );
 
     public static final StreamCodec<RegistryFriendlyByteBuf, EntityTravelDirDataPacket> STREAM_CODEC =

@@ -19,7 +19,7 @@ import java.util.UUID;
 public record FinishPathPacket(UUID entityUuid) implements CustomPacketPayload {
 
     public static final Type<FinishPathPacket> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "finish_travel_path")
+            HypertubeMod.of("finish_travel_path")
     );
 
     public static final StreamCodec<RegistryFriendlyByteBuf, FinishPathPacket> STREAM_CODEC =

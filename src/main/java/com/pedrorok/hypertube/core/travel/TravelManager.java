@@ -28,8 +28,6 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import static com.pedrorok.hypertube.core.travel.TravelConstants.*;
@@ -54,7 +52,7 @@ public class TravelManager {
         if (entityPersistentData.contains(LAST_TRAVEL_BLOCKPOS)) {
             BlockPos lastTravelPos = BlockPos.of(entityPersistentData.getLong(LAST_TRAVEL_BLOCKPOS));
             if (lastTravelPos.equals(pos)
-                && lastTravelTime > System.currentTimeMillis()) {
+                    && lastTravelTime > System.currentTimeMillis()) {
                 return;
             }
         }
@@ -125,7 +123,7 @@ public class TravelManager {
             return;
         }
         if (isTraveling
-            && !ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get()) {
+                && !ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get()) {
             Minecraft.getInstance().options.setCameraType(CameraType.FIRST_PERSON);
             isTraveling = false;
         }

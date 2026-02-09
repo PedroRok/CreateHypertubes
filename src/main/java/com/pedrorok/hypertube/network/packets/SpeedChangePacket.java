@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
 public record SpeedChangePacket(int entityId, double newSpeed) implements CustomPacketPayload {
 
     public static final Type<SpeedChangePacket> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "entity_travel_speed_change")
+            HypertubeMod.of("entity_travel_speed_change")
     );
 
     public static final StreamCodec<RegistryFriendlyByteBuf, SpeedChangePacket> STREAM_CODEC =

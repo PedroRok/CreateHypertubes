@@ -20,7 +20,7 @@ import java.util.UUID;
 public record ActionPointReachPacket(UUID entityId, BlockPos pos) implements CustomPacketPayload {
 
     public static final Type<ActionPointReachPacket> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "entity_action_point_reach")
+            HypertubeMod.of("entity_action_point_reach")
     );
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ActionPointReachPacket> STREAM_CODEC =

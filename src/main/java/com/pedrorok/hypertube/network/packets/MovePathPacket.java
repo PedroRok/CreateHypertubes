@@ -25,7 +25,7 @@ public record MovePathPacket(int entityId, List<Vec3> pathPoints, Set<BlockPos> 
                              double travelSpeed) implements CustomPacketPayload {
 
     public static final Type<MovePathPacket> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "entity_travel_path")
+            HypertubeMod.of("entity_travel_path")
     );
 
     public static final StreamCodec<RegistryFriendlyByteBuf, MovePathPacket> STREAM_CODEC =

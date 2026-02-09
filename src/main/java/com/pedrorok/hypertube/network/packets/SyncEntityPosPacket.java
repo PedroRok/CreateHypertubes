@@ -18,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
 public record SyncEntityPosPacket(int entityId, int segment) implements CustomPacketPayload {
 
     public static final Type<SyncEntityPosPacket> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "sync_entity_pos")
+            HypertubeMod.of("sync_entity_pos")
     );
 
     public static final StreamCodec<RegistryFriendlyByteBuf, SyncEntityPosPacket> STREAM_CODEC =

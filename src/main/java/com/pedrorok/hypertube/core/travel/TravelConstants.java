@@ -34,7 +34,7 @@ public class TravelConstants {
 
 
     public static final TagKey<EntityType<?>> TRAVELLER_ENTITIES =
-            TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "traveller_entities"));
+            TagKey.create(Registries.ENTITY_TYPE, HypertubeMod.of("traveller_entities"));
 
     @OnlyIn(Dist.CLIENT)
     public static class Client {

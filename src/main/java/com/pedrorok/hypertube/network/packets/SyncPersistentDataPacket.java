@@ -21,7 +21,7 @@ import java.util.HashSet;
 public record SyncPersistentDataPacket(int entityId, CompoundTag readData) implements CustomPacketPayload {
 
     public static final Type<SyncPersistentDataPacket> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath(HypertubeMod.MOD_ID, "travel_index")
+           HypertubeMod.of("travel_index")
     );
 
     public static final StreamCodec<RegistryFriendlyByteBuf, SyncPersistentDataPacket> STREAM_CODEC =
