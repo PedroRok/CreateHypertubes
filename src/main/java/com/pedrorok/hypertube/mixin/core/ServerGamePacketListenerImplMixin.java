@@ -1,5 +1,7 @@
 package com.pedrorok.hypertube.mixin.core;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
