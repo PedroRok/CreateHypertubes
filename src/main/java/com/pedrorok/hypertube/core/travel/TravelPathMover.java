@@ -57,6 +57,14 @@ public class TravelPathMover {
 
         this.currentStart = entityPos;
         this.currentEnd = pathPoints.getFirst().subtract(0, 0.25, 0);
+        
+        // If the entrance is on a virtual sub-level, the distance will be massive.
+        // Snap the start position to the virtual space to avoid infinite distance tracking.
+        if (this.currentStart.distanceToSqr(this.currentEnd) > 10000) { // > 100 blocks away
+            this.currentStart = this.currentEnd;
+        }
+        // -------------------------------
+
         this.totalDistance = currentStart.distanceTo(currentEnd);
         this.traveled = 0;
 
@@ -72,9 +80,16 @@ public class TravelPathMover {
             return;
         }
 
+        // Instantly process the client's finish packet instead of waiting
+        // for the current massive distance segment to naturally conclude.
+        if (finished) {
+            onFinishCallback.accept(entity, false);
+            return;
+        }
+
         if (traveled >= totalDistance) {
             currentSegment++;
-            if (currentSegment >= pathPoints.size() || finished) {
+            if (currentSegment >= pathPoints.size()) {
                 onFinishCallback.accept(entity, false);
                 return;
             }
