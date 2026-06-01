@@ -109,7 +109,7 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
             return;
         }
 
-        TravelManager.tryStartTravel(inRangeEntity, pos, state, TubeUtils.calculateTravelSpeed(actualSpeed));
+        TravelManager.tryStartTravel(inRangeEntity, this, TubeUtils.calculateTravelSpeed(actualSpeed));
     }
 
     @OnlyIn(Dist.CLIENT)

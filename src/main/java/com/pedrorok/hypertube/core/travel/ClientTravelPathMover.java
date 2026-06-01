@@ -1,6 +1,8 @@
 package com.pedrorok.hypertube.core.travel;
 
 import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
+import com.pedrorok.hypertube.core.compat.Mods;
+import com.pedrorok.hypertube.core.compat.sable.SableCompat;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.network.packets.ActionPointReachPacket;
 import com.pedrorok.hypertube.network.packets.FinishPathPacket;
@@ -71,9 +73,10 @@ public class ClientTravelPathMover {
 
 
             data.updateLogicalPosition();
-            entity.setDeltaMovement(data.getCurrentDirection());
+            Vec3 currentDirection = Mods.SABLE.executeIfInstalled(() -> (dir) -> SableCompat.Client.transformToWorld(data.getCurrentTarget(), dir).getSecond(), data.getCurrentDirection());
+            entity.setDeltaMovement(currentDirection);
             if (data.isClientPlayer())
-                handleEntityDirection(data.getCurrentDirection());
+                handleEntityDirection(currentDirection);
         }
     }
 
@@ -93,7 +96,7 @@ public class ClientTravelPathMover {
             if (entity == null || !entity.isAlive() || entity.isSpectator()) continue;
             data.handleActionPoint((LivingEntity) entity);
 
-            Vec3 renderPos = data.getRenderPosition(partialTicks);
+            Vec3 renderPos = renderPos = Mods.SABLE.executeIfInstalled(() -> (pos) -> SableCompat.Client.transformToWorld(pos), data.getRenderPosition(partialTicks));
 
             entity.moveTo(renderPos.x, renderPos.y, renderPos.z);
         }
