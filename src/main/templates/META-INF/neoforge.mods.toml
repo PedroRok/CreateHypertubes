@@ -40,7 +40,7 @@ type = "optional"
 [[dependencies.${mod_id}]]
 modId = "sable"
 type = "optional"
-versionRange = "[${sable_version_range},)"
+versionRange = "[1.2.0,)"
 ordering = "NONE"
 side = "BOTH"
 
