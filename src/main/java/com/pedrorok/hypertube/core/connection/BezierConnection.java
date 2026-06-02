@@ -90,7 +90,8 @@ public class BezierConnection implements IConnection {
 
     private List<Vec3> calculateRelativeBezierPoints() {
         if (toPos == null) return List.of();
-
+        if (distance() >= MAX_REASONABLE_DISTANCE) return List.of();
+        
         // Calculate offset between from and to positions
         BlockPos storedFromPos = fromPos.pos();
         BlockPos storedToPos = toPos.pos();

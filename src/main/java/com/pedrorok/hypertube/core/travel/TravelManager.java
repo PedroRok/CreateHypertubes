@@ -1,8 +1,11 @@
 package com.pedrorok.hypertube.core.travel;
 
+import com.mojang.datafixers.util.Pair;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.config.ClientConfig;
+import com.pedrorok.hypertube.core.compat.Mods;
+import com.pedrorok.hypertube.core.compat.sable.SableCompat;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.events.PlayerSyncEvents;
 import com.pedrorok.hypertube.network.packets.MovePathPacket;
@@ -22,6 +25,7 @@ import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -40,7 +44,10 @@ public class TravelManager {
 
     private static final Object2ObjectArrayMap<UUID, TravelPathMover> travelDataMap = new Object2ObjectArrayMap<>();
 
-    public static void tryStartTravel(LivingEntity entity, BlockPos pos, BlockState state, float speed) {
+    public static void tryStartTravel(LivingEntity entity, BlockEntity blockEntity, float speed) {
+        BlockState state = blockEntity.getBlockState();
+        BlockPos pos = blockEntity.getBlockPos();
+
         CompoundTag entityPersistentData = entity.getPersistentData();
         if (entityPersistentData.getBoolean(TRAVEL_TAG)) return;
 
@@ -74,7 +81,7 @@ public class TravelManager {
         float finalSpeed = (speed * TravelConstants.DEFAULT_SPEED_MULTIPLIER);
 
         TravelPathMover pathMover = new TravelPathMover(
-                pos,
+                blockEntity,
                 entity.position(),
                 travelPathData.getTravelPoints(),
                 travelPathData.getActionPoints(),
@@ -135,7 +142,7 @@ public class TravelManager {
     }
 
     private static void finishTravel(LivingEntity entity, boolean forced) {
-        Level level = entity.level();
+        final Level level = entity.level();
         if (level.isClientSide) return;
         TravelPathMover pathMover = travelDataMap.get(entity.getUUID());
         travelDataMap.remove(entity.getUUID());
@@ -154,6 +161,12 @@ public class TravelManager {
         if (blockState.getBlock() instanceof HyperEntranceBlock) {
             lastBlockPos = pathMover.getLastPos().relative(blockState.getValue(HyperEntranceBlock.FACING).getOpposite()).getCenter();
         }
+
+        Pair<Vec3, Vec3> lastPosDir = Pair.of(lastBlockPos, lastDir);
+        lastPosDir = Mods.SABLE.executeIfInstalled(() -> (posDir) -> SableCompat.transformToWorld(level, posDir.getFirst(), posDir.getSecond()), lastPosDir);
+        lastBlockPos = lastPosDir.getFirst();
+        lastDir = lastPosDir.getSecond();
+
         if (!forced) {
             if (level instanceof ServerLevel) {
                 entity.teleportTo((ServerLevel) level, lastBlockPos.x, lastBlockPos.y, lastBlockPos.z, RelativeMovement.ALL, entity.getYRot(), entity.getXRot());

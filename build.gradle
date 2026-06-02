@@ -23,6 +23,7 @@ repositories {
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
     maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
     maven { url = "https://mvn.devos.one/snapshots" } // Registrate
+    maven { url = "https://maven.ryanhcode.dev/releases" } // Sable
 
 }
 
@@ -92,10 +93,10 @@ dependencies {
 
     compileOnly("curse.maven:betterthirdperson-435044:5833474")
 
-    compileOnly("maven.modrinth:create-aeronautics:1sv6OtSz")
-    runtimeOnly("maven.modrinth:create-aeronautics:1sv6OtSz")
-    compileOnly("maven.modrinth:sable:g8CObHcP")
-    runtimeOnly("maven.modrinth:sable:g8CObHcP")
+    // Sable
+    api("dev.ryanhcode.sable:sable-neoforge-${minecraft_version}:${sable_version}") {
+        exclude group: "foundry.veil"
+    }
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

@@ -37,6 +37,13 @@ side="BOTH"
 modId = "betterthirdperson"
 type = "optional"
 
+[[dependencies.${mod_id}]]
+modId = "sable"
+type = "optional"
+versionRange = "[1.2.0,)"
+ordering = "NONE"
+side = "BOTH"
+
 
 
 # Features are specific properties of the game environment, that you may want to declare you require. This example declares

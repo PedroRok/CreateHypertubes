@@ -10,6 +10,7 @@ import net.neoforged.fml.loading.LoadingModList;
 
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.function.Function;
 
 public enum Mods {
 	SABLE;
@@ -78,5 +79,19 @@ public enum Mods {
 		if (isLoaded()) {
 			toExecute.get().run();
 		}
+	}
+
+	/**
+	 * Simple hook to execute code if a mod is installed
+	 *
+	 * @param toExecute will be executed only if the mod is loaded
+	 * @param parameter will be passed into the scope, or returned if the mod isn't loaded
+	 * @return parameter if the mod is not loaded, otherwise the return value of the given function
+	 */
+	public <T> T executeIfInstalled(Supplier<Function<T, T>> toExecute, T parameter) {
+		if (isLoaded()) {
+			return toExecute.get().apply(parameter);
+		}
+		return parameter;
 	}
 }

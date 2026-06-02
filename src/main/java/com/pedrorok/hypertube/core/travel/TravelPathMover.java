@@ -2,6 +2,8 @@ package com.pedrorok.hypertube.core.travel;
 
 import com.pedrorok.hypertube.blocks.ActionTubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
+import com.pedrorok.hypertube.core.compat.Mods;
+import com.pedrorok.hypertube.core.compat.sable.SableCompat;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.network.packets.EntityTravelDirDataPacket;
 import com.pedrorok.hypertube.network.packets.SyncEntityPosPacket;
@@ -10,6 +12,7 @@ import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
@@ -45,24 +48,23 @@ public class TravelPathMover {
 
     private Vec3 lastDirection;
 
-    public TravelPathMover(BlockPos firstBlockEntrance, Vec3 entityPos, List<Vec3> points, Set<BlockPos> actionPoints, float travelSpeed, Vec3 lastDirection, BlockPos lastPos, BiConsumer<LivingEntity, Boolean> onFinishCallback) {
+    public TravelPathMover(BlockEntity entrance, Vec3 entityPos, List<Vec3> points, Set<BlockPos> actionPoints, float travelSpeed, Vec3 lastDirection, BlockPos lastPos, BiConsumer<LivingEntity, Boolean> onFinishCallback) {
         this.pathPoints = points;
         this.actionPoints = actionPoints;
         this.activeActionPoints = new HashSet<>() {{
-            add(firstBlockEntrance);
+            add(entrance.getBlockPos());
         }};
         actionPoints.add(lastPos);
         this.travelSpeed = travelSpeed;
         this.lastPos = lastPos;
-
-        this.currentStart = entityPos;
-        this.currentEnd = pathPoints.getFirst().subtract(0, 0.25, 0);
         
-        // If the entrance is on a virtual sub-level, the distance will be massive.
-        // Snap the start position to the virtual space to avoid infinite distance tracking.
-        if (this.currentStart.distanceToSqr(this.currentEnd) > 262144) { // > 512 blocks away
-            this.currentStart = this.currentEnd;
-        }
+        final Level level = entrance.getLevel();
+        final Vec3 entrancePos = entrance.getBlockPos().getCenter();
+        Vec3 entranceOffset = entityPos.subtract(Mods.SABLE.executeIfInstalled(() -> (pos) -> SableCompat.transformToWorld(level, pos), entrancePos));
+        entranceOffset = Mods.SABLE.executeIfInstalled(() -> (dir) -> SableCompat.transformToSubLevel(level, entrancePos, dir).getSecond(), entranceOffset.normalize()).scale(entranceOffset.length());
+
+        this.currentStart = entrancePos.add(entranceOffset);
+        this.currentEnd = pathPoints.getFirst().subtract(0, 0.25, 0);
 
         this.totalDistance = currentStart.distanceTo(currentEnd);
         this.traveled = 0;
@@ -109,12 +111,12 @@ public class TravelPathMover {
             }
         }
 
-        Vec3 direction = currentEnd.subtract(currentStart).normalize().scale(travelSpeed);
-        Vec3 newPos = entity.position().add(direction);
+        traveled += travelSpeed;
+        Vec3 direction = currentEnd.subtract(currentStart).normalize();
+        Vec3 newPos = currentStart.add(direction.scale(traveled));
+        newPos = Mods.SABLE.executeIfInstalled(() -> (pos) -> SableCompat.transformToWorld(entity.level(), pos), newPos);
 
         entity.moveTo(newPos.x, newPos.y, newPos.z);
-        traveled += travelSpeed;
-
         entity.resetFallDistance();
 
         handleEntityDirection(entity, direction);
