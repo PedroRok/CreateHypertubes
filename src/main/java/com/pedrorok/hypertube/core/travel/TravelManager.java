@@ -95,6 +95,7 @@ public class TravelManager {
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, movePathPacket);
         Vec3 center = pos.getCenter();
         TubeSoundManager.playTubeSuctionSound(entity, center);
+        Mods.SABLE.executeIfInstalled(() -> () -> SableCompat.stickToSubLevel(entity, center));
 
         syncPersistentData(entity);
 
@@ -166,7 +167,9 @@ public class TravelManager {
         lastPosDir = Mods.SABLE.executeIfInstalled(() -> (posDir) -> SableCompat.transformToWorld(level, posDir.getFirst(), posDir.getSecond()), lastPosDir);
         lastBlockPos = lastPosDir.getFirst();
         lastDir = lastPosDir.getSecond();
+        lastBlockPos = lastBlockPos.add(lastDir.scale(0.5));
 
+        Mods.SABLE.executeIfInstalled(() -> () -> SableCompat.stickToSubLevel(entity, null));
         if (!forced) {
             if (level instanceof ServerLevel) {
                 entity.teleportTo((ServerLevel) level, lastBlockPos.x, lastBlockPos.y, lastBlockPos.z, RelativeMovement.ALL, entity.getYRot(), entity.getXRot());

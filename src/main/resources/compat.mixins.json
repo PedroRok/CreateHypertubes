@@ -1,0 +1,14 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.pedrorok.hypertube.mixin.compat",
+  "refmap": "compat.refmap.json",
+  "plugin": "com.pedrorok.hypertube.mixin.compat.CompatMixinPlugin",
+  "compatibilityLevel": "JAVA_8",
+  "client": [
+    "sable.EntityMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

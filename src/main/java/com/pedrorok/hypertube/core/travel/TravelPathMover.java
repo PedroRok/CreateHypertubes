@@ -64,15 +64,17 @@ public class TravelPathMover {
         entranceOffset = Mods.SABLE.executeIfInstalled(() -> (dir) -> SableCompat.transformToSubLevel(level, entrancePos, dir).getSecond(), entranceOffset.normalize()).scale(entranceOffset.length());
 
         this.currentStart = entrancePos.add(entranceOffset);
-        this.currentEnd = pathPoints.getFirst().subtract(0, 0.25, 0);
+        this.currentEnd = pathPoints.getFirst();
 
         this.totalDistance = currentStart.distanceTo(currentEnd);
         this.traveled = 0;
 
         this.onFinishCallback = onFinishCallback;
         this.lastDirection = lastDirection;
-        if (lastDirection != null) return;
-        this.lastDirection = pathPoints.getLast().subtract(pathPoints.get(pathPoints.size() - 2)).normalize();
+        if (lastDirection == null) {
+            this.lastDirection = pathPoints.getLast().subtract(pathPoints.get(pathPoints.size() - 2)).normalize();
+        }
+        this.pathPoints.add(pathPoints.getLast().add(this.lastDirection.scale(1)));
     }
 
     public void tickEntity(LivingEntity entity) {
@@ -93,7 +95,7 @@ public class TravelPathMover {
                 return;
             }
             currentStart = currentEnd;
-            currentEnd = pathPoints.get(currentSegment).subtract(0, 0.25, 0);
+            currentEnd = pathPoints.get(currentSegment);
             totalDistance = currentStart.distanceTo(currentEnd);
             traveled = 0;
         }
@@ -115,8 +117,9 @@ public class TravelPathMover {
         Vec3 direction = currentEnd.subtract(currentStart).normalize();
         Vec3 newPos = currentStart.add(direction.scale(traveled));
         newPos = Mods.SABLE.executeIfInstalled(() -> (pos) -> SableCompat.transformToWorld(entity.level(), pos), newPos);
+        direction = Mods.SABLE.executeIfInstalled(() -> (dir) -> SableCompat.transformToWorld(entity.level(), currentStart, dir).getSecond(), direction);
 
-        entity.moveTo(newPos.x, newPos.y, newPos.z);
+        moveEntity(entity, newPos);
         entity.resetFallDistance();
 
         handleEntityDirection(entity, direction);
@@ -141,6 +144,10 @@ public class TravelPathMover {
         entity.setXRot(pitch);
         if (entity.level().isClientSide) return;
         PacketDistributor.sendToPlayersTrackingEntity(entity, EntityTravelDirDataPacket.create(entity));
+    }
+    
+    private void moveEntity(LivingEntity entity, Vec3 pos) {
+        entity.moveTo(pos.x, pos.y - 0.25, pos.z);
     }
 
     public Vec3 getLastDir() {
