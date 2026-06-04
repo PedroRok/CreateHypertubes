@@ -25,7 +25,7 @@ public class SableCompat {
     }
 
     public static Pair<Vec3, Vec3> transformToWorld(Level level, Vec3 pos, Vec3 dir) {
-        return transformToWorld(level, pos, dir, false)
+        return transformToWorld(level, pos, dir, false);
     }
 
     public static Vec3 transformToWorld(Level level, Vec3 pos, boolean useLastPose) {
@@ -48,7 +48,7 @@ public class SableCompat {
     }
 
     public static Pair<Vec3, Vec3> transformToSubLevel(Level level, Vec3 sublevelPos, Vec3 pos, Vec3 dir) {
-        return transformToSubLevel(level, sublevelPos, pos, dir, false)
+        return transformToSubLevel(level, sublevelPos, pos, dir, false);
     }
 
     public static Vec3 transformToSubLevel(Level level, Vec3 sublevelPos, Vec3 pos, boolean useLastPose) {
@@ -85,7 +85,7 @@ public class SableCompat {
         }
 
         public static Pair<Vec3, Vec3> transformToWorld(Vec3 pos, Vec3 dir) {
-            return transformToWorld(pos, dir, false)
+            return transformToWorld(pos, dir, false);
         }
 
         public static Vec3 transformToWorld(Vec3 pos, boolean useLastPose) {
@@ -108,7 +108,7 @@ public class SableCompat {
         }
 
         public static Pair<Vec3, Vec3> transformToSubLevel(Vec3 sublevelPos, Vec3 pos, Vec3 dir) {
-            return transformToSubLevel(sublevelPos, pos, dir, false)
+            return transformToSubLevel(sublevelPos, pos, dir, false);
         }
 
         public static Vec3 transformToSubLevel(Vec3 sublevelPos, Vec3 pos, boolean useLastPose) {

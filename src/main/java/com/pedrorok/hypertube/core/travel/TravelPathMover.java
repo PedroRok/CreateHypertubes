@@ -61,7 +61,7 @@ public class TravelPathMover {
         final Level level = entrance.getLevel();
         final Vec3 entrancePos = entrance.getBlockPos().getCenter();
         Vec3 entranceOffset = entityPos.subtract(Mods.SABLE.executeIfInstalled(() -> (pos) -> SableCompat.transformToWorld(level, pos), entrancePos));
-        entranceOffset = Mods.SABLE.executeIfInstalled(() -> (dir) -> SableCompat.transformToSubLevel(level, entrancePos, dir).getSecond(), entranceOffset.normalize()).scale(entranceOffset.length());
+        entranceOffset = Mods.SABLE.executeIfInstalled(() -> (dir) -> SableCompat.transformToSubLevel(level, entrancePos, Vec3.ZERO, dir).getSecond(), entranceOffset.normalize()).scale(entranceOffset.length());
 
         this.currentStart = entrancePos.add(entranceOffset);
         this.currentEnd = pathPoints.getFirst();

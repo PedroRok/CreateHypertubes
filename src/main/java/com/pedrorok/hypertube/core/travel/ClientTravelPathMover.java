@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.core.travel;
 
+import com.mojang.datafixers.util.Pair;
 import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
 import com.pedrorok.hypertube.core.compat.Mods;
 import com.pedrorok.hypertube.core.compat.sable.SableCompat;
@@ -185,10 +186,11 @@ public class ClientTravelPathMover {
             }
 
             traveled += travelSpeed;
-            Pair<Vec3, Vec3> newPosDir = Pair.of(currentStart.add(direction.scale(traveled)), getCurrentDirection());
-            newPosDir = Mods.SABLE.executeIfInstalled(() -> (pos) -> SableCompat.Client.transformToWorld(newPosDir.getFirst(), newPosDir.getSecond()), newPosDir);
+            Vec3 direction = getCurrentDirection();
+            Pair<Vec3, Vec3> newPosDir = Pair.of(currentStart.add(direction.scale(traveled)), direction);
+            newPosDir = Mods.SABLE.executeIfInstalled(() -> (posDir) -> SableCompat.Client.transformToWorld(posDir.getFirst(), posDir.getSecond()), newPosDir);
             Vec3 newPos = newPosDir.getFirst();
-            Vec3 direction = newPosDir.getSecond();
+            direction = newPosDir.getSecond();
 
             moveEntity(entity, newPos);
             if (clientPlayer)
