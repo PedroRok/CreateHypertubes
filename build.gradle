@@ -97,6 +97,9 @@ dependencies {
     api("dev.ryanhcode.sable:sable-neoforge-${minecraft_version}:${sable_version}") {
         exclude group: "foundry.veil"
     }
+
+    // Aerodynamics
+    runtimeOnly("maven.modrinth:create-aeronautics:YhZLrAFC")
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
