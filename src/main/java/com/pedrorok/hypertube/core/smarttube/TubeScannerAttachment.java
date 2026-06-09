@@ -3,11 +3,14 @@ package com.pedrorok.hypertube.core.smarttube;
 import com.pedrorok.hypertube.blocks.ActionTubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
+import com.pedrorok.hypertube.core.travel.ItemTravelManager;
 import com.pedrorok.hypertube.registry.ModItems;
 import com.pedrorok.hypertube.registry.ModPartialModels;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -36,26 +39,49 @@ public class TubeScannerAttachment implements ITubeAttachment {
 
     @Override
     public ITubeActionPoint getActionPoint(Direction attachedDirection) {
-        return ((entity, mover, pos) -> {
-            var level = entity.level();
+        return new ITubeActionPoint() {
+            @Override
+            public void handleTravelPath(net.minecraft.world.entity.LivingEntity entity, com.pedrorok.hypertube.core.travel.TravelPathMover mover, BlockPos pos) {
+                var level = entity.level();
 
-            if (level.isClientSide) return;
+                if (level.isClientSide) return;
 
-            BlockState currentState = level.getBlockState(pos);
+                BlockState currentState = level.getBlockState(pos);
 
-            if (currentState.hasProperty(ActionTubeBlock.POWER)) {
-                int currentPower = currentState.getValue(ActionTubeBlock.POWER);
-                int newPower = entity != null && entity.isBaby() ? 8 : 15;
+                if (currentState.hasProperty(ActionTubeBlock.POWER)) {
+                    int currentPower = currentState.getValue(ActionTubeBlock.POWER);
+                    int newPower = entity != null && entity.isBaby() ? 8 : 15;
 
-                if (newPower >= currentPower) {
-                    if (newPower != currentPower) {
-                        level.setBlock(pos, currentState.setValue(ActionTubeBlock.POWER, newPower), 3);
+                    if (newPower >= currentPower) {
+                        if (newPower != currentPower) {
+                            level.setBlock(pos, currentState.setValue(ActionTubeBlock.POWER, newPower), 3);
+                        }
+                        level.scheduleTick(pos, currentState.getBlock(), 20);
+                        level.updateNeighborsAt(pos, currentState.getBlock());
                     }
-                    level.scheduleTick(pos, currentState.getBlock(), 20);
-                    level.updateNeighborsAt(pos, currentState.getBlock());
                 }
             }
-        });
+
+            @Override
+            public void handleItemTravel(ItemTravelManager.TravelingItem item, Level level, BlockPos pos) {
+                if (level.isClientSide) return;
+
+                BlockState currentState = level.getBlockState(pos);
+
+                if (currentState.hasProperty(ActionTubeBlock.POWER)) {
+                    int currentPower = currentState.getValue(ActionTubeBlock.POWER);
+                    int newPower = 15;
+
+                    if (newPower >= currentPower) {
+                        if (newPower != currentPower) {
+                            level.setBlock(pos, currentState.setValue(ActionTubeBlock.POWER, newPower), 3);
+                        }
+                        level.scheduleTick(pos, currentState.getBlock(), 20);
+                        level.updateNeighborsAt(pos, currentState.getBlock());
+                    }
+                }
+            }
+        };
     }
 
     @Override

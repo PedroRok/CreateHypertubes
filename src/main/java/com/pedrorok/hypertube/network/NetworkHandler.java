@@ -50,5 +50,15 @@ public class NetworkHandler {
                 ActionPointReachPacket.STREAM_CODEC,
                 ActionPointReachPacket::handle
         );
+        registrar.playToClient(
+                ItemTravelPacket.TYPE,
+                ItemTravelPacket.STREAM_CODEC,
+                ItemTravelPacket::handle
+        );
+        registrar.playToClient(
+                ItemTravelFinishPacket.TYPE,
+                ItemTravelFinishPacket.STREAM_CODEC,
+                ItemTravelFinishPacket::handle
+        );
     }
 }
