@@ -82,6 +82,16 @@ public class HypertubeRecipeGen extends RecipeProvider {
                 .unlockedBy("has_hypertube_entrance", has(ModBlocks.HYPERTUBE_ENTRANCE))
                 .save(consumer, HypertubeMod.of("redstone_detector_tube_attachment"));
 
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.HYPERTUBE_FUNNEL.get())
+                .pattern(" K ")
+                .pattern(" F ")
+                .pattern(" T ")
+                .define('K', Items.DRIED_KELP)
+                .define('F', AllBlocks.ANDESITE_FUNNEL)
+                .define('T', ModBlocks.HYPERTUBE.get())
+                .unlockedBy("has_hypertube", has(ModBlocks.HYPERTUBE))
+                .save(consumer);
+
         new SequencedAssemblyRecipeBuilder(HypertubeMod.of("tube_scanner"))
                 .transitionTo(ModItems.TUBE_SCANNER_UNFINISHED)
                 .addOutput(ModItems.TUBE_SCANNER, 100)

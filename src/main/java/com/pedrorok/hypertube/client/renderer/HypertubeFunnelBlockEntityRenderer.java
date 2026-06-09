@@ -1,0 +1,74 @@
+package com.pedrorok.hypertube.client.renderer;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.pedrorok.hypertube.blocks.HypertubeFunnelBlock;
+import com.pedrorok.hypertube.blocks.blockentities.HypertubeFunnelBlockEntity;
+import com.pedrorok.hypertube.client.BezierTextureRenderer;
+import com.pedrorok.hypertube.core.connection.BezierConnection;
+import com.pedrorok.hypertube.registry.ModPartialModels;
+import com.pedrorok.hypertube.utils.RenderUtils;
+import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
+import net.createmod.catnip.render.CachedBuffers;
+import net.createmod.catnip.render.SuperByteBuffer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
+
+public class HypertubeFunnelBlockEntityRenderer extends KineticBlockEntityRenderer<HypertubeFunnelBlockEntity> {
+
+    private final BezierTextureRenderer tubeRenderer = BezierTextureRenderer.get();
+
+    public HypertubeFunnelBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
+        super(context);
+    }
+
+    @Override
+    protected void renderSafe(HypertubeFunnelBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer,
+                              int light, int overlay) {
+
+        BlockState blockState = be.getBlockState();
+        if (!(blockState.getBlock() instanceof HypertubeFunnelBlock)) {
+            return;
+        }
+
+        Direction facing = blockState.getValue(HypertubeFunnelBlock.FACING);
+        boolean isTubeOnVertical = facing.getAxis().isVertical();
+        be.getTubeAttachments().forEach((direct, attachment) -> {
+            SuperByteBuffer smartTubeModel = CachedBuffers.partial(attachment.getPartialModel(blockState, be, direct), blockState);
+
+            RenderUtils.rotateToFace(smartTubeModel, facing, direct.getOpposite(), isTubeOnVertical);
+            smartTubeModel.light(light);
+            smartTubeModel.renderInto(ms, buffer.getBuffer(RenderType.translucent()));
+        });
+
+        SuperByteBuffer cogwheelModel = CachedBuffers.partialFacingVertical(ModPartialModels.COGWHEEL_HOLE, blockState, facing);
+        float angle = getAngleForBe(be, be.getBlockPos(), facing.getAxis());
+        Direction.Axis rotationAxisOf = getRotationAxisOf(be);
+        kineticRotationTransform(cogwheelModel, be, rotationAxisOf, angle, light);
+        cogwheelModel.renderInto(ms, buffer.getBuffer(RenderType.solid()));
+
+        if (be.getConnection() instanceof BezierConnection bezierConnection) {
+            tubeRenderer.renderBezierConnection(be.getBlockPos(), bezierConnection, ms, buffer, light, overlay);
+        }
+    }
+
+    @Override
+    public boolean shouldRenderOffScreen(HypertubeFunnelBlockEntity p_112306_) {
+        return true;
+    }
+
+    @Override
+    public boolean shouldRender(HypertubeFunnelBlockEntity p_173568_, Vec3 p_173569_) {
+        return true;
+    }
+
+    @Override
+    public @NotNull AABB getRenderBoundingBox(@NotNull HypertubeFunnelBlockEntity blockEntity) {
+        return AABB.INFINITE;
+    }
+}

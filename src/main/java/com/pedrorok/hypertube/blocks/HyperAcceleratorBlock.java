@@ -4,6 +4,7 @@ import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.blocks.blockentities.HyperAcceleratorBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
+import com.pedrorok.hypertube.core.travel.ItemTravelManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravelPathMover;
 import com.pedrorok.hypertube.network.packets.SpeedChangePacket;
@@ -180,6 +181,16 @@ public class HyperAcceleratorBlock extends ActionTubeBlock implements EntityBloc
         mover.setTravelSpeed(newSpeed);
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, new SpeedChangePacket(entity.getId(), newSpeed));
         TubeSoundManager.playTubeSuctionSound(entity, entity.position());
+    }
+
+    @Override
+    public void handleItemTravel(ItemTravelManager.TravelingItem item, Level level, BlockPos pos) {
+        HyperAcceleratorBlockEntity tube = (HyperAcceleratorBlockEntity) level.getBlockEntity(pos);
+        if (tube == null) return;
+        float speed = TubeUtils.calculateTravelSpeed(Math.abs(tube.getSpeed())) / 2;
+        float newSpeed = item.getTravelSpeed() + speed * (tube.getBlockState().getValue(ACCELERATE) ? 1 : -1);
+        newSpeed = Math.max(0.4333f, newSpeed);
+        item.setTravelSpeed(newSpeed);
     }
 
     // ------- Collision Shapes -------

@@ -3,6 +3,7 @@ package com.pedrorok.hypertube.events;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.config.ServerConfig;
 import com.pedrorok.hypertube.core.placement.TubePlacement;
+import com.pedrorok.hypertube.core.travel.ItemTravelManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravelManager;
 import com.pedrorok.hypertube.utils.TubeUtils;
@@ -31,6 +32,11 @@ public class ModServerEvents {
     @SubscribeEvent
     public static void onServerStart(ServerStartingEvent event) {
         ServerConfig.get().init();
+    }
+
+    @SubscribeEvent
+    public static void onServerTickEvent(net.neoforged.neoforge.event.tick.ServerTickEvent.Pre event) {
+        ItemTravelManager.tick();
     }
 
     @SubscribeEvent

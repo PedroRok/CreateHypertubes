@@ -7,6 +7,7 @@ import com.pedrorok.hypertube.config.ServerConfig;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.core.smarttube.ITubeAttachment;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
+import com.pedrorok.hypertube.core.travel.ItemTravelManager;
 import com.pedrorok.hypertube.core.travel.TravelPathMover;
 import com.pedrorok.hypertube.registry.ModParticles;
 import com.pedrorok.hypertube.registry.ModSounds;
@@ -25,6 +26,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -44,7 +46,7 @@ import java.util.*;
  */
 public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
 
-    private static final float RADIUS = 1.0f;
+    protected static final float RADIUS = 1.0f;
     protected final UUID tubeSoundId = UUID.randomUUID();
 
     private final Map<Direction, ITubeAttachment> smartTubeAttachments = new HashMap<>();
@@ -107,6 +109,15 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
             ITubeActionPoint actionPoint = value.getActionPoint(attachmentEntry.getKey());
             if (actionPoint == null) continue;
             actionPoint.handleTravelPath(entity, travelPathMover, pos);
+        }
+    }
+
+    public void activateAllTubeAttachmentsForItem(ItemTravelManager.TravelingItem item, BlockPos pos) {
+        for (Map.Entry<Direction, ITubeAttachment> attachmentEntry : smartTubeAttachments.entrySet()) {
+            ITubeAttachment value = attachmentEntry.getValue();
+            ITubeActionPoint actionPoint = value.getActionPoint(attachmentEntry.getKey());
+            if (actionPoint == null) continue;
+            actionPoint.handleItemTravel(item, level, pos);
         }
     }
 
@@ -253,6 +264,13 @@ public abstract class ActionTubeBlockEntity extends TubeBlockEntity {
                 TargetingConditions.forNonCombat().ignoreLineOfSight(),
                 null,
                 centerPos.x, centerPos.y, centerPos.z);
+    }
+
+    protected boolean hasNearbyItems(ServerLevel level, Vec3 centerPos) {
+        return !level.getEntitiesOfClass(ItemEntity.class,
+                AABB.ofSize(centerPos, RADIUS * 6, RADIUS * 6, RADIUS * 6),
+                item -> !item.getItem().isEmpty() && !ItemTravelManager.isItemTraveling(item.getUUID()))
+                .isEmpty();
     }
 
 

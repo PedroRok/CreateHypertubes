@@ -6,6 +6,7 @@ import com.pedrorok.hypertube.core.camera.DetachedCameraController;
 import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
 import com.pedrorok.hypertube.core.placement.TubePlacement;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
+import com.pedrorok.hypertube.core.travel.ClientItemTravelPathMover;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravellerEntity;
 import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
@@ -72,6 +73,9 @@ public class ClientEvents {
 
         TubePlacement.drawCustomBlockSelection(ms, buffer, camera);
 
+        renderTravelingItems(ms, camera);
+
+        Minecraft.getInstance().renderBuffers().bufferSource().endBatch();
         buffer.draw();
         RenderSystem.enableCull();
         ms.popPose();
@@ -99,5 +103,33 @@ public class ClientEvents {
         LivingEntity entity = event.getEntity();
         if (!entity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
         event.getPoseStack().popPose();
+    }
+
+    private static void renderTravelingItems(PoseStack ms, Vec3 camera) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) return;
+
+        for (ClientItemTravelPathMover.ItemPathData data : ClientItemTravelPathMover.getActivePaths()) {
+            if (data.isFinished()) continue;
+            Vec3 pos = data.getRenderPosition();
+            if (pos == null) continue;
+
+            ms.pushPose();
+            ms.translate(pos.x - camera.x, pos.y - camera.y - 0.15, pos.z - camera.z);
+            ms.scale(0.5f, 0.5f, 0.5f);
+
+            mc.getItemRenderer().renderStatic(
+                    data.getItemStack(),
+                    net.minecraft.world.item.ItemDisplayContext.GROUND,
+                    15728880,
+                    655360,
+                    ms,
+                    mc.renderBuffers().bufferSource(),
+                    mc.level,
+                    0
+            );
+
+            ms.popPose();
+        }
     }
 }

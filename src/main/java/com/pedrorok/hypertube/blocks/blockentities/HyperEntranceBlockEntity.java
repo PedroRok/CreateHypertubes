@@ -7,6 +7,7 @@ import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
+import com.pedrorok.hypertube.core.travel.ItemTravelManager;
 import com.pedrorok.hypertube.core.travel.TravelManager;
 import com.pedrorok.hypertube.utils.TubeUtils;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
@@ -21,8 +22,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -97,19 +100,46 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
         boolean isNotLocked = !getBlockState().getValue(HyperEntranceBlock.LOCKED);
         LivingEntity nearbyEntity = getNearbyLivingEntities((ServerLevel) level, pos.getCenter());
 
-        boolean canOpen = nearbyEntity != null && (isNotLocked || nearbyEntity.isShiftKeyDown() || nearbyEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG));
+        boolean hasNearbyItems = hasNearbyItems((ServerLevel) level, pos.getCenter());
+
+        boolean canOpen = (nearbyEntity != null && (isNotLocked || nearbyEntity.isShiftKeyDown() || nearbyEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)))
+                          || hasNearbyItems;
 
 
         if (isTubeClosed(canOpen, isOpen)) return;
 
         LivingEntity inRangeEntity = getInRangeLivingEntities((ServerLevel) level, pos.getCenter(), state.getValue(HyperEntranceBlock.FACING));
-        if (inRangeEntity == null) return;
-
-        if (isNotLocked && inRangeEntity.isShiftKeyDown() && !inRangeEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) {
-            return;
+        if (inRangeEntity != null) {
+            if (!(isNotLocked && inRangeEntity.isShiftKeyDown() && !inRangeEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG))) {
+                TravelManager.tryStartTravel(inRangeEntity, this, TubeUtils.calculateTravelSpeed(actualSpeed));
+            }
         }
 
-        TravelManager.tryStartTravel(inRangeEntity, this, TubeUtils.calculateTravelSpeed(actualSpeed));
+        tickItemSuction((ServerLevel) level, pos, state, actualSpeed);
+    }
+
+    private void tickItemSuction(ServerLevel level, BlockPos pos, BlockState state, float actualSpeed) {
+        Direction facing = state.getValue(HyperEntranceBlock.FACING);
+        Vec3 centerPos = pos.getCenter();
+        Vec3 checkPos = centerPos.add(Vec3.atLowerCornerOf(facing.getOpposite().getNormal()));
+
+        List<ItemEntity> nearbyItems = level.getEntitiesOfClass(ItemEntity.class,
+                AABB.ofSize(checkPos, RADIUS * 6, RADIUS * 6, RADIUS * 6),
+                item -> !item.getItem().isEmpty() && !ItemTravelManager.isItemTraveling(item.getUUID()));
+
+        if (nearbyItems.isEmpty()) return;
+
+        for (ItemEntity item : nearbyItems) {
+            double distance = item.position().distanceTo(checkPos);
+            if (distance < 1.5) {
+                ItemTravelManager.startItemTravel(item, this, TubeUtils.calculateTravelSpeed(actualSpeed));
+            } else {
+                Vec3 direction = checkPos.subtract(item.position()).normalize();
+                double pullStrength = Math.max(0.05, 0.3 - distance * 0.05);
+                item.setDeltaMovement(item.getDeltaMovement().add(direction.scale(pullStrength)));
+                item.hurtMarked = true;
+            }
+        }
     }
 
     @OnlyIn(Dist.CLIENT)
