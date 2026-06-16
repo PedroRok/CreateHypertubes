@@ -180,6 +180,11 @@ public class HyperJunctionBlockEntity extends ActionTubeBlockEntity implements I
     }
 
     @Override
+    public float getConnectionOffsetOnDirection(Direction direction) {
+        return 0.65f;
+    }
+
+    @Override
     protected int getConnectionCount() {
         return 3;
     }

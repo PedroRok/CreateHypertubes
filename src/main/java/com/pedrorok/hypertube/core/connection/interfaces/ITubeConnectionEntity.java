@@ -59,11 +59,13 @@ public interface ITubeConnectionEntity {
             if (isNewFormat) {
                 SimpleConnection fromAbsolute = new SimpleConnection(
                         connection.getFromPos().pos().offset(referencePos),
-                        connection.getFromPos().direction()
+                        connection.getFromPos().direction(),
+                        connection.getFromPos().offset()
                 );
                 SimpleConnection toAbsolute = connection.getToPos() != null ? new SimpleConnection(
                         connection.getToPos().pos().offset(referencePos),
-                        connection.getToPos().direction()
+                        connection.getToPos().direction(),
+                        connection.getToPos().offset()
                 ) : null;
                 return new BezierConnection(fromAbsolute, toAbsolute, connection.getTubeSegments(), connection.getCachedRelativeBezierPoints());
             }
@@ -82,7 +84,8 @@ public interface ITubeConnectionEntity {
                 if (isNewFormat) {
                     return new SimpleConnection(
                             connection.pos().offset(referencePos),
-                            connection.direction()
+                            connection.direction(),
+                            connection.offset()
                     );
                 }
                 return connection;
@@ -100,11 +103,12 @@ public interface ITubeConnectionEntity {
     }
 
     default void writeConnectionRelativeSingle(CompoundTag tag, BlockPos referencePos, IConnection connection, String key) {
-        if (connection instanceof SimpleConnection(BlockPos pos, Direction direction)) {
+        if (connection instanceof SimpleConnection(BlockPos pos, Direction direction, float offset)) {
             // Convert absolute position to relative
             SimpleConnection relative = new SimpleConnection(
                     pos.subtract(referencePos),
-                    direction
+                    direction,
+                    offset
             );
             tag.put(key, SimpleConnection.CODEC.encodeStart(NbtOps.INSTANCE, relative)
                     .getOrThrow());
@@ -112,11 +116,13 @@ public interface ITubeConnectionEntity {
             // Convert absolute positions to relative
             SimpleConnection fromRelative = new SimpleConnection(
                     bezierConnection.getFromPos().pos().subtract(referencePos),
-                    bezierConnection.getFromPos().direction()
+                    bezierConnection.getFromPos().direction(),
+                    bezierConnection.getFromPos().offset()
             );
             SimpleConnection toRelative = bezierConnection.getToPos() != null ? new SimpleConnection(
                     bezierConnection.getToPos().pos().subtract(referencePos),
-                    bezierConnection.getToPos().direction()
+                    bezierConnection.getToPos().direction(),
+                    bezierConnection.getToPos().offset()
             ) : null;
             BezierConnection relative = new BezierConnection(fromRelative, toRelative, bezierConnection.getTubeSegments(), bezierConnection.getCachedRelativeBezierPoints());
             tag.put(key, BezierConnection.CODEC.encodeStart(NbtOps.INSTANCE, relative)
@@ -142,6 +148,8 @@ public interface ITubeConnectionEntity {
      * @return the number of blocks broken by this connection
      */
     int blockBroken();
+
+    float getConnectionOffsetOnDirection(Direction direction);
 
     default int blockBroken(Level level, IConnection connection, BlockPos selfPos) {
         int toDrop = 0;

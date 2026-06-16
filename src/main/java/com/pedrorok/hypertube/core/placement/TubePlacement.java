@@ -90,7 +90,7 @@ public class TubePlacement {
 
         Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, () -> hypertubeHitResult);
 
-        SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
+        SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection, 0);
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
 
         // Exception & visual
@@ -133,7 +133,7 @@ public class TubePlacement {
             return false;
         }
 
-        BezierConnection connection = new BezierConnection(simpleConnection, new SimpleConnection(pos, direction.getOpposite()));
+        BezierConnection connection = new BezierConnection(simpleConnection, new SimpleConnection(pos, direction.getOpposite(), -tubeEntity.getConnectionOffsetOnDirection(direction.getOpposite())));
 
 
         ResponseDTO validation = connection.getValidation();

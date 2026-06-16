@@ -34,7 +34,7 @@ public interface IConnection {
                     dir = bezier.getFromPos();
                 } else {
                     SimpleConnection toPos = bezier.getToPos();
-                    dir = new SimpleConnection(toPos.pos(), toPos.direction().getOpposite());
+                    dir = new SimpleConnection(toPos.pos(), toPos.direction().getOpposite(), toPos.offset());
                 }
                 return dir;
             }

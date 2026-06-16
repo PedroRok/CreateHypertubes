@@ -91,17 +91,17 @@ public class BezierConnection implements IConnection {
     private List<Vec3> calculateRelativeBezierPoints() {
         if (toPos == null) return List.of();
         if (distance() >= MAX_REASONABLE_DISTANCE) return List.of();
-        
-        // Calculate offset between from and to positions
-        BlockPos storedFromPos = fromPos.pos();
-        BlockPos storedToPos = toPos.pos();
-        BlockPos offset = storedToPos.subtract(storedFromPos);
 
-        // Create relative positions (fromPos is at origin 0,0,0)
-        Vec3 fromRelative = new Vec3(0.5, 0.5, 0.5); // Center of origin block
-        Vec3 toRelative = new Vec3(offset.getX() + 0.5, offset.getY() + 0.5, offset.getZ() + 0.5);
+        // Absolute world positions with offset applied
+        Vec3 fromAbsolute = fromPos.getOffsetCenter();
+        Vec3 toAbsolute = toPos.getOffsetCenter();
 
-        // Calculate bezier curve in relative space
+        // Express everything relative to the fromPos block origin (lower corner),
+        // so cached points survive block moves (same as before).
+        Vec3 originAbsolute = Vec3.atLowerCornerOf(fromPos.pos());
+        Vec3 fromRelative = fromAbsolute.subtract(originAbsolute);
+        Vec3 toRelative   = toAbsolute.subtract(originAbsolute);
+
         double distance = fromRelative.distanceTo(toRelative);
         Vec3 controlPoint1 = createFirstControlPoint(fromRelative, fromPos.direction(), distance);
         Vec3 controlPoint2 = createSecondControlPoint(toRelative, fromPos.direction(), distance,
@@ -280,9 +280,14 @@ public class BezierConnection implements IConnection {
     public void drawPath(LerpedFloat animation, boolean isValid) {
         if (distance() > MAX_REASONABLE_DISTANCE) return;
 
-        Vec3 pos1 = fromPos.pos().getCenter();
+        // Start from the offset center so the debug path matches the rendered tube
+        List<Vec3> points = getBezierPoints();
+        if (points.isEmpty()) return;
+
+        Vec3 pos1 = points.getFirst();
         int id = 0;
-        for (Vec3 bezierPoint : getBezierPoints()) {
+        for (int i = 1; i < points.size(); i++) {
+            Vec3 bezierPoint = points.get(i);
             line(uuid, id, pos1, bezierPoint, animation, !isValid);
             pos1 = bezierPoint;
             id++;
@@ -315,10 +320,10 @@ public class BezierConnection implements IConnection {
 
     public BezierConnection invert() {
         return new BezierConnection(
-            new SimpleConnection(toPos.pos(), toPos.direction().getOpposite()),
-            new SimpleConnection(fromPos.pos(), fromPos.direction().getOpposite()),
-            tubeSegments,
-            detailLevel
+                new SimpleConnection(toPos.pos(), toPos.direction().getOpposite(), toPos.offset()),
+                new SimpleConnection(fromPos.pos(), fromPos.direction().getOpposite(), fromPos.offset()),
+                tubeSegments,
+                detailLevel
         );
     }
 
@@ -353,10 +358,9 @@ public class BezierConnection implements IConnection {
     @Override
     public String toString() {
         return "BezierConnection{" +
-               "fromPos=" + fromPos +
-               ", toPos=" + toPos +
-               ", isValid=" + valid +
-               '}';
+                "fromPos=" + fromPos +
+                ", toPos=" + toPos +
+                ", isValid=" + valid +
+                '}';
     }
 }
-

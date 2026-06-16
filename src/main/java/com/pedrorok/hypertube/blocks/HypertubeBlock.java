@@ -256,7 +256,7 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
         if (connectionFrom == null) return;
 
         Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, () -> state.getBlock() instanceof ITubeConnection, true);
-        SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
+        SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection, 0);
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
 
         if (!TubeUtils.checkPlayerPlacingBlockValidation(player, bezierConnection, level)) {

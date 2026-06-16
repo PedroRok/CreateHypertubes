@@ -89,7 +89,7 @@ public class HyperJunctionBlock extends ActionTubeBlock implements EntityBlock, 
                     .setValue(OPEN, false)
                     .setValue(WATERLOGGED, fluidstate.is(Fluids.WATER));
         }
-        Direction direction = player.getDirection();
+        Direction direction = player.getDirection().getOpposite();
         if (player.getXRot() < -45) {
             direction = Direction.UP;
         } else if (player.getXRot() > 45) {

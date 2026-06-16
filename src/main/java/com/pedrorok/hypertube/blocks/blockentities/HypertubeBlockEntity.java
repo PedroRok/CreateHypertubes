@@ -124,6 +124,11 @@ public class HypertubeBlockEntity extends TubeBlockEntity {
     }
 
     @Override
+    public float getConnectionOffsetOnDirection(Direction direction) {
+        return 0;
+    }
+
+    @Override
     protected int getConnectionCount() {
         return 2;
     }

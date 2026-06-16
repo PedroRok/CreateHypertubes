@@ -170,6 +170,11 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
     }
 
     @Override
+    public float getConnectionOffsetOnDirection(Direction direction) {
+        return 0.3f;
+    }
+
+    @Override
     public List<Direction> getFacesConnectable() {
         if (connection != null) return List.of();
         return List.of(getBlockState().getValue(HyperEntranceBlock.FACING));

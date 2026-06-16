@@ -181,6 +181,11 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
     }
 
     @Override
+    public float getConnectionOffsetOnDirection(Direction direction) {
+        return 0.4f;
+    }
+
+    @Override
     protected int getConnectionCount() {
         return 2;
     }

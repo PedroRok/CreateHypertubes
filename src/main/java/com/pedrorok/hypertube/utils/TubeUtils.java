@@ -50,7 +50,7 @@ public class TubeUtils {
         SimpleConnection connectionFrom = itemInHand.get(ModDataComponent.TUBE_CONNECTING_FROM);
 
         Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, null, true);
-        SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
+        SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection, 0);
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
 
         return checkPlayerPlacingBlockValidation(player, bezierConnection, level);
