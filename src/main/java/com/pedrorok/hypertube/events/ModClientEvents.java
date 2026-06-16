@@ -33,6 +33,7 @@ public class ModClientEvents {
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.HYPERTUBE.get(), RenderType.translucent());
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.HYPERTUBE_ENTRANCE.get(), RenderType.translucent());
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.HYPER_ACCELERATOR.get(), RenderType.translucent());
+        ItemBlockRenderTypes.setRenderLayer(ModBlocks.HYPER_JUNCTION.get(), RenderType.translucent());
     }
 
     @SubscribeEvent
