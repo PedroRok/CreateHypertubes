@@ -36,13 +36,12 @@ public class ClientTravelPathMover {
     private static final Int2ObjectArrayMap<PathData> ACTIVE_PATHS = new Int2ObjectArrayMap<>();
 
     public static void startMoving(MovePathPacket packet) {
-        final Minecraft mc = Minecraft.getInstance();
-        final int id = packet.entityId();
-        final Entity entity = mc.level.getEntity(id);
-        final boolean isPlayer = mc.player.getId() == id;
+        Minecraft mc = Minecraft.getInstance();
+        boolean isPlayer = mc.player.getId() == packet.entityId();
+        Entity entity = mc.level.getEntity(packet.entityId());
 
         Mods.SABLE.executeIfInstalled(() -> () -> SableCompat.stickToSubLevel(entity, packet.actionPoints().iterator().next().getCenter()));
-        ACTIVE_PATHS.put(packet.entityId(), new PathData(entity.position(), packet.pathPoints(), packet.actionPoints(), packet.travelSpeed(), isPlayer));
+        ACTIVE_PATHS.put(packet.entityId(), new PathData(entity, packet.pathPoints(), packet.actionPoints(), packet.travelSpeed(), isPlayer));
     }
 
     public static void updateEntitySpeed(SpeedChangePacket packet) {
@@ -66,10 +65,22 @@ public class ClientTravelPathMover {
             PathData data = entry.getValue();
 
             Entity entity = level.getEntity(id);
-            if (!data.doClientTick(entity)) {
+            if (entity == null || !entity.isAlive() || entity.isSpectator()) {
                 it.remove();
                 continue;
             }
+
+            if (data.isDone()) {
+                PacketDistributor.sendToServer(new FinishPathPacket(entity.getUUID()));
+                Mods.SABLE.executeIfInstalled(() -> () -> SableCompat.stickToSubLevel(entity, null));
+                it.remove();
+                continue;
+            }
+
+            data.updateLogicalPosition();
+            entity.setDeltaMovement(data.getCurrentDirection());
+            if (data.isClientPlayer())
+                handleEntityDirection(data.getWorldDirection());
         }
     }
 
@@ -85,7 +96,13 @@ public class ClientTravelPathMover {
             int id = entry.getKey();
             PathData data = entry.getValue();
 
-            data.doRenderTick(level.getEntity(id), partialTicks);
+            Entity entity = level.getEntity(id);
+            if (entity == null || !entity.isAlive() || entity.isSpectator()) continue;
+            data.handleActionPoint((LivingEntity) entity);
+
+            Vec3 renderPos = data.getRenderPosition(partialTicks);
+
+            entity.moveTo(renderPos.x, renderPos.y, renderPos.z);
         }
     }
 
@@ -105,6 +122,7 @@ public class ClientTravelPathMover {
             }
             data.lastUpdateTick = 5;
             data.currentIndex = segment;
+            data.updateLogicalPosition();
         }
     }
 
@@ -113,117 +131,75 @@ public class ClientTravelPathMover {
     }
 
     public static class PathData {
-        private final List<Vec3> pathPoints;
+        private final List<Vec3> points;
         private final Set<BlockPos> actionPoints;
         private double travelSpeed;
-
         private int currentIndex = 0;
         private int lastUpdateTick = 0;
-        private Vec3 currentStart;
-        private Vec3 currentEnd;
-        private double totalDistance;
-        private double traveled;
+
+        private Vec3 currentLogicalPos;
+        private Vec3 previousLogicalPos;
+
         private float previousPitch = 0;
 
-        private boolean finished = false;
-
         @Getter
-        private boolean clientPlayer = false;
+        private boolean clientPlayer;
 
-        public PathData(Vec3 entityPos, List<Vec3> points, Set<BlockPos> actionPoints, double travelSpeed, boolean clientPlayer) {
-            this.pathPoints = points;
+        public PathData(Entity entity, List<Vec3> points, Set<BlockPos> actionPoints, double blocksPerSecond, boolean clientPlayer) {
+            this.points = points;
             this.actionPoints = actionPoints;
-            this.travelSpeed = travelSpeed;
+            this.travelSpeed = blocksPerSecond;
             this.clientPlayer = clientPlayer;
-            
-            final Vec3 entrancePos = pathPoints.getFirst();
-            Vec3 entranceOffset = Mods.SABLE.executeIfInstalled(() -> (pos) -> SableCompat.Client.transformToSubLevel(entrancePos, pos), entityPos).subtract(entrancePos);
 
-            this.currentStart = entrancePos.add(entranceOffset);
-            this.currentEnd = getCurrentTarget();
+            if (!points.isEmpty()) {
+                Vec3 entranceLogical = points.get(0).subtract(0, 0.25, 0);
+                Vec3 entranceOffset = Mods.SABLE.executeIfInstalled(() -> (pos) -> SableCompat.Client.transformToSubLevel(entranceLogical, pos), entity.position()).subtract(entranceLogical);
 
-            this.totalDistance = currentStart.distanceTo(currentEnd);
-            this.traveled = 0;
+                this.currentLogicalPos = entranceLogical.add(entranceOffset);
+                this.previousLogicalPos = this.currentLogicalPos;
+            }
+        }
+
+        public boolean isDone() {
+            return currentIndex >= points.size();
         }
 
         public Vec3 getCurrentTarget() {
-            return pathPoints.get(Math.min(currentIndex, pathPoints.size() - 1));
-        }
-
-        private Vec3 getCurrentDirection() {
-            if (currentEnd.equals(currentStart)) {
-                return Vec3.ZERO;
+            if (currentIndex < points.size()) {
+                return points.get(currentIndex).subtract(0, 0.25, 0);
             }
-            return currentEnd.subtract(currentStart).normalize();
+            return currentLogicalPos;
         }
 
-        private void moveEntity(Entity entity, Vec3 pos) {
-            entity.moveTo(pos.x, pos.y - 0.25, pos.z);
-            entity.setDeltaMovement(Vec3.ZERO);
-        }
+        public void updateLogicalPosition() {
+            if (isDone()) return;
 
-        public boolean doClientTick(Entity entity) {
-            if (entity == null || entity.isSpectator() || !entity.isAlive()) {
-                return false;
-            }
-
-            if (traveled >= totalDistance) {
-                currentIndex++;
-                if (currentIndex >= pathPoints.size()) {
-                    finished = true;
-                } else {
-                    currentStart = currentEnd;
-                    currentEnd = getCurrentTarget();
-                    totalDistance = currentStart.distanceTo(currentEnd);
-                    traveled = 0;
+            Vec3 target = getCurrentTarget();
+            double distanceToTarget = currentLogicalPos.distanceTo(target);
+            boolean doHalfStep = true;
+            previousLogicalPos = currentLogicalPos;
+            if (distanceToTarget < travelSpeed) {
+                currentLogicalPos = target;
+                currentIndex = (int) (currentIndex + Math.max(1, travelSpeed));
+                if (travelSpeed <= 1) {
+                    doHalfStep = false;
                 }
             }
-
-            if (finished) {
-                PacketDistributor.sendToServer(new FinishPathPacket(entity.getUUID()));
-                Mods.SABLE.executeIfInstalled(() -> () -> SableCompat.stickToSubLevel(entity, null));
-                return false;
+            if (doHalfStep) {
+                Vec3 direction = target.subtract(currentLogicalPos).normalize().scale(travelSpeed);
+                currentLogicalPos = currentLogicalPos.add(direction);
             }
-
-            traveled += travelSpeed;
-            Vec3 direction = getCurrentDirection();
-            Pair<Vec3, Vec3> newPosDir = Pair.of(currentStart.add(direction.scale(traveled)), direction);
-            newPosDir = Mods.SABLE.executeIfInstalled(() -> (posDir) -> SableCompat.Client.transformToWorld(posDir.getFirst(), posDir.getSecond()), newPosDir);
-            Vec3 newPos = newPosDir.getFirst();
-            direction = newPosDir.getSecond();
-
-            moveEntity(entity, newPos);
-            if (clientPlayer)
-                handleEntityDirection(direction);
-            
-            return true;
-        }
-        
-        public void doRenderTick(Entity entity, float partialTicks) {
-            if (finished || entity == null || entity.isSpectator() || !entity.isAlive()) {
-                return;
-            }
-            handleActionPoint(entity);
-            
-            Vec3 direction = getCurrentDirection();
-            Vec3 lastClientTickPos = currentStart.add(direction.scale(traveled));
-            Vec3 nextClientTickPos = currentStart.add(direction.scale(traveled + travelSpeed));
-            Vec3 endPos = Mods.SABLE.executeIfInstalled(() -> (pos) -> SableCompat.Client.transformToWorld(pos, true), lastClientTickPos)
-                .lerp(
-                    Mods.SABLE.executeIfInstalled(() -> (pos) -> SableCompat.Client.transformToWorld(pos, false), nextClientTickPos),
-                    partialTicks
-                );
-            moveEntity(entity, endPos);
         }
 
-        private static void handleEntityDirection(Vec3 direction) {
-            float yaw = (float) Math.toDegrees(Math.atan2(-direction.x, direction.z));
-            float pitch = (float) Math.toDegrees(Math.atan2(-direction.y, Math.sqrt(direction.x * direction.x + direction.z * direction.z)));
-            DetachedPlayerDirController.get().setDetached(true);
-            DetachedPlayerDirController.get().updateRotation(yaw, pitch);
+        public float getPitch() {
+            Vec3 dir = getWorldDirection();
+            if (dir.equals(Vec3.ZERO) && previousPitch != -1) return previousPitch;
+            float degrees = (float) Math.toDegrees(Math.atan2(-dir.y, Math.sqrt(dir.x * dir.x + dir.z * dir.z)));
+            previousPitch = degrees;
+            return degrees;
         }
 
-        public void handleActionPoint(Entity entity) {
+        public void handleActionPoint(LivingEntity entity) {
             BlockPos entityPos = entity.getOnPos();
             if (!actionPoints.contains(entityPos)) return;
             actionPoints.remove(entityPos);
@@ -234,11 +210,20 @@ public class ClientTravelPathMover {
             }
         }
 
-        public float getPitch() {
-            Vec3 direction = Mods.SABLE.executeIfInstalled(() -> (dir) -> SableCompat.Client.transformToWorld(currentEnd, dir).getSecond(), getCurrentDirection());
-            if (direction.equals(Vec3.ZERO) && previousPitch != -1) return previousPitch;
-            previousPitch = (float) Math.toDegrees(Math.atan2(-direction.y, Math.sqrt(direction.x * direction.x + direction.z * direction.z)));
-            return previousPitch;
+        public Vec3 getCurrentDirection() {
+            if (currentLogicalPos.equals(previousLogicalPos)) {
+                return Vec3.ZERO;
+            }
+            return currentLogicalPos.subtract(previousLogicalPos).normalize();
+        }
+
+        public Vec3 getWorldDirection() {
+            return Mods.SABLE.executeIfInstalled(() -> (dir) -> SableCompat.Client.transformToWorld(currentLogicalPos, dir).getSecond(), getCurrentDirection());
+        }
+
+        public Vec3 getRenderPosition(float partialTicks) {
+            Vec3 logicalRender = previousLogicalPos.lerp(currentLogicalPos, partialTicks);
+            return Mods.SABLE.executeIfInstalled(() -> (pos) -> SableCompat.Client.transformToWorld(pos, true), logicalRender);
         }
     }
 }

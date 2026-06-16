@@ -12,7 +12,6 @@ import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
@@ -57,14 +56,13 @@ public class TravelPathMover {
         actionPoints.add(lastPos);
         this.travelSpeed = travelSpeed;
         this.lastPos = lastPos;
-        
-        final Level level = entrance.getLevel();
-        final Vec3 entrancePos = entrance.getBlockPos().getCenter();
-        Vec3 entranceOffset = entityPos.subtract(Mods.SABLE.executeIfInstalled(() -> (pos) -> SableCompat.transformToWorld(level, pos), entrancePos));
-        entranceOffset = Mods.SABLE.executeIfInstalled(() -> (dir) -> SableCompat.transformToSubLevel(level, entrancePos, Vec3.ZERO, dir).getSecond(), entranceOffset.normalize()).scale(entranceOffset.length());
 
-        this.currentStart = entrancePos.add(entranceOffset);
-        this.currentEnd = pathPoints.getFirst();
+        this.currentStart = entityPos;
+        this.currentEnd = pathPoints.getFirst().subtract(0, 0.25, 0);
+
+        if (this.currentStart.distanceToSqr(this.currentEnd) > 262144) {
+            this.currentStart = this.currentEnd;
+        }
 
         this.totalDistance = currentStart.distanceTo(currentEnd);
         this.traveled = 0;
@@ -95,7 +93,7 @@ public class TravelPathMover {
                 return;
             }
             currentStart = currentEnd;
-            currentEnd = pathPoints.get(currentSegment);
+            currentEnd = pathPoints.get(currentSegment).subtract(0, 0.25, 0);
             totalDistance = currentStart.distanceTo(currentEnd);
             traveled = 0;
         }
@@ -113,13 +111,14 @@ public class TravelPathMover {
             }
         }
 
-        traveled += travelSpeed;
-        Vec3 direction = currentEnd.subtract(currentStart).normalize();
-        Vec3 newPos = currentStart.add(direction.scale(traveled));
-        newPos = Mods.SABLE.executeIfInstalled(() -> (pos) -> SableCompat.transformToWorld(entity.level(), pos), newPos);
+        Vec3 direction = currentEnd.subtract(currentStart).normalize().scale(travelSpeed);
         direction = Mods.SABLE.executeIfInstalled(() -> (dir) -> SableCompat.transformToWorld(entity.level(), currentStart, dir).getSecond(), direction);
 
-        moveEntity(entity, newPos);
+        Vec3 newPos = entity.position().add(direction);
+
+        entity.moveTo(newPos.x, newPos.y, newPos.z);
+        traveled += travelSpeed;
+
         entity.resetFallDistance();
 
         handleEntityDirection(entity, direction);
@@ -144,10 +143,6 @@ public class TravelPathMover {
         entity.setXRot(pitch);
         if (entity.level().isClientSide) return;
         PacketDistributor.sendToPlayersTrackingEntity(entity, EntityTravelDirDataPacket.create(entity));
-    }
-    
-    private void moveEntity(LivingEntity entity, Vec3 pos) {
-        entity.moveTo(pos.x, pos.y - 0.25, pos.z);
     }
 
     public Vec3 getLastDir() {

@@ -22,6 +22,7 @@ import java.util.*;
  * @author Rok, Pedro Lucas nmm. Created on 25/04/2025
  * @project Create Hypertube
  */
+@SuppressWarnings("D")
 public class TravelPathData {
 
     @Getter
@@ -146,6 +147,7 @@ public class TravelPathData {
 
             addTravelPoint(toPosFinal, level);
             connected = true;
+            break;
         }
         return connected;
     }
