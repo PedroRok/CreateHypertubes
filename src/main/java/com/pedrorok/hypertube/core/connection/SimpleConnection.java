@@ -34,10 +34,6 @@ public record SimpleConnection(BlockPos pos, Direction direction, float offset) 
             SimpleConnection::new
     );
 
-    /**
-     * Returns the world position offset forward along the connection direction by {@code offset} blocks.
-     * Used as the visual start/end point for rendering and path drawing.
-     */
     public Vec3 getOffsetCenter() {
         Vec3 center = pos.getCenter();
         if (offset == 0f) return center;

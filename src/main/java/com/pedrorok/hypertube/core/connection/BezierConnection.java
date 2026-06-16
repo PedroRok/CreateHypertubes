@@ -92,12 +92,9 @@ public class BezierConnection implements IConnection {
         if (toPos == null) return List.of();
         if (distance() >= MAX_REASONABLE_DISTANCE) return List.of();
 
-        // Absolute world positions with offset applied
         Vec3 fromAbsolute = fromPos.getOffsetCenter();
         Vec3 toAbsolute = toPos.getOffsetCenter();
 
-        // Express everything relative to the fromPos block origin (lower corner),
-        // so cached points survive block moves (same as before).
         Vec3 originAbsolute = Vec3.atLowerCornerOf(fromPos.pos());
         Vec3 fromRelative = fromAbsolute.subtract(originAbsolute);
         Vec3 toRelative   = toAbsolute.subtract(originAbsolute);
@@ -121,7 +118,6 @@ public class BezierConnection implements IConnection {
     public List<Vec3> getBezierPoints() {
         if (cachedRelativeBezierPoints.isEmpty()) return List.of();
 
-        // Convert cached relative points to absolute using stored fromPos
         Vec3 originAbsolute = Vec3.atLowerCornerOf(fromPos.pos());
         List<Vec3> absolutePoints = new ArrayList<>(cachedRelativeBezierPoints.size());
         for (Vec3 relativePoint : cachedRelativeBezierPoints) {
@@ -133,7 +129,6 @@ public class BezierConnection implements IConnection {
     public List<Vec3> getBezierPoints(Level level, BlockPos currentFromPos) {
         if (cachedRelativeBezierPoints.isEmpty()) return List.of();
 
-        // Convert cached relative points to absolute using CURRENT block position
         Vec3 originAbsolute = Vec3.atLowerCornerOf(currentFromPos);
         List<Vec3> absolutePoints = new ArrayList<>(cachedRelativeBezierPoints.size());
         for (Vec3 relativePoint : cachedRelativeBezierPoints) {
@@ -145,12 +140,10 @@ public class BezierConnection implements IConnection {
     public List<Vec3> getRelativeBezierPoints(BlockPos originPos) {
         if (cachedRelativeBezierPoints.isEmpty()) return List.of();
 
-        // If originPos matches fromPos, return cached points directly
         if (originPos.equals(fromPos.pos())) {
             return new ArrayList<>(cachedRelativeBezierPoints);
         }
 
-        // Otherwise, calculate offset and adjust cached points
         BlockPos offset = fromPos.pos().subtract(originPos);
         Vec3 offsetVec = new Vec3(offset.getX(), offset.getY(), offset.getZ());
         List<Vec3> adjustedPoints = new ArrayList<>(cachedRelativeBezierPoints.size());
@@ -212,7 +205,6 @@ public class BezierConnection implements IConnection {
 
         if (distance() > MAX_REASONABLE_DISTANCE) return 0;
 
-        // THIS IS TO PREVENT FROM PLACING BACK
         Vec3 first = points.getFirst();
         Vec3 second = points.get(1);
         Direction direction = fromPos.direction();
@@ -222,7 +214,6 @@ public class BezierConnection implements IConnection {
         if (initialAngle >= 2.) {
             return initialAngle;
         }
-        // END OF PREVENTION
 
         return getMaxAngle(points);
     }
@@ -280,7 +271,6 @@ public class BezierConnection implements IConnection {
     public void drawPath(LerpedFloat animation, boolean isValid) {
         if (distance() > MAX_REASONABLE_DISTANCE) return;
 
-        // Start from the offset center so the debug path matches the rendered tube
         List<Vec3> points = getBezierPoints();
         if (points.isEmpty()) return;
 
