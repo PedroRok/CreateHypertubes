@@ -1,4 +1,4 @@
-package com.pedrorok.hypertube.blocks.blockentities;
+package com.pedrorok.hypertube.blocks.blockentities.parent;
 
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;

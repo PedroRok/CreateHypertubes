@@ -1,7 +1,7 @@
 package com.pedrorok.hypertube.items;
 
 import com.pedrorok.hypertube.blocks.ActionTubeBlock;
-import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
+import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.core.smarttube.ITubeAttachment;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import net.minecraft.core.BlockPos;

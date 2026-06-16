@@ -22,7 +22,7 @@ import java.util.Set;
  * @project Create Hypertube
  */
 public record MovePathPacket(int entityId, List<Vec3> pathPoints, Set<BlockPos> actionPoints,
-                             double travelSpeed) implements CustomPacketPayload {
+                             double travelSpeed, boolean isJunctionEnd) implements CustomPacketPayload {
 
     public static final Type<MovePathPacket> TYPE = new Type<>(
             HypertubeMod.of("entity_travel_path")
@@ -45,6 +45,7 @@ public record MovePathPacket(int entityId, List<Vec3> pathPoints, Set<BlockPos> 
             buf.writeBlockPos(blockPos);
         }
         buf.writeDouble(packet.travelSpeed);
+        buf.writeBoolean(packet.isJunctionEnd);
     }
 
     public static MovePathPacket decode(FriendlyByteBuf buf) {
@@ -63,7 +64,8 @@ public record MovePathPacket(int entityId, List<Vec3> pathPoints, Set<BlockPos> 
             actionPoints.add(buf.readBlockPos());
         }
         double speed = buf.readDouble();
-        return new MovePathPacket(id, points, actionPoints, speed);
+        boolean isJunctionEnd = buf.readBoolean();
+        return new MovePathPacket(id, points, actionPoints, speed, isJunctionEnd);
     }
 
     public static void handle(MovePathPacket packet, IPayloadContext ctx) {

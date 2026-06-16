@@ -1,7 +1,6 @@
 package com.pedrorok.hypertube.core.travel;
 
-import com.pedrorok.hypertube.blocks.ActionTubeBlock;
-import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
+import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.core.compat.Mods;
 import com.pedrorok.hypertube.core.compat.sable.SableCompat;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
@@ -10,6 +9,7 @@ import com.pedrorok.hypertube.network.packets.SyncEntityPosPacket;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
@@ -17,25 +17,34 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 03/07/2025
  * @project Create Hypertube
  */
 public class TravelPathMover {
-    private final List<Vec3> pathPoints;
+    private final ArrayList<Vec3> pathPoints;
     private final Set<BlockPos> actionPoints;
     private final Set<BlockPos> activeActionPoints;
     @Getter
     @Setter
     private float travelSpeed;
-    private final BiConsumer<LivingEntity, Boolean> onFinishCallback;
+    private final Consumer<EndTravelData> onFinishCallback;
     @Getter
     private final BlockPos lastPos;
+
+    // junction data
+    private final boolean isJunction;
+    private Direction chosenDirection = Direction.NORTH;
+    @Getter
+    private Direction junctionDirection;
+    //
 
     private int currentSegment = 0;
     private Vec3 currentStart;
@@ -47,17 +56,17 @@ public class TravelPathMover {
 
     private Vec3 lastDirection;
 
-    public TravelPathMover(BlockEntity entrance, Vec3 entityPos, List<Vec3> points, Set<BlockPos> actionPoints, float travelSpeed, Vec3 lastDirection, BlockPos lastPos, BiConsumer<LivingEntity, Boolean> onFinishCallback) {
-        this.pathPoints = points;
-        this.actionPoints = actionPoints;
+    public TravelPathMover(BlockEntity entrance, TravelPathData data, LivingEntity entity, float travelSpeed, Consumer<EndTravelData> onFinishCallback) {
+        this.pathPoints = data.getTravelPoints();
+        this.actionPoints = data.getActionPoints();
         this.activeActionPoints = new HashSet<>() {{
             add(entrance.getBlockPos());
         }};
-        actionPoints.add(lastPos);
+        this.lastPos = data.getLastBlockPos();
+        actionPoints.add(this.lastPos);
         this.travelSpeed = travelSpeed;
-        this.lastPos = lastPos;
 
-        this.currentStart = entityPos;
+        this.currentStart = entity.position();
         this.currentEnd = pathPoints.getFirst().subtract(0, 0.25, 0);
 
         if (this.currentStart.distanceToSqr(this.currentEnd) > 262144) {
@@ -68,28 +77,34 @@ public class TravelPathMover {
         this.traveled = 0;
 
         this.onFinishCallback = onFinishCallback;
-        this.lastDirection = lastDirection;
+
+        this.isJunction = data.isFinishWithJunction();
+        this.junctionDirection = data.getJunctionDirection();
+
+        if (isJunction) return;
+        this.lastDirection = data.getEndDirection(entity.level());
         if (lastDirection == null) {
             this.lastDirection = pathPoints.getLast().subtract(pathPoints.get(pathPoints.size() - 2)).normalize();
         }
         this.pathPoints.add(pathPoints.getLast().add(this.lastDirection.scale(1)));
     }
 
+    @SuppressWarnings("D")
     public void tickEntity(LivingEntity entity) {
         if (entity.isSpectator() || !entity.isAlive()) {
-            onFinishCallback.accept(entity, true);
+            onFinishCallback.accept(EndTravelData.forced(entity, isJunction, chosenDirection));
             return;
         }
 
         if (finished) {
-            onFinishCallback.accept(entity, false);
+            onFinishCallback.accept(EndTravelData.normal(entity, isJunction, chosenDirection));
             return;
         }
 
         if (traveled >= totalDistance) {
             currentSegment++;
             if (currentSegment >= pathPoints.size()) {
-                onFinishCallback.accept(entity, false);
+                onFinishCallback.accept(EndTravelData.normal(entity, isJunction, chosenDirection));
                 return;
             }
             currentStart = currentEnd;
@@ -133,6 +148,13 @@ public class TravelPathMover {
     public void handleActionPoint(BlockPos actionPos) {
         activeActionPoints.add(actionPos);
         actionPoints.remove(actionPos);
+    }
+
+    public void setChosenDirection(Direction direction) {
+        this.chosenDirection = direction;
+        this.lastDirection = Vec3.atLowerCornerOf(chosenDirection.getNormal());
+        this.pathPoints.removeLast();
+        this.pathPoints.add(pathPoints.getLast().add(this.lastDirection));
     }
 
 

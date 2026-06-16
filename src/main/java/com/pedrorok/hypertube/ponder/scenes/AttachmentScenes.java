@@ -1,7 +1,7 @@
 package com.pedrorok.hypertube.ponder.scenes;
 
 import com.pedrorok.hypertube.blocks.HyperAcceleratorBlock;
-import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
+import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.core.smarttube.ITubeAttachment;
 import com.pedrorok.hypertube.items.TubeAttachmentItem;
 import com.pedrorok.hypertube.registry.ModItems;

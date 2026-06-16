@@ -3,6 +3,7 @@ package com.pedrorok.hypertube.core.travel;
 import com.mojang.datafixers.util.Pair;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
+import com.pedrorok.hypertube.blocks.HyperJunctionBlock;
 import com.pedrorok.hypertube.config.ClientConfig;
 import com.pedrorok.hypertube.core.compat.Mods;
 import com.pedrorok.hypertube.core.compat.sable.SableCompat;
@@ -11,10 +12,12 @@ import com.pedrorok.hypertube.events.PlayerSyncEvents;
 import com.pedrorok.hypertube.network.packets.MovePathPacket;
 import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
 import com.pedrorok.hypertube.utils.MessageUtils;
+import com.pedrorok.hypertube.utils.MoveDirection;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -44,19 +47,20 @@ public class TravelManager {
 
     private static final Object2ObjectArrayMap<UUID, TravelPathMover> travelDataMap = new Object2ObjectArrayMap<>();
 
-    public static void tryStartTravel(LivingEntity entity, BlockEntity blockEntity, float speed) {
+    public static void tryStartTravel(LivingEntity entity, BlockEntity blockEntity, Direction facingDirection, float speed) {
         BlockState state = blockEntity.getBlockState();
         BlockPos pos = blockEntity.getBlockPos();
+        boolean isJunction = state.getBlock() instanceof HyperJunctionBlock;
 
         CompoundTag entityPersistentData = entity.getPersistentData();
-        if (entityPersistentData.getBoolean(TRAVEL_TAG)) return;
+        if (entityPersistentData.getBoolean(TRAVEL_TAG) && !isJunction) return;
 
         boolean isPlayer = entity instanceof ServerPlayer;
         ServerPlayer player = isPlayer ? (ServerPlayer) entity : null;
 
         long lastTravelTime = entityPersistentData.getLong(LAST_TRAVEL_TIME);
 
-        if (entityPersistentData.contains(LAST_TRAVEL_BLOCKPOS)) {
+        if (entityPersistentData.contains(LAST_TRAVEL_BLOCKPOS) && !isJunction) {
             BlockPos lastTravelPos = BlockPos.of(entityPersistentData.getLong(LAST_TRAVEL_BLOCKPOS));
             if (lastTravelPos.equals(pos)
                     && lastTravelTime > System.currentTimeMillis()) {
@@ -64,12 +68,11 @@ public class TravelManager {
             }
         }
 
-        if (lastTravelTime - DEFAULT_AFTER_TUBE_CAMERA > System.currentTimeMillis()) {
+        if (lastTravelTime - DEFAULT_AFTER_TUBE_CAMERA > System.currentTimeMillis() && !isJunction) {
             speed += entityPersistentData.getFloat(LAST_TRAVEL_SPEED);
         }
 
-        BlockPos relative = pos.relative(state.getValue(HyperEntranceBlock.FACING));
-        TravelPathData travelPathData = new TravelPathData(relative, entity.level(), pos);
+        TravelPathData travelPathData = new TravelPathData(facingDirection, entity.level(), pos);
 
         if (travelPathData.getTravelPoints().size() < 3) {
             if (!isPlayer) return;
@@ -82,16 +85,13 @@ public class TravelManager {
 
         TravelPathMover pathMover = new TravelPathMover(
                 blockEntity,
-                entity.position(),
-                travelPathData.getTravelPoints(),
-                travelPathData.getActionPoints(),
+                travelPathData,
+                entity,
                 finalSpeed,
-                travelPathData.getEndDirection(entity.level()),
-                travelPathData.getLastBlockPos(),
                 TravelManager::finishTravel);
         travelDataMap.put(entity.getUUID(), pathMover);
 
-        MovePathPacket movePathPacket = new MovePathPacket(entity.getId(), travelPathData.getTravelPoints(), travelPathData.getActionPoints(), finalSpeed);
+        MovePathPacket movePathPacket = new MovePathPacket(entity.getId(), travelPathData.getTravelPoints(), travelPathData.getActionPoints(), finalSpeed, travelPathData.isFinishWithJunction());
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, movePathPacket);
         Vec3 center = pos.getCenter();
         TubeSoundManager.playTubeSuctionSound(entity, center);
@@ -99,7 +99,7 @@ public class TravelManager {
 
         syncPersistentData(entity);
 
-        HypertubeMod.LOGGER.debug("Travel started: {} to {} and speed {}", entity.getName().getString(), relative, pathMover.getTravelSpeed());
+        HypertubeMod.LOGGER.debug("Travel started: {} to {} and speed {}", entity.getName().getString(), pos, pathMover.getTravelSpeed());
     }
 
     public static void entityTick(LivingEntity entity) {
@@ -139,10 +139,12 @@ public class TravelManager {
 
     public static void finishTravel(ServerPlayer player) {
         if (!travelDataMap.containsKey(player.getUUID())) return;
-        finishTravel(player, true);
+        finishTravel(EndTravelData.forced(player));
     }
 
-    private static void finishTravel(LivingEntity entity, boolean forced) {
+    private static void finishTravel(EndTravelData data) {
+        final boolean forced = data.isForced();
+        final LivingEntity entity = data.entity();
         final Level level = entity.level();
         if (level.isClientSide) return;
         TravelPathMover pathMover = travelDataMap.get(entity.getUUID());
@@ -155,6 +157,12 @@ public class TravelManager {
         entity.getPersistentData().putBoolean(IMMUNITY_TAG, true);
 
         syncPersistentData(entity);
+
+        if (data.isJunctionEnd()) {
+            BlockEntity blockState = level.getBlockEntity(pathMover.getLastPos());
+            tryStartTravel(entity, blockState, data.direction(), pathMover.getTravelSpeed());
+            return;
+        }
 
         Vec3 lastDir = pathMover.getLastDir();
         Vec3 lastBlockPos = pathMover.getLastPos().getCenter();
@@ -184,6 +192,13 @@ public class TravelManager {
 
         if (!(entity instanceof Player player)) return;
         player.startFallFlying();
+    }
+
+    public static void changeDirection(MoveDirection direction, UUID entityUuid) {
+        TravelPathMover travelPathMover = travelDataMap.get(entityUuid);
+        if (travelPathMover == null) return;
+        travelPathMover.setChosenDirection(direction.map(travelPathMover.getJunctionDirection()));
+        System.out.println("Direction changed to " + direction + " for entity " + entityUuid);
     }
 
     public static void finishTravel(UUID entityUuid) {

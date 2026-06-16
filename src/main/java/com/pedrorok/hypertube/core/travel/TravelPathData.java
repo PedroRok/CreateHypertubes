@@ -1,6 +1,8 @@
 package com.pedrorok.hypertube.core.travel;
 
-import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
+import com.pedrorok.hypertube.blocks.HyperJunctionBlock;
+import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
+import com.pedrorok.hypertube.blocks.blockentities.parent.TubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
@@ -26,22 +28,31 @@ import java.util.*;
 public class TravelPathData {
 
     @Getter
-    private final List<Vec3> travelPoints; //
+    private final ArrayList<Vec3> travelPoints; //
     private final List<UUID> bezierConnections;
     private final List<BlockPos> blockConnections;
     @Getter
     private final Set<BlockPos> actionPoints;
+    private final Direction facingDirection;
 
-    public TravelPathData(BlockPos firstPipe, Level level, BlockPos entrancePos) {
+    @Getter
+    private boolean finishWithJunction = false;
+    @Getter
+    private Direction junctionDirection;
+
+    public TravelPathData(Direction facingDirection, Level level, BlockPos entrancePos) {
         this.travelPoints = new ArrayList<>();
         this.bezierConnections = new ArrayList<>();
         this.blockConnections = new ArrayList<>();
         this.actionPoints = new HashSet<>();
+        this.facingDirection = facingDirection;
         travelPoints.add(entrancePos.getCenter());
         blockConnections.add(entrancePos);
+
+        BlockPos firstPipe = entrancePos.relative(facingDirection);
         travelPoints.add(firstPipe.getCenter());
         blockConnections.add(firstPipe);
-        addTravelPoint(entrancePos, level);
+        addTravelPoint(entrancePos, level, true);
         addTravelPoint(firstPipe, level);
         checkAndRemoveNearPoints();
     }
@@ -63,13 +74,28 @@ public class TravelPathData {
     }
 
     private void addTravelPoint(BlockPos pos, Level level) {
+        addTravelPoint(pos, level, false);
+    }
+
+    private void addTravelPoint(BlockPos pos, Level level, boolean entrance) {
         BlockState blockState = level.getBlockState(pos);
         if (level.getBlockState(pos).getBlock() instanceof ITubeActionPoint ||
                 (level.getBlockEntity(pos) instanceof ActionTubeBlockEntity tubeEntity && tubeEntity.hasAnyTubeAttachment())) {
             actionPoints.add(pos);
         }
 
-        if (addCurvedTravelPoint(pos, level)) return;
+        if (blockState.getBlock() instanceof HyperJunctionBlock
+                && level.getBlockEntity(pos) instanceof TubeBlockEntity tubeBlockEntity
+                && tubeBlockEntity.getConnections().size() > 2 && !entrance) {
+            blockConnections.add(pos);
+            travelPoints.add(pos.getCenter());
+            junctionDirection = blockState.getValue(HyperJunctionBlock.FACING);
+            finishWithJunction = true;
+            return;
+        }
+
+
+        if (addCurvedTravelPoint(pos, level, entrance)) return;
         Block block = blockState.getBlock();
         if (!(block instanceof ITubeConnection pipeBlock)) return;
         List<Direction> connectedFaces = pipeBlock.getConnectedFaces(blockState);
@@ -88,10 +114,19 @@ public class TravelPathData {
     }
 
 
-    private boolean addCurvedTravelPoint(BlockPos pos, Level level) {
+    private boolean addCurvedTravelPoint(BlockPos pos, Level level, boolean entrance) {
         if (!(level.getBlockEntity(pos) instanceof ITubeConnectionEntity hypertubeBlockEntity)) return false;
         boolean connected = false;
-        for (IConnection connection : hypertubeBlockEntity.getConnections()) {
+        List<IConnection> connections = hypertubeBlockEntity.getConnections();
+
+        if (entrance) {
+            IConnection connectionInDirection = hypertubeBlockEntity.getConnectionInDirection(facingDirection);
+            if (connectionInDirection != null) {
+                connections = List.of(connectionInDirection);
+            }
+        }
+
+        for (IConnection connection : connections) {
             BezierConnection bezier;
             boolean inverse = false;
             BlockPos currentFromPos;

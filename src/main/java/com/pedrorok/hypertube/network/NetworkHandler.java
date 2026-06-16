@@ -50,5 +50,9 @@ public class NetworkHandler {
                 ActionPointReachPacket.STREAM_CODEC,
                 ActionPointReachPacket::handle
         );
+        registrar.playToServer(MoveDirectionPacket.TYPE,
+                MoveDirectionPacket.STREAM_CODEC,
+                MoveDirectionPacket::handle
+        );
     }
 }

@@ -1,22 +1,15 @@
 package com.pedrorok.hypertube.blocks;
 
-import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
-import com.pedrorok.hypertube.blocks.blockentities.HyperAcceleratorBlockEntity;
+import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
+import com.pedrorok.hypertube.blocks.blockentities.parent.TravelInteractTubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
-import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravelPathMover;
-import com.pedrorok.hypertube.network.packets.SpeedChangePacket;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
-import com.pedrorok.hypertube.utils.MessageUtils;
-import com.pedrorok.hypertube.utils.TubeUtils;
 import com.pedrorok.hypertube.utils.VoxelUtils;
-import com.simibubi.create.content.equipment.wrench.IWrenchable;
-import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -35,13 +28,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,8 +45,9 @@ import java.util.List;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperJunctionBlock extends ActionTubeBlock implements EntityBlock, ITubeActionPoint {
+public class HyperJunctionBlock extends TubeBlock implements EntityBlock, ITubeActionPoint {
 
+    public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
 
@@ -63,18 +57,13 @@ public class HyperJunctionBlock extends ActionTubeBlock implements EntityBlock, 
         registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(OPEN, false)
-                .setValue(WATERLOGGED, false)
-                .setValue(POWERED, false));
+                .setValue(WATERLOGGED, false));
     }
 
-    @Override
-    protected BooleanProperty propertyToUpdate() {
-        return null;
-    }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, OPEN, WATERLOGGED, POWER, ACTIVE, POWERED);
+        builder.add(FACING, OPEN, WATERLOGGED, ACTIVE);
         super.createBlockStateDefinition(builder);
     }
 
@@ -91,9 +80,9 @@ public class HyperJunctionBlock extends ActionTubeBlock implements EntityBlock, 
         }
         Direction direction = player.getDirection().getOpposite();
         if (player.getXRot() < -45) {
-            direction = Direction.UP;
+            //direction = Direction.UP;
         } else if (player.getXRot() > 45) {
-            direction = Direction.DOWN;
+            //direction = Direction.DOWN;
         }
         return this.defaultBlockState()
                 .setValue(FACING, direction)
@@ -118,20 +107,19 @@ public class HyperJunctionBlock extends ActionTubeBlock implements EntityBlock, 
 
     @Override
     public Item getItem() {
-        return ModBlocks.HYPER_ACCELERATOR.asItem();
+        return ModBlocks.HYPER_JUNCTION.asItem();
     }
 
     @Nullable
     @Override
     public BlockEntity newBlockEntity(@NotNull BlockPos blockPos, @NotNull BlockState blockState) {
-        //return ModBlockEntities.HYPER_ACCELERATOR.get().create(blockPos, blockState);
         return ModBlockEntities.HYPER_JUNCTION.get().create(blockPos, blockState);
     }
 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> type) {
-        return (level1, pos, state1, be) -> ((ActionTubeBlockEntity) be).tick();
+        return (level1, pos, state1, be) -> ((TravelInteractTubeBlockEntity) be).tick();
     }
 
     @Override

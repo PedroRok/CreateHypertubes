@@ -2,7 +2,7 @@
 package com.pedrorok.hypertube.core.smarttube;
 
 import com.pedrorok.hypertube.blocks.ActionTubeBlock;
-import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
+import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.ponder.HypertubesPonderPlugin;
 import com.pedrorok.hypertube.registry.ModItems;
 import com.pedrorok.hypertube.registry.ModPartialModels;

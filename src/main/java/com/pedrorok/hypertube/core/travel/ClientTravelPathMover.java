@@ -5,14 +5,14 @@ import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
 import com.pedrorok.hypertube.core.compat.Mods;
 import com.pedrorok.hypertube.core.compat.sable.SableCompat;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
-import com.pedrorok.hypertube.network.packets.ActionPointReachPacket;
-import com.pedrorok.hypertube.network.packets.FinishPathPacket;
-import com.pedrorok.hypertube.network.packets.MovePathPacket;
-import com.pedrorok.hypertube.network.packets.SpeedChangePacket;
+import com.pedrorok.hypertube.network.packets.*;
+import com.pedrorok.hypertube.utils.MoveDirection;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
@@ -41,7 +41,10 @@ public class ClientTravelPathMover {
         Entity entity = mc.level.getEntity(packet.entityId());
 
         Mods.SABLE.executeIfInstalled(() -> () -> SableCompat.stickToSubLevel(entity, packet.actionPoints().iterator().next().getCenter()));
-        ACTIVE_PATHS.put(packet.entityId(), new PathData(entity, packet.pathPoints(), packet.actionPoints(), packet.travelSpeed(), isPlayer));
+        ACTIVE_PATHS.put(packet.entityId(), new PathData(entity, packet.pathPoints(), packet.actionPoints(), packet.travelSpeed(), isPlayer, packet.isJunctionEnd()));
+
+        if (!isPlayer || !packet.isJunctionEnd()) return;
+        ClientKeyInputTracker.handlePlayerStart();
     }
 
     public static void updateEntitySpeed(SpeedChangePacket packet) {
@@ -79,10 +82,23 @@ public class ClientTravelPathMover {
 
             data.updateLogicalPosition();
             entity.setDeltaMovement(data.getCurrentDirection());
-            if (data.isClientPlayer())
-                handleEntityDirection(data.getWorldDirection());
+            if (data.isClientPlayer()) {
+                handleClientPlayer(data);
+            }
         }
     }
+
+    private static void handleClientPlayer(PathData data) {
+        handleEntityDirection(data.getWorldDirection());
+
+        if (data.getCurrentIndex() < 4) return;
+        if (!data.isJunctionEnd()) return;
+        MoveDirection direction = ClientKeyInputTracker.handlePlayerInputs();
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null) return;
+        player.displayClientMessage(Component.literal("§7DIRECTION: §e" + direction), true);
+    }
+
 
     @SubscribeEvent
     public static void onRenderTick(RenderFrameEvent.Pre event) {
@@ -134,6 +150,7 @@ public class ClientTravelPathMover {
         private final List<Vec3> points;
         private final Set<BlockPos> actionPoints;
         private double travelSpeed;
+        @Getter
         private int currentIndex = 0;
         private int lastUpdateTick = 0;
 
@@ -144,12 +161,15 @@ public class ClientTravelPathMover {
 
         @Getter
         private boolean clientPlayer;
+        @Getter
+        private boolean junctionEnd;
 
-        public PathData(Entity entity, List<Vec3> points, Set<BlockPos> actionPoints, double blocksPerSecond, boolean clientPlayer) {
+        public PathData(Entity entity, List<Vec3> points, Set<BlockPos> actionPoints, double blocksPerSecond, boolean clientPlayer, boolean isJunctionEnd) {
             this.points = points;
             this.actionPoints = actionPoints;
             this.travelSpeed = blocksPerSecond;
             this.clientPlayer = clientPlayer;
+            this.junctionEnd = isJunctionEnd;
 
             if (!points.isEmpty()) {
                 Vec3 entranceLogical = points.get(0).subtract(0, 0.25, 0);

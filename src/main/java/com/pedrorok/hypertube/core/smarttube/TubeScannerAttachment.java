@@ -1,7 +1,7 @@
 package com.pedrorok.hypertube.core.smarttube;
 
 import com.pedrorok.hypertube.blocks.ActionTubeBlock;
-import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
+import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.registry.ModItems;
 import com.pedrorok.hypertube.registry.ModPartialModels;
@@ -47,13 +47,12 @@ public class TubeScannerAttachment implements ITubeAttachment {
                 int currentPower = currentState.getValue(ActionTubeBlock.POWER);
                 int newPower = entity != null && entity.isBaby() ? 8 : 15;
 
-                if (newPower >= currentPower) {
-                    if (newPower != currentPower) {
-                        level.setBlock(pos, currentState.setValue(ActionTubeBlock.POWER, newPower), 3);
-                    }
-                    level.scheduleTick(pos, currentState.getBlock(), 20);
-                    level.updateNeighborsAt(pos, currentState.getBlock());
+                if (newPower < currentPower) return;
+                if (newPower != currentPower) {
+                    level.setBlock(pos, currentState.setValue(ActionTubeBlock.POWER, newPower), 3);
                 }
+                level.scheduleTick(pos, currentState.getBlock(), 20);
+                level.updateNeighborsAt(pos, currentState.getBlock());
             }
         });
     }

@@ -2,6 +2,7 @@ package com.pedrorok.hypertube.blocks.blockentities;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
+import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.config.ServerConfig;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
@@ -10,7 +11,6 @@ import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravelManager;
 import com.pedrorok.hypertube.utils.TubeUtils;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
-import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
@@ -109,7 +109,7 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
             return;
         }
 
-        TravelManager.tryStartTravel(inRangeEntity, this, TubeUtils.calculateTravelSpeed(actualSpeed));
+        TravelManager.tryStartTravel(inRangeEntity, this, state.getValue(HyperEntranceBlock.FACING), TubeUtils.calculateTravelSpeed(actualSpeed));
     }
 
     @OnlyIn(Dist.CLIENT)

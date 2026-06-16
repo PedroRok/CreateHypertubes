@@ -1,28 +1,28 @@
 package com.pedrorok.hypertube.blocks.blockentities;
 
 import com.pedrorok.hypertube.HypertubeMod;
-import com.pedrorok.hypertube.blocks.HyperAcceleratorBlock;
+import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.blocks.HyperJunctionBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
+import com.pedrorok.hypertube.blocks.blockentities.parent.TravelInteractTubeBlockEntity;
 import com.pedrorok.hypertube.config.ServerConfig;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
-import com.simibubi.create.content.kinetics.base.IRotate;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
@@ -34,7 +34,7 @@ import java.util.UUID;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperJunctionBlockEntity extends ActionTubeBlockEntity implements IHaveHoveringInformation {
+public class HyperJunctionBlockEntity extends TravelInteractTubeBlockEntity implements IHaveHoveringInformation {
 
     private final UUID tubeSoundId = UUID.randomUUID();
 
@@ -177,6 +177,17 @@ public class HyperJunctionBlockEntity extends ActionTubeBlockEntity implements I
         }
         setChanged();
         sync();
+    }
+
+    @Override
+    public Vec3 getExitDirection() {
+        if (getBlockState().hasProperty(HyperJunctionBlock.FACING)) {
+            Direction facing = getBlockState().getValue(HyperJunctionBlock.FACING);
+            if (level == null) return Vec3.atLowerCornerOf(facing.getNormal());
+            facing = level.getRandom().nextBoolean() ? facing.getClockWise() : facing.getCounterClockWise();
+            return Vec3.atLowerCornerOf(facing.getNormal());
+        }
+        return null;
     }
 
     @Override
