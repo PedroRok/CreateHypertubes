@@ -1,8 +1,10 @@
-package com.pedrorok.hypertube.core.travel;
+package com.pedrorok.hypertube.core.travel.client;
 
 import com.pedrorok.hypertube.network.packets.MoveDirectionPacket;
+import com.pedrorok.hypertube.registry.ModSounds;
 import com.pedrorok.hypertube.utils.MoveDirection;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
@@ -22,7 +24,8 @@ public class ClientKeyInputTracker {
     }
     public static MoveDirection handlePlayerInputs() {
         var options = Minecraft.getInstance().options;
-        if (Minecraft.getInstance().player == null) return MoveDirection.NONE;
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null) return MoveDirection.NONE;
 
         boolean forwardDown = options.keyUp.isDown();
         boolean leftDown = options.keyLeft.isDown();
@@ -30,12 +33,15 @@ public class ClientKeyInputTracker {
 
         if (forwardDown && !wasForwardDown) {
             lastDirection = MoveDirection.FRONT;
+            player.playSound(ModSounds.CHOSE_DIRECTION.get(), 1.0f, 0.7f + player.level().random.nextFloat() * 0.2f);
         }
         if (leftDown && !wasLeftDown) {
             lastDirection = MoveDirection.LEFT;
+            player.playSound(ModSounds.CHOSE_DIRECTION.get(), 1.0f, 0.7f + player.level().random.nextFloat() * 0.2f);
         }
         if (rightDown && !wasRightDown) {
             lastDirection = MoveDirection.RIGHT;
+            player.playSound(ModSounds.CHOSE_DIRECTION.get(), 1.0f, 0.7f + player.level().random.nextFloat() * 0.2f);
         }
 
         wasForwardDown = forwardDown;

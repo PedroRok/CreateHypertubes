@@ -97,7 +97,7 @@ public class BezierConnection implements IConnection {
 
         Vec3 originAbsolute = Vec3.atLowerCornerOf(fromPos.pos());
         Vec3 fromRelative = fromAbsolute.subtract(originAbsolute);
-        Vec3 toRelative   = toAbsolute.subtract(originAbsolute);
+        Vec3 toRelative = toAbsolute.subtract(originAbsolute);
 
         double distance = fromRelative.distanceTo(toRelative);
         Vec3 controlPoint1 = createFirstControlPoint(fromRelative, fromPos.direction(), distance);
@@ -305,6 +305,11 @@ public class BezierConnection implements IConnection {
                 .colored(0xEA5C2B)
                 .lineWidth(1 / 8f)
                 .disableLineNormals();
+    }
+
+    // check if the referencePos is the same as this bezierconnection origin
+    public boolean isInverted(BlockPos refencePos) {
+        return toPos.pos().equals(refencePos);
     }
 
 

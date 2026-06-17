@@ -1,15 +1,16 @@
-package com.pedrorok.hypertube.core.travel;
+package com.pedrorok.hypertube.core.travel.client;
 
 import com.pedrorok.hypertube.blocks.blockentities.HyperJunctionBlockEntity;
 import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
 import com.pedrorok.hypertube.core.compat.Mods;
 import com.pedrorok.hypertube.core.compat.sable.SableCompat;
+import com.pedrorok.hypertube.core.connection.BezierConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.network.packets.*;
 import com.pedrorok.hypertube.utils.JunctionDirectionUtils;
 import com.pedrorok.hypertube.utils.MoveDirection;
-import com.simibubi.create.CreateClient;
-import com.simibubi.create.content.equipment.zapper.ZapperRenderHandler;
+import com.pedrorok.hypertube.utils.TubePulseRenderer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
@@ -40,7 +41,6 @@ import java.util.*;
 @EventBusSubscriber(value = Dist.CLIENT)
 public class ClientTravelPathMover {
     private static final Int2ObjectArrayMap<PathData> ACTIVE_PATHS = new Int2ObjectArrayMap<>();
-    private static MoveDirection lastValidDirection = MoveDirection.RIGHT;
 
     public static void startMoving(MovePathPacket packet) {
         Minecraft mc = Minecraft.getInstance();
@@ -48,16 +48,18 @@ public class ClientTravelPathMover {
         Entity entity = mc.level.getEntity(packet.entityId());
 
         Mods.SABLE.executeIfInstalled(() -> () -> SableCompat.stickToSubLevel(entity, packet.actionPoints().iterator().next().getCenter()));
-        ACTIVE_PATHS.put(packet.entityId(), new PathData(entity,
+        boolean junctionEnd = packet.isJunctionEnd();
+        PathData pathData = new PathData(entity,
                 packet.pathPoints(),
                 packet.actionPoints(),
                 packet.travelSpeed(),
                 isPlayer,
-                packet.isJunctionEnd(),
-                packet.junctionDirection()));
+                junctionEnd,
+                packet.junctionDirection());
+        ACTIVE_PATHS.put(packet.entityId(), pathData);
 
-        if (!isPlayer || !packet.isJunctionEnd()) return;
-        lastValidDirection = MoveDirection.RIGHT;
+        ClientTravelPathRender.handleStart(junctionEnd, pathData);
+        if (!isPlayer || !junctionEnd) return;
         ClientKeyInputTracker.handlePlayerStart();
     }
 
@@ -97,35 +99,13 @@ public class ClientTravelPathMover {
             data.updateLogicalPosition();
             entity.setDeltaMovement(data.getCurrentDirection());
             if (data.isClientPlayer()) {
-                handleClientPlayer(data);
+                handleEntityDirection(data.getWorldDirection());
+                ClientTravelPathRender.handleClientPlayer(data);
             }
         }
     }
 
-    private static void handleClientPlayer(PathData data) {
-        handleEntityDirection(data.getWorldDirection());
 
-        if (data.getCurrentIndex() < 4) return;
-        if (!data.isJunctionEnd()) return;
-        MoveDirection direction = ClientKeyInputTracker.handlePlayerInputs();
-        LocalPlayer player = Minecraft.getInstance().player;
-        if (player == null) return;
-
-        Tuple<Direction, MoveDirection> directionTuple = JunctionDirectionUtils.resolveValidDirectionTuple(direction, data.getLastBlockPos(), player.level(), data.getJunctionDirection());
-        if (directionTuple != null) {
-            direction = directionTuple.getB();
-        }
-        lastValidDirection = direction;
-        PacketDistributor.sendToServer(new MoveDirectionPacket(lastValidDirection));
-
-        player.displayClientMessage(Component.literal("§7DIRECTION: §e" + direction), true);
-        if (directionTuple == null) return;
-        if (player.level().getBlockEntity(data.getLastBlockPos()) instanceof HyperJunctionBlockEntity junctionBlock) {
-            Direction renderDir = directionTuple.getA();
-            if (player.tickCount % 10 != 0) return;
-            CreateClient.ZAPPER_RENDER_HANDLER.addBeam(new ZapperRenderHandler.LaserBeam(data.getLastBlockPos().getCenter(), data.getLastBlockPos().getCenter().add(Vec3.atLowerCornerOf(renderDir.getNormal()))));
-        }
-    }
 
 
     @SubscribeEvent

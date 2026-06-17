@@ -8,6 +8,9 @@ import com.pedrorok.hypertube.core.placement.TubePlacement;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravellerEntity;
+import com.pedrorok.hypertube.core.travel.client.ClientTravelPathRender;
+import net.createmod.catnip.animation.AnimationTickHolder;
+import net.createmod.catnip.placement.PlacementClient;
 import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.minecraft.client.Minecraft;
@@ -16,10 +19,8 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RenderFrameEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.client.event.RenderLivingEvent;
+import net.neoforged.neoforge.client.event.*;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 23/04/2025
@@ -59,6 +60,14 @@ public class ClientEvents {
             DetachedPlayerDirController.tickPlayer();
             lastTickTime = currentTime;
         }
+    }
+
+    @SubscribeEvent
+    public static void afterRenderOverlayLayer(RenderGuiLayerEvent.Post event) {
+        if (event.getName() != VanillaGuiLayers.CROSSHAIR)
+            return;
+
+        ClientTravelPathRender.renderOverlay(event.getGuiGraphics(), AnimationTickHolder.getPartialTicksUI());
     }
 
     @SubscribeEvent

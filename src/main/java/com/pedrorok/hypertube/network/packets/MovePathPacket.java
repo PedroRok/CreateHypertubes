@@ -1,7 +1,7 @@
 package com.pedrorok.hypertube.network.packets;
 
 import com.pedrorok.hypertube.HypertubeMod;
-import com.pedrorok.hypertube.core.travel.ClientTravelPathMover;
+import com.pedrorok.hypertube.core.travel.client.ClientTravelPathMover;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;

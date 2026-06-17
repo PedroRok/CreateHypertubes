@@ -6,5 +6,32 @@
   "traveling": {
     "sounds": ["create_hypertube:wind_tunnel"],
     "subtitle": "subtitles.create_hypertube.traveling"
+  },
+  "chose_direction": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.item_frame.add_item"
+      }
+    ],
+    "subtitle": "subtitles.create_hypertube.chose_direction"
+  },
+  "entrance_open": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.iron_trapdoor.open"
+      }
+    ],
+    "subtitle": "subtitles.create_hypertube.entrance_open"
+  },
+  "entrance_close": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.iron_trapdoor.close"
+      }
+    ],
+    "subtitle": "subtitles.create_hypertube.entrance_close"
   }
 }
