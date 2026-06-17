@@ -46,6 +46,7 @@ public class ClientTravelPathRender {
             lastValidDirection = directionTuple.getA();
             lastValidMoveDir = directionTuple.getB();
         }
+        PacketDistributor.sendToServer(new MoveDirectionPacket(lastValidMoveDir));
         isTraveling = true;
     }
     protected static void handleClientPlayer(ClientTravelPathMover.PathData data) {
@@ -55,16 +56,21 @@ public class ClientTravelPathRender {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
 
+
         Tuple<Direction, MoveDirection> directionTuple = JunctionDirectionUtils.resolveValidDirectionTuple(direction, data.getLastBlockPos(), player.level(), data.getJunctionDirection());
         if (directionTuple != null) {
             direction = directionTuple.getB();
         }
         lastValidMoveDir = direction;
-        PacketDistributor.sendToServer(new MoveDirectionPacket(lastValidMoveDir));
         if (directionTuple != null) {
             lastValidDirection = directionTuple.getA();
         }
         if (lastValidDirection == null) return;
+
+        if (ClientKeyInputTracker.hasPlayerPressedAnyKey()) {
+            PacketDistributor.sendToServer(new MoveDirectionPacket(lastValidMoveDir));
+        }
+        
         if (player.level().getBlockEntity(data.getLastBlockPos()) instanceof HyperJunctionBlockEntity junctionBlock) {
             Direction renderDir = lastValidDirection;
             IConnection connectionInDirection = junctionBlock.getConnectionInDirection(renderDir);

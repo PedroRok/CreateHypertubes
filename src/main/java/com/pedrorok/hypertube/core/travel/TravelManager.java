@@ -49,13 +49,13 @@ public class TravelManager {
 
     private static final Object2ObjectArrayMap<UUID, TravelPathMover> travelDataMap = new Object2ObjectArrayMap<>();
 
-    public static void tryStartTravel(LivingEntity entity, BlockEntity blockEntity, Direction facingDirection, float speed) {
+    public static boolean tryStartTravel(LivingEntity entity, BlockEntity blockEntity, Direction facingDirection, float speed) {
         BlockState state = blockEntity.getBlockState();
         BlockPos pos = blockEntity.getBlockPos();
         boolean isJunction = state.getBlock() instanceof HyperJunctionBlock;
 
         CompoundTag entityPersistentData = entity.getPersistentData();
-        if (entityPersistentData.getBoolean(TRAVEL_TAG) && !isJunction) return;
+        if (entityPersistentData.getBoolean(TRAVEL_TAG) && !isJunction) return false;
 
         boolean isPlayer = entity instanceof ServerPlayer;
         ServerPlayer player = isPlayer ? (ServerPlayer) entity : null;
@@ -66,7 +66,7 @@ public class TravelManager {
             BlockPos lastTravelPos = BlockPos.of(entityPersistentData.getLong(LAST_TRAVEL_BLOCKPOS));
             if (lastTravelPos.equals(pos)
                     && lastTravelTime > System.currentTimeMillis()) {
-                return;
+                return false;
             }
         }
 
@@ -77,9 +77,9 @@ public class TravelManager {
         TravelPathData travelPathData = new TravelPathData(facingDirection, entity.level(), pos);
 
         if (travelPathData.getTravelPoints().size() < 3) {
-            if (!isPlayer) return;
+            if (!isPlayer) return false;
             MessageUtils.sendActionMessage(player, Component.translatable("hypertube.travel.too_short").withColor(0xff0000), true);
-            return;
+            return false;
         }
         entityPersistentData.putBoolean(TRAVEL_TAG, true);
 
@@ -101,12 +101,12 @@ public class TravelManager {
                 travelPathData.getJunctionDirection());
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, movePathPacket);
         Vec3 center = pos.getCenter();
-        TubeSoundManager.playTubeSuctionSound(entity, center);
         Mods.SABLE.executeIfInstalled(() -> () -> SableCompat.stickToSubLevel(entity, center));
 
         syncPersistentData(entity);
 
         HypertubeMod.LOGGER.debug("Travel started: {} to {} and speed {}", entity.getName().getString(), pos, pathMover.getTravelSpeed());
+        return true;
     }
 
     public static void entityTick(LivingEntity entity) {

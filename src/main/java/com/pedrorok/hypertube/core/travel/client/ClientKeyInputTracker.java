@@ -22,6 +22,7 @@ public class ClientKeyInputTracker {
     public static void handlePlayerStart() {
         PacketDistributor.sendToServer(new MoveDirectionPacket(lastDirection));
     }
+
     public static MoveDirection handlePlayerInputs() {
         var options = Minecraft.getInstance().options;
         LocalPlayer player = Minecraft.getInstance().player;
@@ -48,5 +49,10 @@ public class ClientKeyInputTracker {
         wasLeftDown = leftDown;
         wasRightDown = rightDown;
         return lastDirection;
+    }
+
+    public static boolean hasPlayerPressedAnyKey() {
+        var options = Minecraft.getInstance().options;
+        return options.keyUp.isDown() || options.keyLeft.isDown() || options.keyRight.isDown();
     }
 }
