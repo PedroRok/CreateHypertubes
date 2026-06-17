@@ -17,7 +17,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.GameType;
@@ -49,6 +48,7 @@ public class ClientTravelPathRender {
         PacketDistributor.sendToServer(new MoveDirectionPacket(lastValidMoveDir));
         isTraveling = true;
     }
+
     protected static void handleClientPlayer(ClientTravelPathMover.PathData data) {
 
         if (!data.isJunctionEnd()) return;
@@ -70,7 +70,7 @@ public class ClientTravelPathRender {
         if (ClientKeyInputTracker.hasPlayerPressedAnyKey()) {
             PacketDistributor.sendToServer(new MoveDirectionPacket(lastValidMoveDir));
         }
-        
+
         if (player.level().getBlockEntity(data.getLastBlockPos()) instanceof HyperJunctionBlockEntity junctionBlock) {
             Direction renderDir = lastValidDirection;
             IConnection connectionInDirection = junctionBlock.getConnectionInDirection(renderDir);
@@ -86,6 +86,7 @@ public class ClientTravelPathRender {
 
     public static void renderOverlay(GuiGraphics guiGraphics, float partialTick) {
         Minecraft mc = Minecraft.getInstance();
+        if (mc.gameMode == null) return;
         if (mc.options.hideGui || mc.gameMode.getPlayerMode() == GameType.SPECTATOR)
             return;
 
@@ -97,12 +98,13 @@ public class ClientTravelPathRender {
             return;
         }
         LocalPlayer player = mc.player;
+        if (player == null) return;
         if (!player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return;
         if (lastValidDirection == null) return;
 
         PoseStack poseStack = guiGraphics.pose();
         poseStack.pushPose();
-        poseStack.translate(guiGraphics.guiWidth() / 2 - 91, guiGraphics.guiHeight() /1.5, 0);
+        poseStack.translate((double) guiGraphics.guiWidth() / 2 - 91, guiGraphics.guiHeight() / 1.5, 0);
 
         // Direction
 
