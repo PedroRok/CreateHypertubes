@@ -11,6 +11,7 @@ import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.events.PlayerSyncEvents;
 import com.pedrorok.hypertube.network.packets.MovePathPacket;
 import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
+import com.pedrorok.hypertube.utils.JunctionDirectionUtils;
 import com.pedrorok.hypertube.utils.MessageUtils;
 import com.pedrorok.hypertube.utils.MoveDirection;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
@@ -22,6 +23,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
@@ -91,7 +93,12 @@ public class TravelManager {
                 TravelManager::finishTravel);
         travelDataMap.put(entity.getUUID(), pathMover);
 
-        MovePathPacket movePathPacket = new MovePathPacket(entity.getId(), travelPathData.getTravelPoints(), travelPathData.getActionPoints(), finalSpeed, travelPathData.isFinishWithJunction());
+        MovePathPacket movePathPacket = new MovePathPacket(entity.getId(),
+                travelPathData.getTravelPoints(),
+                travelPathData.getActionPoints(),
+                finalSpeed,
+                travelPathData.isFinishWithJunction(),
+                travelPathData.getJunctionDirection());
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, movePathPacket);
         Vec3 center = pos.getCenter();
         TubeSoundManager.playTubeSuctionSound(entity, center);
@@ -194,11 +201,16 @@ public class TravelManager {
         player.startFallFlying();
     }
 
-    public static void changeDirection(MoveDirection direction, UUID entityUuid) {
+    public static void changeDirection(MoveDirection direction, UUID entityUuid, Level level) {
         TravelPathMover travelPathMover = travelDataMap.get(entityUuid);
         if (travelPathMover == null) return;
-        travelPathMover.setChosenDirection(direction.map(travelPathMover.getJunctionDirection()));
-        System.out.println("Direction changed to " + direction + " for entity " + entityUuid);
+
+        Direction junctionDirection = travelPathMover.getJunctionDirection();
+        if (junctionDirection == null) return;
+
+        Tuple<Direction, MoveDirection> directionTuple = JunctionDirectionUtils.resolveValidDirectionTuple(direction, travelPathMover.getLastPos(), level, junctionDirection);
+        if (directionTuple == null) return;
+        travelPathMover.setChosenDirection(directionTuple.getA());
     }
 
     public static void finishTravel(UUID entityUuid) {

@@ -3,14 +3,15 @@ package com.pedrorok.hypertube.network.packets;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.core.travel.ClientTravelPathMover;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -22,7 +23,8 @@ import java.util.Set;
  * @project Create Hypertube
  */
 public record MovePathPacket(int entityId, List<Vec3> pathPoints, Set<BlockPos> actionPoints,
-                             double travelSpeed, boolean isJunctionEnd) implements CustomPacketPayload {
+                             double travelSpeed, boolean isJunctionEnd,
+                             @Nullable Direction junctionDirection) implements CustomPacketPayload {
 
     public static final Type<MovePathPacket> TYPE = new Type<>(
             HypertubeMod.of("entity_travel_path")
@@ -46,6 +48,9 @@ public record MovePathPacket(int entityId, List<Vec3> pathPoints, Set<BlockPos> 
         }
         buf.writeDouble(packet.travelSpeed);
         buf.writeBoolean(packet.isJunctionEnd);
+
+        if (packet.isJunctionEnd)
+            buf.writeEnum(packet.junctionDirection);
     }
 
     public static MovePathPacket decode(FriendlyByteBuf buf) {
@@ -65,7 +70,10 @@ public record MovePathPacket(int entityId, List<Vec3> pathPoints, Set<BlockPos> 
         }
         double speed = buf.readDouble();
         boolean isJunctionEnd = buf.readBoolean();
-        return new MovePathPacket(id, points, actionPoints, speed, isJunctionEnd);
+        Direction junctionDirection = null;
+        if (isJunctionEnd)
+            junctionDirection = buf.readEnum(Direction.class);
+        return new MovePathPacket(id, points, actionPoints, speed, isJunctionEnd, junctionDirection);
     }
 
     public static void handle(MovePathPacket packet, IPayloadContext ctx) {

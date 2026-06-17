@@ -19,7 +19,6 @@ public class ClientKeyInputTracker {
 
     public static void handlePlayerStart() {
         PacketDistributor.sendToServer(new MoveDirectionPacket(lastDirection));
-        System.out.println("Player started moving in direction: " + lastDirection);
     }
     public static MoveDirection handlePlayerInputs() {
         var options = Minecraft.getInstance().options;
@@ -31,15 +30,12 @@ public class ClientKeyInputTracker {
 
         if (forwardDown && !wasForwardDown) {
             lastDirection = MoveDirection.FRONT;
-            PacketDistributor.sendToServer(new MoveDirectionPacket(lastDirection));
         }
         if (leftDown && !wasLeftDown) {
             lastDirection = MoveDirection.LEFT;
-            PacketDistributor.sendToServer(new MoveDirectionPacket(lastDirection));
         }
         if (rightDown && !wasRightDown) {
             lastDirection = MoveDirection.RIGHT;
-            PacketDistributor.sendToServer(new MoveDirectionPacket(lastDirection));
         }
 
         wasForwardDown = forwardDown;

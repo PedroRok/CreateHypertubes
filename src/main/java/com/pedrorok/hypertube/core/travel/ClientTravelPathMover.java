@@ -1,18 +1,23 @@
 package com.pedrorok.hypertube.core.travel;
 
-import com.mojang.datafixers.util.Pair;
+import com.pedrorok.hypertube.blocks.blockentities.HyperJunctionBlockEntity;
 import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
 import com.pedrorok.hypertube.core.compat.Mods;
 import com.pedrorok.hypertube.core.compat.sable.SableCompat;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.network.packets.*;
+import com.pedrorok.hypertube.utils.JunctionDirectionUtils;
 import com.pedrorok.hypertube.utils.MoveDirection;
+import com.simibubi.create.CreateClient;
+import com.simibubi.create.content.equipment.zapper.ZapperRenderHandler;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
@@ -24,6 +29,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -34,6 +40,7 @@ import java.util.*;
 @EventBusSubscriber(value = Dist.CLIENT)
 public class ClientTravelPathMover {
     private static final Int2ObjectArrayMap<PathData> ACTIVE_PATHS = new Int2ObjectArrayMap<>();
+    private static MoveDirection lastValidDirection = MoveDirection.RIGHT;
 
     public static void startMoving(MovePathPacket packet) {
         Minecraft mc = Minecraft.getInstance();
@@ -41,9 +48,16 @@ public class ClientTravelPathMover {
         Entity entity = mc.level.getEntity(packet.entityId());
 
         Mods.SABLE.executeIfInstalled(() -> () -> SableCompat.stickToSubLevel(entity, packet.actionPoints().iterator().next().getCenter()));
-        ACTIVE_PATHS.put(packet.entityId(), new PathData(entity, packet.pathPoints(), packet.actionPoints(), packet.travelSpeed(), isPlayer, packet.isJunctionEnd()));
+        ACTIVE_PATHS.put(packet.entityId(), new PathData(entity,
+                packet.pathPoints(),
+                packet.actionPoints(),
+                packet.travelSpeed(),
+                isPlayer,
+                packet.isJunctionEnd(),
+                packet.junctionDirection()));
 
         if (!isPlayer || !packet.isJunctionEnd()) return;
+        lastValidDirection = MoveDirection.RIGHT;
         ClientKeyInputTracker.handlePlayerStart();
     }
 
@@ -96,7 +110,21 @@ public class ClientTravelPathMover {
         MoveDirection direction = ClientKeyInputTracker.handlePlayerInputs();
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
+
+        Tuple<Direction, MoveDirection> directionTuple = JunctionDirectionUtils.resolveValidDirectionTuple(direction, data.getLastBlockPos(), player.level(), data.getJunctionDirection());
+        if (directionTuple != null) {
+            direction = directionTuple.getB();
+        }
+        lastValidDirection = direction;
+        PacketDistributor.sendToServer(new MoveDirectionPacket(lastValidDirection));
+
         player.displayClientMessage(Component.literal("§7DIRECTION: §e" + direction), true);
+        if (directionTuple == null) return;
+        if (player.level().getBlockEntity(data.getLastBlockPos()) instanceof HyperJunctionBlockEntity junctionBlock) {
+            Direction renderDir = directionTuple.getA();
+            if (player.tickCount % 10 != 0) return;
+            CreateClient.ZAPPER_RENDER_HANDLER.addBeam(new ZapperRenderHandler.LaserBeam(data.getLastBlockPos().getCenter(), data.getLastBlockPos().getCenter().add(Vec3.atLowerCornerOf(renderDir.getNormal()))));
+        }
     }
 
 
@@ -163,13 +191,17 @@ public class ClientTravelPathMover {
         private boolean clientPlayer;
         @Getter
         private boolean junctionEnd;
+        @Getter
+        @Nullable
+        private Direction junctionDirection;
 
-        public PathData(Entity entity, List<Vec3> points, Set<BlockPos> actionPoints, double blocksPerSecond, boolean clientPlayer, boolean isJunctionEnd) {
+        public PathData(Entity entity, List<Vec3> points, Set<BlockPos> actionPoints, double blocksPerSecond, boolean clientPlayer, boolean isJunctionEnd, @Nullable Direction junctionDirection) {
             this.points = points;
             this.actionPoints = actionPoints;
             this.travelSpeed = blocksPerSecond;
             this.clientPlayer = clientPlayer;
             this.junctionEnd = isJunctionEnd;
+            this.junctionDirection = junctionDirection;
 
             if (!points.isEmpty()) {
                 Vec3 entranceLogical = points.get(0).subtract(0, 0.25, 0);
@@ -244,6 +276,10 @@ public class ClientTravelPathMover {
         public Vec3 getRenderPosition(float partialTicks) {
             Vec3 logicalRender = previousLogicalPos.lerp(currentLogicalPos, partialTicks);
             return Mods.SABLE.executeIfInstalled(() -> (pos) -> SableCompat.Client.transformToWorld(pos, true), logicalRender);
+        }
+
+        public BlockPos getLastBlockPos() {
+            return BlockPos.containing(points.get(points.size() - 1));
         }
     }
 }

@@ -49,6 +49,7 @@ public class TubePlacement {
             .startWithValue(0);
 
     @OnlyIn(Dist.CLIENT)
+    @SuppressWarnings("D")
     public static void clientTick() {
         LocalPlayer player = Minecraft.getInstance().player;
         ItemStack stack = player.getMainHandItem();

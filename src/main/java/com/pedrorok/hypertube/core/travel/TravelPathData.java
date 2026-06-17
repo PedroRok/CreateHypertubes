@@ -52,8 +52,8 @@ public class TravelPathData {
         BlockPos firstPipe = entrancePos.relative(facingDirection);
         travelPoints.add(firstPipe.getCenter());
         blockConnections.add(firstPipe);
-        addTravelPoint(entrancePos, level, true);
-        addTravelPoint(firstPipe, level);
+        addTravelPoint(entrancePos, level, true, facingDirection);
+        addTravelPoint(firstPipe, level, facingDirection);
         checkAndRemoveNearPoints();
     }
 
@@ -73,11 +73,11 @@ public class TravelPathData {
         }
     }
 
-    private void addTravelPoint(BlockPos pos, Level level) {
-        addTravelPoint(pos, level, false);
+    private void addTravelPoint(BlockPos pos, Level level, Direction connectingFrom) {
+        addTravelPoint(pos, level, false, connectingFrom);
     }
 
-    private void addTravelPoint(BlockPos pos, Level level, boolean entrance) {
+    private void addTravelPoint(BlockPos pos, Level level, boolean entrance, Direction connectingFrom) {
         BlockState blockState = level.getBlockState(pos);
         if (level.getBlockState(pos).getBlock() instanceof ITubeActionPoint ||
                 (level.getBlockEntity(pos) instanceof ActionTubeBlockEntity tubeEntity && tubeEntity.hasAnyTubeAttachment())) {
@@ -89,7 +89,7 @@ public class TravelPathData {
                 && tubeBlockEntity.getConnections().size() > 2 && !entrance) {
             blockConnections.add(pos);
             travelPoints.add(pos.getCenter());
-            junctionDirection = blockState.getValue(HyperJunctionBlock.FACING);
+            junctionDirection = connectingFrom;
             finishWithJunction = true;
             return;
         }
@@ -108,7 +108,7 @@ public class TravelPathData {
                 continue;
             travelPoints.add(nextPipe.getCenter());
             blockConnections.add(nextPipe);
-            addTravelPoint(nextPipe, level);
+            addTravelPoint(nextPipe, level, direction);
             break;
         }
     }
@@ -150,6 +150,17 @@ public class TravelPathData {
             if (inverse) {
                 Collections.reverse(bezierPoints);
             }
+
+            Direction entranceDirectionForToPosFinal = null;
+            if (bezierPoints.size() >= 2) {
+                Vec3 secondToLast = bezierPoints.get(bezierPoints.size() - 2);
+                Vec3 last = bezierPoints.get(bezierPoints.size() - 1);
+                Vec3 arrivalVector = last.subtract(secondToLast);
+                if (arrivalVector.lengthSqr() > 0.01) {
+                    entranceDirectionForToPosFinal = Direction.getNearest(arrivalVector.x, arrivalVector.y, arrivalVector.z);
+                }
+            }
+
             bezierPoints.removeLast();
             bezierPoints.removeFirst();
             travelPoints.addAll(bezierPoints);
@@ -180,7 +191,7 @@ public class TravelPathData {
                 }
             }
 
-            addTravelPoint(toPosFinal, level);
+            addTravelPoint(toPosFinal, level, entranceDirectionForToPosFinal);
             connected = true;
             break;
         }

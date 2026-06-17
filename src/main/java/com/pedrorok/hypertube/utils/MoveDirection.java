@@ -9,13 +9,22 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public enum MoveDirection {
     FRONT(dir -> dir),
-    LEFT(Direction::getClockWise),
-    RIGHT(Direction::getCounterClockWise),
+    LEFT(Direction::getCounterClockWise),
+    RIGHT(Direction::getClockWise),
     NONE(dir -> dir);
 
     private final Function<Direction, Direction> directionMapper;
 
     public Direction map(Direction direction) {
         return directionMapper.apply(direction);
+    }
+
+    public static MoveDirection fromDirections(Direction from, Direction to) {
+        for (MoveDirection moveDirection : values()) {
+            if (moveDirection.map(from) == to) {
+                return moveDirection;
+            }
+        }
+        return NONE;
     }
 }
