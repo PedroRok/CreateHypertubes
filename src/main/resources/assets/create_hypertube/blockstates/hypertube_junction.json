@@ -1,22 +1,22 @@
 {
   "multipart": [
     { "when": { "facing": "north", "open": true },
-      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction", "uvlock": false }
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_open", "uvlock": false }
     },
     { "when": { "facing": "east", "open": true },
-      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction", "y": 90, "uvlock": false }
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_open", "y": 90, "uvlock": false }
     },
     { "when": { "facing": "south", "open": true },
-      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction", "y": 180, "uvlock": false }
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_open", "y": 180, "uvlock": false }
     },
     { "when": { "facing": "west", "open": true },
-      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction", "y": 270, "uvlock": false }
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_open", "y": 270, "uvlock": false }
     },
     { "when": { "facing": "up", "open": true },
-      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction", "x": 270, "uvlock": false }
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_open", "x": 270, "uvlock": false }
     },
     { "when": { "facing": "down", "open": true },
-      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction", "x": 90, "uvlock": false }
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_open", "x": 90, "uvlock": false }
     },
 
     { "when": { "facing": "north", "open": false },
