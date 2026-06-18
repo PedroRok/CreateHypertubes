@@ -34,7 +34,6 @@ public class ClientTravelPathRender {
     private static Direction lastValidDirection = null;
     private static boolean isTraveling = false;
 
-
     protected static void handleStart(boolean endJunction, ClientTravelPathMover.PathData data) {
         lastValidMoveDir = MoveDirection.RIGHT;
         lastValidDirection = null;
@@ -71,17 +70,23 @@ public class ClientTravelPathRender {
             PacketDistributor.sendToServer(new MoveDirectionPacket(lastValidMoveDir));
         }
 
-        if (player.level().getBlockEntity(data.getLastBlockPos()) instanceof HyperJunctionBlockEntity junctionBlock) {
-            Direction renderDir = lastValidDirection;
-            IConnection connectionInDirection = junctionBlock.getConnectionInDirection(renderDir);
-            if (connectionInDirection == null) return;
-            BezierConnection connection = connectionInDirection.getThisEntranceConnection(junctionBlock.getLevel());
-            if (connection == null) return;
-            if (player.tickCount % 10 != 0) return;
-            boolean inverted = connection.isInverted(data.getLastBlockPos());
-            BlockPos pos = connection.getFromPos().pos();
-            TubePulseRenderer.start(pos, connection, inverted, 8, 0.08f, 0.1f, 0x55FF55, 5);
-        }
+        if (player.tickCount % 10 != 0)
+            return;
+        if (!(player.level().getBlockEntity(data.getLastBlockPos()) instanceof HyperJunctionBlockEntity junctionBlock))
+            return;
+
+        Direction renderDir = lastValidDirection;
+        IConnection connectionInDirection = junctionBlock.getConnectionInDirection(renderDir);
+
+        if (connectionInDirection == null)
+            return;
+        BezierConnection connection = connectionInDirection.getThisEntranceConnection(junctionBlock.getLevel());
+        if (connection == null)
+            return;
+
+        boolean inverted = connection.isInverted(data.getLastBlockPos());
+        BlockPos pos = connection.getFromPos().pos();
+        TubePulseRenderer.start(pos, connection, inverted, 8, 0.08f, 0.1f, 0x88FF88, 5);
     }
 
     public static void renderOverlay(GuiGraphics guiGraphics, float partialTick) {
