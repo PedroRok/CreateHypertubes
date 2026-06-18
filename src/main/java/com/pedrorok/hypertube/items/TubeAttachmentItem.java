@@ -45,14 +45,14 @@ public class TubeAttachmentItem extends Item {
 
         Direction direction = pContext.getClickedFace();
 
-        if (!(state.getBlock() instanceof ActionTubeBlock)) return InteractionResult.FAIL;
+        if (!(state.getBlock() instanceof ActionTubeBlock block)) return InteractionResult.FAIL;
 
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof ActionTubeBlockEntity actionTubeBE)) return InteractionResult.FAIL;
         if (actionTubeBE.hasTubeAttachment(direction)) {
             return InteractionResult.FAIL;
         }
-        if (!ActionTubeBlock.canPlaceAttachment(state, level, pos, direction)) {
+        if (!block.canPlaceAttachment(state, level, pos, direction)) {
             return InteractionResult.FAIL;
         }
 

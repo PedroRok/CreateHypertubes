@@ -3,19 +3,24 @@ package com.pedrorok.hypertube.blocks;
 import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.blocks.blockentities.parent.TravelInteractTubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravelPathMover;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.utils.VoxelUtils;
+import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -45,11 +50,13 @@ import java.util.List;
  * @author Rok, Pedro Lucas nmm. Created on 21/04/2025
  * @project Create Hypertube
  */
-public class HyperJunctionBlock extends TubeBlock implements EntityBlock, ITubeActionPoint {
+public class HyperJunctionBlock extends ActionTubeBlock implements EntityBlock {
 
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
+    public static final BooleanProperty POWERABLE = BooleanProperty.create("powerable");
+    public static final BooleanProperty TRAVEL_CONTINUE_POWERED = BooleanProperty.create("travel_continue_powered");
 
 
     public HyperJunctionBlock(Properties properties) {
@@ -57,13 +64,23 @@ public class HyperJunctionBlock extends TubeBlock implements EntityBlock, ITubeA
         registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(OPEN, false)
-                .setValue(WATERLOGGED, false));
+                .setValue(WATERLOGGED, false)
+                .setValue(POWER, 0)
+                .setValue(POWERED, false)
+                .setValue(POWERABLE, false)
+                .setValue(TRAVEL_CONTINUE_POWERED, false)
+        );
+    }
+
+    @Override
+    protected BooleanProperty propertyToUpdate() {
+        return TRAVEL_CONTINUE_POWERED;
     }
 
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, OPEN, WATERLOGGED, ACTIVE);
+        builder.add(FACING, OPEN, WATERLOGGED, ACTIVE, POWERABLE, POWERED, POWER, TRAVEL_CONTINUE_POWERED);
         super.createBlockStateDefinition(builder);
     }
 
@@ -76,7 +93,11 @@ public class HyperJunctionBlock extends TubeBlock implements EntityBlock, ITubeA
             return this.defaultBlockState()
                     .setValue(FACING, context.getClickedFace().getOpposite())
                     .setValue(OPEN, false)
-                    .setValue(WATERLOGGED, fluidstate.is(Fluids.WATER));
+                    .setValue(WATERLOGGED, fluidstate.is(Fluids.WATER))
+                    .setValue(POWERABLE, false)
+                    .setValue(TRAVEL_CONTINUE_POWERED, false)
+                    .setValue(POWER, 0)
+                    .setValue(POWERED, false);
         }
         Direction direction = player.getDirection().getOpposite();
         if (player.getXRot() < -45) {
@@ -87,7 +108,11 @@ public class HyperJunctionBlock extends TubeBlock implements EntityBlock, ITubeA
         return this.defaultBlockState()
                 .setValue(FACING, direction)
                 .setValue(OPEN, false)
-                .setValue(WATERLOGGED, fluidstate.is(Fluids.WATER));
+                .setValue(WATERLOGGED, fluidstate.is(Fluids.WATER))
+                .setValue(POWERABLE, false)
+                .setValue(TRAVEL_CONTINUE_POWERED, false)
+                .setValue(POWER, 0)
+                .setValue(POWERED, false);
     }
 
     @Override
@@ -129,46 +154,26 @@ public class HyperJunctionBlock extends TubeBlock implements EntityBlock, ITubeA
 
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
-        /*if (context.getLevel().isClientSide) return InteractionResult.SUCCESS;
+        if (context.getLevel().isClientSide) return InteractionResult.SUCCESS;
+        if (context.getPlayer() == null) return InteractionResult.PASS;
         if (super.onWrenched(state, context) == InteractionResult.SUCCESS) return InteractionResult.SUCCESS;
 
-        BlockEntity blockEntity = context.getLevel().getBlockEntity(context.getClickedPos());
-        if (blockEntity instanceof HyperAcceleratorBlockEntity entrance) {
-            if (entrance.wrenchClicked(context.getClickedFace())) {
-                IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
-                return InteractionResult.SUCCESS;
-            }
-        }
-        Player player = context.getPlayer();
-        BlockState blockState = state.setValue(ACCELERATE, !state.getValue(ACCELERATE));
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
-        level.setBlock(pos, blockState, 3);
-
-        if (blockState.getValue(ACCELERATE)) {
-            MessageUtils.sendActionMessage(player,
-                    Component.translatable("block.hypertube.hyper_accelerator.accelerate_mode")
-                            .withColor(0xFFFF00), true);
-        } else {
-            MessageUtils.sendActionMessage(player,
-                    Component.translatable("block.hypertube.hyper_accelerator.brake_mode")
-                            .withColor(0xFF8800), true);
+        Player player = context.getPlayer();
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (blockEntity instanceof TravelInteractTubeBlockEntity tubeEntity && tubeEntity.isConnected()) {
+            if (tubeEntity.getConnectionInDirection(context.getClickedFace()) == null) {
+                return InteractionResult.PASS;
+            }
+            tubeEntity.wrenchClicked(context.getClickedFace());
+            updateAfterWrenched(state, context);
+            IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
+            return InteractionResult.SUCCESS;
         }
-        IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());*/
-        return InteractionResult.SUCCESS;
-    }
 
-    @Override
-    public void handleTravelPath(LivingEntity entity, TravelPathMover mover, BlockPos pos) {
-        //Level level = entity.level();
-        //HyperAcceleratorBlockEntity tube = (HyperAcceleratorBlockEntity) level.getBlockEntity(pos);
-        //if (tube == null || mover == null) return;
-        //float speed = TubeUtils.calculateTravelSpeed(Math.abs(tube.getSpeed())) / 2;
-        //float newSpeed = mover.getTravelSpeed() + speed * (tube.getBlockState().getValue(ACCELERATE) ? 1 : -1);
-        //newSpeed = Math.max(0.4333f, newSpeed);
-        //mover.setTravelSpeed(newSpeed);
-        //PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, new SpeedChangePacket(entity.getId(), newSpeed));
-        //TubeSoundManager.playTubeSuctionSound(entity, entity.position());
+        level.playSound(player, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.75f, 1);
+        return InteractionResult.SUCCESS;
     }
 
     // ------- Collision Shapes -------
@@ -181,4 +186,11 @@ public class HyperJunctionBlock extends TubeBlock implements EntityBlock, ITubeA
         }
         return Shapes.block();
     }
+
+    // -------- attachments  --------
+    @Override
+    public boolean canPlaceAttachment(BlockState state, BlockGetter world, BlockPos pos, Direction side) {
+        return side != null && (side != state.getValue(FACING) || side == Direction.DOWN || side == Direction.UP);
+    }
+
 }

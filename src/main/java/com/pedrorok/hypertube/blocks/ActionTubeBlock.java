@@ -92,10 +92,10 @@ public abstract class ActionTubeBlock extends TubeBlock {
     public boolean canConnectRedstone(BlockState state, BlockGetter world, BlockPos pos, Direction side) {
         ActionTubeBlockEntity tubeBlockEntity = (ActionTubeBlockEntity) world.getBlockEntity(pos);
         if (tubeBlockEntity == null) return false;
-        return side != null && side != state.getValue(FACING) && side != state.getValue(FACING).getOpposite() && tubeBlockEntity.getAttachmentDirections().contains(side.getOpposite());
+        return canPlaceAttachment(state, world, pos, side) && tubeBlockEntity.getAttachmentDirections().contains(side.getOpposite());
     }
 
-    public static boolean canPlaceAttachment(BlockState state, BlockGetter world, BlockPos pos, Direction side) {
+    public boolean canPlaceAttachment(BlockState state, BlockGetter world, BlockPos pos, Direction side) {
         return side != null && side != state.getValue(FACING) && side != state.getValue(FACING).getOpposite();
     }
 

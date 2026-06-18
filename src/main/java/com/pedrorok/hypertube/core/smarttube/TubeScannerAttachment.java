@@ -5,6 +5,7 @@ import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.registry.ModItems;
 import com.pedrorok.hypertube.registry.ModPartialModels;
+import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
@@ -28,10 +29,11 @@ public class TubeScannerAttachment implements ITubeAttachment {
 
     @Override
     public PartialModel getPartialModel(BlockState blockState, ActionTubeBlockEntity blockEntity, Direction facing) {
+        boolean hasCog = blockEntity instanceof ICogWheel;
         if (blockState.getValue(ActionTubeBlock.POWER) > 0) {
-            return ModPartialModels.TUBE_SCANNER_ACTIVE;
+            return hasCog ? ModPartialModels.TUBE_SCANNER_ACTIVE : ModPartialModels.TUBE_SCANNER_NO_COG_ACTIVE;
         }
-        return ModPartialModels.TUBE_SCANNER;
+        return hasCog ? ModPartialModels.TUBE_SCANNER : ModPartialModels.TUBE_SCANNER_NO_COG;
     }
 
     @Override

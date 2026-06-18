@@ -6,6 +6,7 @@ import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.ponder.HypertubesPonderPlugin;
 import com.pedrorok.hypertube.registry.ModItems;
 import com.pedrorok.hypertube.registry.ModPartialModels;
+import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
@@ -24,16 +25,17 @@ public class RedstoneDetectorAttachment implements ITubeAttachment {
 
     @Override
     public PartialModel getPartialModel(BlockState blockState, ActionTubeBlockEntity blockEntity, Direction facing) {
+        boolean hasCog = blockEntity instanceof ICogWheel;
         if (HypertubesPonderPlugin.isAnyPonderScreenOpen()) {
             if (blockState.getValue(ActionTubeBlock.POWER) > 0) {
-                return ModPartialModels.REDSTONE_DETECTOR_ACTIVE;
+                return hasCog ? ModPartialModels.REDSTONE_DETECTOR_ACTIVE : ModPartialModels.REDSTONE_DETECTOR_NO_COG_ACTIVE;
             }
-            return ModPartialModels.REDSTONE_DETECTOR;
+            return hasCog ? ModPartialModels.REDSTONE_DETECTOR : ModPartialModels.REDSTONE_DETECTOR_NO_COG;
         }
         if (ActionTubeBlock.hasSignalOnSide(blockEntity.getLevel(), blockEntity.getBlockPos(), facing)) {
-            return ModPartialModels.REDSTONE_DETECTOR_ACTIVE;
+            return  hasCog ? ModPartialModels.REDSTONE_DETECTOR_ACTIVE : ModPartialModels.REDSTONE_DETECTOR_NO_COG_ACTIVE;
         }
-        return ModPartialModels.REDSTONE_DETECTOR;
+        return  hasCog ? ModPartialModels.REDSTONE_DETECTOR : ModPartialModels.REDSTONE_DETECTOR_NO_COG;
     }
 
     @Override
