@@ -167,7 +167,8 @@ public class TravelManager {
 
         if (data.isJunctionEnd()) {
             BlockEntity blockState = level.getBlockEntity(pathMover.getLastPos());
-            tryStartTravel(entity, blockState, data.direction(), pathMover.getTravelSpeed());
+            if (!tryStartTravel(entity, blockState, data.direction(), pathMover.getTravelSpeed())) return;
+            TubeSoundManager.playTubeSuctionSound(entity, pathMover.getLastPos().getCenter(), 0.5f, 1.2f);
             return;
         }
 

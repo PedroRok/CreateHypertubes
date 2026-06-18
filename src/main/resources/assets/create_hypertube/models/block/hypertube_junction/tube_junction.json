@@ -2,10 +2,10 @@
 	"format_version": "1.9.0",
 	"credit": "Made with Blockbench",
 	"parent": "block/block",
-	"texture_size": [64, 64],
 	"textures": {
 		"1": "create_hypertube:block/hypertube_entrance",
 		"2": "create_hypertube:block/hypertube",
+		"3": "create_hypertube:block/direction_signal_right",
 		"4": "create_hypertube:block/middle_tube",
 		"particle": "create_hypertube:block/hypertube_entrance"
 	},
@@ -408,6 +408,30 @@
 				"up": {"uv": [6.5, 5.25, 9.5, 4.25], "rotation": 270, "texture": "#1"},
 				"down": {"uv": [6.5, 5.25, 9.5, 4.25], "rotation": 270, "texture": "#1"}
 			}
+		},
+		{
+			"from": [-3.225, 16.025, 3],
+			"to": [-1.225, 16.025, 13],
+			"rotation": {"angle": 0, "axis": "y", "origin": [-3.225, 16.025, 2]},
+			"faces": {
+				"up": {"uv": [0, 4, 10, 6], "rotation": 90, "texture": "#3"}
+			}
+		},
+		{
+			"from": [3.05, 16.025, -3],
+			"to": [13.05, 16.025, -1],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8.05, 16.025, -2.5]},
+			"faces": {
+				"up": {"uv": [10, 2, 0, 0], "texture": "#3"}
+			}
+		},
+		{
+			"from": [17.25, 16.025, 3],
+			"to": [19.25, 16.025, 13],
+			"rotation": {"angle": 0, "axis": "y", "origin": [18.25, 16.025, 8]},
+			"faces": {
+				"up": {"uv": [10, 4, 0, 6], "rotation": 270, "texture": "#3"}
+			}
 		}
 	],
 	"display": {
@@ -491,6 +515,13 @@
 							"children": [26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37]
 						}
 					]
+				},
+				{
+					"name": "Power",
+					"origin": [8, 8, 8],
+					"scope": 0,
+					"color": 0,
+					"children": [38, 39, 40]
 				}
 			]
 		}

@@ -317,7 +317,7 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
             state = getState(state, List.of(context.getClickedFace()), false);
         }
 
-        level.playSound(player, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.75f, 1);
+        IWrenchable.playRotateSound(context.getLevel(), context.getClickedPos());
 
         return super.onWrenched(state, context);
     }
