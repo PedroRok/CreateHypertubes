@@ -1,13 +1,13 @@
 package com.pedrorok.hypertube.utils;
 
 import com.pedrorok.hypertube.blocks.HyperJunctionBlock;
+import com.pedrorok.hypertube.core.data.MoveDirection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 

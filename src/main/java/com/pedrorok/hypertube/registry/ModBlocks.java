@@ -34,10 +34,12 @@ public class ModBlocks {
     private static final CreateRegistrate REGISTRATE = HypertubeMod.get();
 
     public static final BlockEntry<HypertubeBlock> HYPERTUBE = REGISTRATE.block("hypertube", HypertubeBlock::new)
-            .item(HypertubeItem::new).build()
+            .item(HypertubeItem::new)
+            .model((ctx, prov) -> {})
+            .build()
             .properties((a) -> PROPERTIES)
             .transform(axeOrPickaxe())
-            .defaultBlockstate()
+            .blockstate((ctx, prov) -> {})
             .defaultLoot()
             .register();
 
@@ -45,30 +47,33 @@ public class ModBlocks {
             .simpleItem()
             .properties((a) -> PROPERTIES)
             .transform(axeOrPickaxe())
-            .defaultBlockstate()
+            .blockstate((ctx, prov) -> {})
             .defaultLoot()
             .item(BlockItem::new)
-            .transform(customItemModel())
+            .model((ctx, prov) -> {})
+            .build()
             .register();
 
     public static final BlockEntry<HyperAcceleratorBlock> HYPER_ACCELERATOR = REGISTRATE.block("hypertube_accelerator", HyperAcceleratorBlock::new)
             .simpleItem()
             .properties((a) -> PROPERTIES)
             .transform(axeOrPickaxe())
-            .defaultBlockstate()
+            .blockstate((ctx, prov) -> {})
             .defaultLoot()
             .item(BlockItem::new)
-            .transform(customItemModel())
+            .model((ctx, prov) -> {})
+            .build()
             .register();
 
     public static final BlockEntry<HyperJunctionBlock> HYPER_JUNCTION = REGISTRATE.block("hypertube_junction", HyperJunctionBlock::new)
             .simpleItem()
             .properties((a) -> PROPERTIES)
             .transform(axeOrPickaxe())
-            .defaultBlockstate()
+            .blockstate((ctx, prov) -> {})
             .defaultLoot()
             .item(BlockItem::new)
-            .transform(customItemModel())
+            .model((ctx, prov) -> {})
+            .build()
             .register();
 
     public static void register() {

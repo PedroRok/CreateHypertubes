@@ -1,4 +1,4 @@
-package com.pedrorok.hypertube.utils;
+package com.pedrorok.hypertube.core.data;
 
 import lombok.RequiredArgsConstructor;
 import net.minecraft.core.Direction;

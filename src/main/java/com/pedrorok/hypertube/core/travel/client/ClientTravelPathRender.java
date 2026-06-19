@@ -8,7 +8,7 @@ import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.network.packets.MoveDirectionPacket;
 import com.pedrorok.hypertube.utils.JunctionDirectionUtils;
-import com.pedrorok.hypertube.utils.MoveDirection;
+import com.pedrorok.hypertube.core.data.MoveDirection;
 import com.pedrorok.hypertube.utils.TubePulseRenderer;
 import net.createmod.catnip.math.AngleHelper;
 import net.createmod.catnip.placement.PlacementClient;

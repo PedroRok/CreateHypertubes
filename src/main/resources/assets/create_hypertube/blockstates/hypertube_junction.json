@@ -1,41 +1,122 @@
 {
   "multipart": [
-    { "when": { "facing": "north", "open": true },
+    { "when": { "facing": "north", "open": true, "junction_mode": "automatic" },
       "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_open", "uvlock": false }
     },
-    { "when": { "facing": "east", "open": true },
+    { "when": { "facing": "east", "open": true, "junction_mode": "automatic" },
       "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_open", "y": 90, "uvlock": false }
     },
-    { "when": { "facing": "south", "open": true },
+    { "when": { "facing": "south", "open": true, "junction_mode": "automatic" },
       "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_open", "y": 180, "uvlock": false }
     },
-    { "when": { "facing": "west", "open": true },
+    { "when": { "facing": "west", "open": true, "junction_mode": "automatic" },
       "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_open", "y": 270, "uvlock": false }
     },
-    { "when": { "facing": "up", "open": true },
+    { "when": { "facing": "up", "open": true, "junction_mode": "automatic" },
       "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_open", "x": 270, "uvlock": false }
     },
-    { "when": { "facing": "down", "open": true },
+    { "when": { "facing": "down", "open": true, "junction_mode": "automatic" },
       "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_open", "x": 90, "uvlock": false }
     },
 
-    { "when": { "facing": "north", "open": false },
-      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction", "uvlock": false }
+    { "when": { "facing": "north", "open": false, "junction_mode": "automatic" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_no_redstone", "uvlock": false }
     },
-    { "when": { "facing": "east", "open": false },
-      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction", "y": 90, "uvlock": false }
+    { "when": { "facing": "east", "open": false, "junction_mode": "automatic" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_no_redstone", "y": 90, "uvlock": false }
     },
-    { "when": { "facing": "south", "open": false },
-      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction", "y": 180, "uvlock": false }
+    { "when": { "facing": "south", "open": false, "junction_mode": "automatic" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_no_redstone", "y": 180, "uvlock": false }
     },
-    { "when": { "facing": "west", "open": false },
-      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction", "y": 270, "uvlock": false }
+    { "when": { "facing": "west", "open": false, "junction_mode": "automatic" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_no_redstone", "y": 270, "uvlock": false }
     },
-    { "when": { "facing": "up", "open": false },
-      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction", "x": 270, "uvlock": false }
+    { "when": { "facing": "up", "open": false, "junction_mode": "automatic" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_no_redstone", "x": 270, "uvlock": false }
     },
-    { "when": { "facing": "down", "open": false },
-      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction", "x": 90, "uvlock": false }
+    { "when": { "facing": "down", "open": false, "junction_mode": "automatic" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_no_redstone", "x": 90, "uvlock": false }
+    },
+
+
+
+
+    { "when": { "facing": "north", "open": true, "junction_mode": "forced_continue" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_continue_open", "uvlock": false }
+    },
+    { "when": { "facing": "east", "open": true, "junction_mode": "forced_continue" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_continue_open", "y": 90, "uvlock": false }
+    },
+    { "when": { "facing": "south", "open": true, "junction_mode": "forced_continue" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_continue_open", "y": 180, "uvlock": false }
+    },
+    { "when": { "facing": "west", "open": true, "junction_mode": "forced_continue" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_continue_open", "y": 270, "uvlock": false }
+    },
+    { "when": { "facing": "up", "open": true, "junction_mode": "forced_continue" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_continue_open", "x": 270, "uvlock": false }
+    },
+    { "when": { "facing": "down", "open": true, "junction_mode": "forced_continue" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_continue_open", "x": 90, "uvlock": false }
+    },
+
+    { "when": { "facing": "north", "open": false, "junction_mode": "forced_continue" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_continue", "uvlock": false }
+    },
+    { "when": { "facing": "east", "open": false, "junction_mode": "forced_continue" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_continue", "y": 90, "uvlock": false }
+    },
+    { "when": { "facing": "south", "open": false, "junction_mode": "forced_continue" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_continue", "y": 180, "uvlock": false }
+    },
+    { "when": { "facing": "west", "open": false, "junction_mode": "forced_continue" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_continue", "y": 270, "uvlock": false }
+    },
+    { "when": { "facing": "up", "open": false, "junction_mode": "forced_continue" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_continue", "x": 270, "uvlock": false }
+    },
+    { "when": { "facing": "down", "open": false, "junction_mode": "forced_continue" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_continue", "x": 90, "uvlock": false }
+    },
+
+
+
+    { "when": { "facing": "north", "open": true, "junction_mode": "forced_center" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_center_open", "uvlock": false }
+    },
+    { "when": { "facing": "east", "open": true, "junction_mode": "forced_center" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_center_open", "y": 90, "uvlock": false }
+    },
+    { "when": { "facing": "south", "open": true, "junction_mode": "forced_center" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_center_open", "y": 180, "uvlock": false }
+    },
+    { "when": { "facing": "west", "open": true, "junction_mode": "forced_center" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_center_open", "y": 270, "uvlock": false }
+    },
+    { "when": { "facing": "up", "open": true, "junction_mode": "forced_center" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_center_open", "x": 270, "uvlock": false }
+    },
+    { "when": { "facing": "down", "open": true, "junction_mode": "forced_center" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_center_open", "x": 90, "uvlock": false }
+    },
+
+    { "when": { "facing": "north", "open": false, "junction_mode": "forced_center" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_center", "uvlock": false }
+    },
+    { "when": { "facing": "east", "open": false, "junction_mode": "forced_center" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_center", "y": 90, "uvlock": false }
+    },
+    { "when": { "facing": "south", "open": false, "junction_mode": "forced_center" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_center", "y": 180, "uvlock": false }
+    },
+    { "when": { "facing": "west", "open": false, "junction_mode": "forced_center" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_center", "y": 270, "uvlock": false }
+    },
+    { "when": { "facing": "up", "open": false, "junction_mode": "forced_center" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_center", "x": 270, "uvlock": false }
+    },
+    { "when": { "facing": "down", "open": false, "junction_mode": "forced_center" },
+      "apply": { "model": "create_hypertube:block/hypertube_junction/tube_junction_center", "x": 90, "uvlock": false }
     }
   ]
 }

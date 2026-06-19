@@ -1,0 +1,10 @@
+{
+	"parent": "create_hypertube:block/hypertube_junction/tube_junction",
+	"textures": {
+		"1": "create_hypertube:block/hypertube_entrance",
+		"2": "create_hypertube:block/hypertube",
+		"3": "create_hypertube:block/direction_signal_center",
+		"4": "create_hypertube:block/middle_tube",
+		"particle": "create_hypertube:block/hypertube_entrance"
+	}
+}

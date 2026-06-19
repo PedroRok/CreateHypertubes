@@ -1,24 +1,15 @@
 package com.pedrorok.hypertube.core.travel.client;
 
-import com.pedrorok.hypertube.blocks.blockentities.HyperJunctionBlockEntity;
 import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
 import com.pedrorok.hypertube.core.compat.Mods;
 import com.pedrorok.hypertube.core.compat.sable.SableCompat;
-import com.pedrorok.hypertube.core.connection.BezierConnection;
-import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.network.packets.*;
-import com.pedrorok.hypertube.utils.JunctionDirectionUtils;
-import com.pedrorok.hypertube.utils.MoveDirection;
-import com.pedrorok.hypertube.utils.TubePulseRenderer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;

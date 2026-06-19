@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_precision_mechanism": {
+    "has_brass_sheet": {
       "conditions": {
         "items": [
           {
-            "items": "create:precision_mechanism"
+            "items": "create:brass_sheet"
           }
         ]
       },
@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "create_hypertube:hyper_accelerator_large_cogwheel"
+        "recipe": "create_hypertube:hypertube_funnel"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -21,12 +21,12 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_precision_mechanism"
+      "has_brass_sheet"
     ]
   ],
   "rewards": {
     "recipes": [
-      "create_hypertube:hyper_accelerator_large_cogwheel"
+      "create_hypertube:hypertube_funnel"
     ]
   }
 }

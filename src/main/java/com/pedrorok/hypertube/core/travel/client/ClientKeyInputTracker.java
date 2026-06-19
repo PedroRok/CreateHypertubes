@@ -2,7 +2,7 @@ package com.pedrorok.hypertube.core.travel.client;
 
 import com.pedrorok.hypertube.network.packets.MoveDirectionPacket;
 import com.pedrorok.hypertube.registry.ModSounds;
-import com.pedrorok.hypertube.utils.MoveDirection;
+import com.pedrorok.hypertube.core.data.MoveDirection;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;

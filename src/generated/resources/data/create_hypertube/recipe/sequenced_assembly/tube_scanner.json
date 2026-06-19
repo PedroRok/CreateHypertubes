@@ -3,7 +3,6 @@
   "ingredient": {
     "item": "create_hypertube:redstone_detector_tube_attachment"
   },
-  "loops": 1,
   "results": [
     {
       "chance": 100.0,

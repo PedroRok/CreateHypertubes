@@ -5,17 +5,17 @@
     "C": {
       "item": "create:smart_chute"
     },
+    "F": {
+      "item": "create_hypertube:hypertube_funnel"
+    },
     "G": {
       "item": "create:cogwheel"
-    },
-    "K": {
-      "item": "minecraft:dried_kelp"
     }
   },
   "pattern": [
-    " K ",
-    " C ",
-    " G "
+    " F ",
+    " G ",
+    " C "
   ],
   "result": {
     "count": 1,

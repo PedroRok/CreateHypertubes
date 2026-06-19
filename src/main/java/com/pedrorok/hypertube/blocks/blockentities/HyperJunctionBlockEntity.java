@@ -7,12 +7,15 @@ import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.blocks.blockentities.parent.TravelInteractTubeBlockEntity;
 import com.pedrorok.hypertube.config.ServerConfig;
+import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
+import com.pedrorok.hypertube.utils.TubePulseRenderer;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
 import lombok.Getter;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -119,8 +122,19 @@ public class HyperJunctionBlockEntity extends ActionTubeBlockEntity implements I
 
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-        super.addToGoggleTooltip(tooltip, isPlayerSneaking);
-        return true;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return false;
+        if (mc.player.tickCount % 10 != 0) return false;
+
+        for (IConnection iConnection : getConnections()) {
+            BezierConnection connection = iConnection.getThisEntranceConnection(mc.level);
+            if (connection == null) return false;
+            boolean inverted = connection.isInverted(getBlockPos());
+            BlockPos pos = connection.getFromPos().pos();
+            TubePulseRenderer.start(pos, connection, false, 8, 0.08f, 0.1f, inverted? 0xffee55 : 0x55FF55, 5);
+        }
+
+        return false;
     }
 
     @Override

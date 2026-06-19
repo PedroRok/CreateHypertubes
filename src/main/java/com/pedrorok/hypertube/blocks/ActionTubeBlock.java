@@ -17,10 +17,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.properties.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -40,7 +37,7 @@ public abstract class ActionTubeBlock extends TubeBlock {
         super(properties);
     }
 
-    protected abstract BooleanProperty propertyToUpdate();
+    protected abstract Property<?> propertyToUpdate();
 
 
     @Override
@@ -107,13 +104,20 @@ public abstract class ActionTubeBlock extends TubeBlock {
         boolean actualState = state.getValue(POWERED);
         if (neighborHasSignal && !actualState) {
             level.scheduleTick(pos, this, 4);
-            level.setBlock(pos, state.setValue(POWERED, true).setValue(propertyToUpdate(), !state.getValue(propertyToUpdate())), 2);
+            level.setBlock(pos, onNeighborUpdate(state, level, pos, true).setValue(POWERED, true), 2);
             IWrenchable.playRotateSound(level, pos);
 
         } else if (!neighborHasSignal && actualState) {
-            level.setBlock(pos, state.setValue(POWERED, false).setValue(propertyToUpdate(), !state.getValue(propertyToUpdate())), 2);
+            level.setBlock(pos, onNeighborUpdate(state, level, pos, true).setValue(POWERED, false), 2);
             IWrenchable.playRotateSound(level, pos);
         }
+    }
+
+    public BlockState onNeighborUpdate(BlockState state, Level level, BlockPos pos, boolean hasSignal) {
+        if (!(propertyToUpdate() instanceof BooleanProperty property)) {
+            throw new IllegalStateException("propertyToUpdate must be a BooleanProperty for onNeighbourHasSignal to work, or it must be overridden to handle other property types.");
+        }
+        return state.setValue(property, !state.getValue(property));
     }
 
     @Override
@@ -138,7 +142,6 @@ public abstract class ActionTubeBlock extends TubeBlock {
 
         if (!(blockEntity instanceof ActionTubeBlockEntity action)) return InteractionResult.PASS;
         if (!action.hasTubeAttachment(clickedFace)) return InteractionResult.PASS;
-
 
 
         ITubeAttachment iTubeAttachment = action.removeTubeAttachment(clickedFace);

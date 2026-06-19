@@ -32,6 +32,7 @@
   "item.create_hypertube.redstone_detector_tube_attachment": "Redstone Detector Tube Attachment",
   "item.create_hypertube.tube_scanner_attachment": "Tube Scanner Attachment",
   "item.create_hypertube.tube_scanner_unfinished": "Unfinished Tube Scanner",
+  "item.create_hypertube.hypertube_funnel": "Hypertube Funnel",
   "create_hypertube.ponder.simple_tube.header": "Creating a Hypertube",
   "create_hypertube.ponder.simple_tube.text_1": "To create a Hypertube connection, Just Right Click the tube while holding another tube.",
   "create_hypertube.ponder.simple_tube.text_2": "Then place the second tube.",

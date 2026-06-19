@@ -13,7 +13,7 @@ import com.pedrorok.hypertube.network.packets.MovePathPacket;
 import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
 import com.pedrorok.hypertube.utils.JunctionDirectionUtils;
 import com.pedrorok.hypertube.utils.MessageUtils;
-import com.pedrorok.hypertube.utils.MoveDirection;
+import com.pedrorok.hypertube.core.data.MoveDirection;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -50,6 +50,7 @@ public class TravelManager {
     private static final Object2ObjectArrayMap<UUID, TravelPathMover> travelDataMap = new Object2ObjectArrayMap<>();
 
     public static boolean tryStartTravel(LivingEntity entity, BlockEntity blockEntity, Direction facingDirection, float speed) {
+        if (blockEntity == null) return false;
         BlockState state = blockEntity.getBlockState();
         BlockPos pos = blockEntity.getBlockPos();
         boolean isJunction = state.getBlock() instanceof HyperJunctionBlock;

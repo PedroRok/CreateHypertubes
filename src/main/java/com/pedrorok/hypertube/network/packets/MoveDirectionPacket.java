@@ -2,7 +2,7 @@ package com.pedrorok.hypertube.network.packets;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.core.travel.TravelManager;
-import com.pedrorok.hypertube.utils.MoveDirection;
+import com.pedrorok.hypertube.core.data.MoveDirection;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
