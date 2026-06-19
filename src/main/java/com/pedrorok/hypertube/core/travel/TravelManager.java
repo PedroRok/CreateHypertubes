@@ -29,6 +29,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -49,6 +50,7 @@ public class TravelManager {
 
     private static final Object2ObjectArrayMap<UUID, TravelPathMover> travelDataMap = new Object2ObjectArrayMap<>();
 
+    @SuppressWarnings("D")
     public static boolean tryStartTravel(LivingEntity entity, BlockEntity blockEntity, Direction facingDirection, float speed) {
         if (blockEntity == null) return false;
         BlockState state = blockEntity.getBlockState();
@@ -60,6 +62,8 @@ public class TravelManager {
 
         boolean isPlayer = entity instanceof ServerPlayer;
         ServerPlayer player = isPlayer ? (ServerPlayer) entity : null;
+
+        if (isPlayer && player.gameMode.getGameModeForPlayer().equals(GameType.SPECTATOR)) return false;
 
         long lastTravelTime = entityPersistentData.getLong(LAST_TRAVEL_TIME);
 
