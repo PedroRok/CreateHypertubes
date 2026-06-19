@@ -122,6 +122,7 @@ public class HyperJunctionBlockEntity extends ActionTubeBlockEntity implements I
     }
 
     @Override
+    @OnlyIn(Dist.CLIENT)
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return false;
@@ -147,6 +148,7 @@ public class HyperJunctionBlockEntity extends ActionTubeBlockEntity implements I
         return false;
     }
 
+    @OnlyIn(Dist.CLIENT)
     private void renderFromDirections(List<Direction> directions, float speed, int color, float radius) {
         Minecraft mc = Minecraft.getInstance();
         for (Direction direction : directions) {
