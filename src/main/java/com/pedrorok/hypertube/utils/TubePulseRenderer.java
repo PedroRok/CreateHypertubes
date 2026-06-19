@@ -48,20 +48,32 @@ public final class TubePulseRenderer {
     }
 
     public static void start(BlockPos originBlockPos, BezierConnection connection, boolean invertDir) {
-        start(originBlockPos, connection, invertDir, DEFAULT_RING_COUNT, DEFAULT_RING_SPACING, DEFAULT_SPEED, DEFAULT_COLOR, DEFAULT_FADE_OUT_DISTANCE);
+        start(originBlockPos, connection, invertDir, DEFAULT_RING_COUNT, DEFAULT_RING_SPACING, DEFAULT_SPEED, DEFAULT_COLOR, DEFAULT_FADE_OUT_DISTANCE, false);
+    }
+
+
+    public static void start(BlockPos originBlockPos, BezierConnection connection, boolean invertDir,
+                             int ringCount, float ringSpacing, float speed, int color, int fadeOutDistance, boolean cutNearList) {
+        start(originBlockPos, connection, invertDir, ringCount, ringSpacing, speed, color,0, fadeOutDistance, cutNearList, RING_RADIUS);
     }
 
     public static void start(BlockPos originBlockPos, BezierConnection connection, boolean invertDir,
-                             int ringCount, float ringSpacing, float speed, int color, int fadeOutDistance) {
+                             int ringCount, float ringSpacing, float speed, int color, float fadeInDistance, float fadeOutDistance, boolean cutNearList, float ringRadius) {
         Level level = Minecraft.getInstance().level;
         if (level == null || connection == null) return;
 
         List<Vec3> relativePoints = connection.getRelativeBezierPoints(level, originBlockPos);
         if (relativePoints.size() < 2) return;
+
         if (invertDir) {
             relativePoints = relativePoints.reversed();
         }
-        ACTIVE_EFFECTS.add(new TubePulseEffect(originBlockPos, relativePoints, ringCount, ringSpacing, speed, color, fadeOutDistance));
+
+        if (cutNearList) {
+            relativePoints = relativePoints.subList(Math.min(relativePoints.size()-4, relativePoints.size()-1) , relativePoints.size());
+        }
+
+        ACTIVE_EFFECTS.add(new TubePulseEffect(originBlockPos, relativePoints, ringCount, ringSpacing, speed, color, fadeInDistance, fadeOutDistance, ringRadius));
     }
 
     public static void start(BlockPos originBlockPos, SimpleConnection simpleConnection, boolean invertDir) {
@@ -76,7 +88,7 @@ public final class TubePulseRenderer {
         BezierConnection entrance = simpleConnection.getThisEntranceConnection(level);
         if (entrance == null) return;
 
-        start(originBlockPos, entrance, invertDir, ringCount, ringSpacing, speed, color, DEFAULT_FADE_OUT_DISTANCE);
+        start(originBlockPos, entrance, invertDir, ringCount, ringSpacing, speed, color,0, DEFAULT_FADE_OUT_DISTANCE, false, RING_RADIUS);
     }
 
     public static void clear() {
@@ -131,7 +143,7 @@ public final class TubePulseRenderer {
             RingTransform transform = resolveRingTransform(points, distanceAlongPath);
             if (transform == null) continue;
 
-            drawRing(builder, pose, transform, effect.getColorFromProgress(), effect.getOpacity());
+            drawRing(builder, pose, transform, effect.getColorFromProgress(), effect.getOpacity(), effect.getRingRadius());
         }
 
         poseStack.popPose();
@@ -196,7 +208,7 @@ public final class TubePulseRenderer {
         return new Vector3f[]{perpA, perpB};
     }
 
-    private static void drawRing(VertexConsumer builder, Matrix4f pose, RingTransform transform, int color, int opacity) {
+    private static void drawRing(VertexConsumer builder, Matrix4f pose, RingTransform transform, int color, int opacity, float ringRadius) {
         int r = (color >> 16) & 0xFF;
         int g = (color >> 8) & 0xFF;
         int b = color & 0xFF;
@@ -204,7 +216,7 @@ public final class TubePulseRenderer {
         List<Vector3f> ringPoints = new ArrayList<>(RING_SEGMENTS);
         for (int i = 0; i < RING_SEGMENTS; i++) {
             float angle = (float) (i * 2 * Math.PI / RING_SEGMENTS) + (float) (Math.PI / 4);
-            ringPoints.add(offset(transform.perpA(), transform.perpB(), angle));
+            ringPoints.add(offset(transform.perpA(), transform.perpB(), angle, ringRadius));
         }
 
         for (int i = 0; i < RING_SEGMENTS; i++) {
@@ -214,13 +226,13 @@ public final class TubePulseRenderer {
         }
     }
 
-    private static Vector3f offset(Vector3f perpA, Vector3f perpB, float angle) {
+    private static Vector3f offset(Vector3f perpA, Vector3f perpB, float angle, float ringRadius) {
         float cosAngle = Mth.cos(angle);
         float sinAngle = Mth.sin(angle);
         return new Vector3f(
-                (cosAngle * perpA.x + sinAngle * perpB.x) * RING_RADIUS,
-                (cosAngle * perpA.y + sinAngle * perpB.y) * RING_RADIUS,
-                (cosAngle * perpA.z + sinAngle * perpB.z) * RING_RADIUS
+                (cosAngle * perpA.x + sinAngle * perpB.x) * ringRadius,
+                (cosAngle * perpA.y + sinAngle * perpB.y) * ringRadius,
+                (cosAngle * perpA.z + sinAngle * perpB.z) * ringRadius
         );
     }
 

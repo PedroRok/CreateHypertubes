@@ -86,7 +86,7 @@ public class ClientTravelPathRender {
 
         boolean inverted = connection.isInverted(data.getLastBlockPos());
         BlockPos pos = connection.getFromPos().pos();
-        TubePulseRenderer.start(pos, connection, inverted, 8, 0.08f, 0.1f, 0x88FF88, 5);
+        TubePulseRenderer.start(pos, connection, inverted, 8, 0.08f, 0.1f, 0x88FF88, 5, false);
     }
 
     public static void renderOverlay(GuiGraphics guiGraphics, float partialTick) {

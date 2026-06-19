@@ -25,13 +25,15 @@ public class TubePulseEffect {
     private final float ringSpacing;
     private final float speed;
     private final int color;
+    private final float fadeInDistance;
     private final float fadeOutDistance;
+    private final float ringRadius;
 
     private float travelDistance;
     private boolean finished;
 
     public TubePulseEffect(BlockPos originBlockPos, List<Vec3> relativePoints, int ringCount,
-                           float ringSpacing, float speed, int color, float fadeOutDistance) {
+                           float ringSpacing, float speed, int color, float fadeInDistance, float fadeOutDistance, float ringRadius) {
         this.originBlockPos = originBlockPos;
         this.relativePoints = relativePoints;
         this.ringCount = ringCount;
@@ -40,7 +42,9 @@ public class TubePulseEffect {
         this.color = color;
         this.travelDistance = 0f;
         this.finished = relativePoints.size() < 2;
+        this.fadeInDistance = fadeInDistance;
         this.fadeOutDistance = fadeOutDistance;
+        this.ringRadius = ringRadius;
     }
 
     public void tick(float partialTick) {
@@ -79,7 +83,13 @@ public class TubePulseEffect {
             finished = true;
             return 1;
         }
-        return (int) ((1.0f - reachProgress) * 255);
+
+        float fadeInAlpha = fadeInDistance > 0f
+                ? Mth.clamp(travelDistance / fadeInDistance, 0.0f, 1.0f)
+                : 1.0f;
+        float fadeOutAlpha = 1.0f - reachProgress;
+
+        return (int) (Math.min(fadeInAlpha, fadeOutAlpha) * 255);
     }
 
     public float getReachProgress() {

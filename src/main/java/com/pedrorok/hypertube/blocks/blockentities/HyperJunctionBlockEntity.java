@@ -10,8 +10,10 @@ import com.pedrorok.hypertube.config.ServerConfig;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
+import com.pedrorok.hypertube.core.data.JunctionMode;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
+import com.pedrorok.hypertube.utils.JunctionDirectionUtils;
 import com.pedrorok.hypertube.utils.TubePulseRenderer;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
 import lombok.Getter;
@@ -126,15 +128,37 @@ public class HyperJunctionBlockEntity extends ActionTubeBlockEntity implements I
         if (mc.player == null) return false;
         if (mc.player.tickCount % 10 != 0) return false;
 
-        for (IConnection iConnection : getConnections()) {
-            BezierConnection connection = iConnection.getThisEntranceConnection(mc.level);
-            if (connection == null) return false;
-            boolean inverted = connection.isInverted(getBlockPos());
-            BlockPos pos = connection.getFromPos().pos();
-            TubePulseRenderer.start(pos, connection, false, 8, 0.08f, 0.1f, inverted? 0xffee55 : 0x55FF55, 5);
+        List<Direction> connectedFaces = JunctionDirectionUtils.getConnectedFaces(getBlockState(), null, (HyperJunctionBlock) getBlockState().getBlock());
+        //List<Direction> fromCenterDirection = JunctionDirectionUtils.getConnectedFaces(getBlockState(), null, (HyperJunctionBlock) getBlockState().getBlock());
+        renderFromDirections(connectedFaces, 0.06f, 0x55FF55, 0.72f);
+        if (!getBlockState().getValue(HyperJunctionBlock.JUNCTION_MODE).equals(JunctionMode.AUTOMATIC)) {
+            List<Direction> fromCenterDirection = JunctionDirectionUtils.getConnectedFaces(getBlockState(), getBlockState().getValue(HyperJunctionBlock.FACING), (HyperJunctionBlock) getBlockState().getBlock());
+            IConnection connectionInDirection = getConnectionInDirection(getBlockState().getValue(HyperJunctionBlock.FACING));
+            if (connectionInDirection != null) {
+                BezierConnection thisEntranceConnection = connectionInDirection.getThisEntranceConnection(mc.level);
+                if (thisEntranceConnection != null) {
+                    boolean inverted = thisEntranceConnection.isInverted(getBlockPos());
+                    BlockPos pos = thisEntranceConnection.getFromPos().pos();
+                    TubePulseRenderer.start(pos, thisEntranceConnection, !inverted, 2, 0.08f, 0.05f, 0xffee55, 2, 8, true, 0.6f);
+                }
+            }
+            renderFromDirections(fromCenterDirection, 0.05f, 0xffee55, 0.6f);
         }
 
         return false;
+    }
+
+    private void renderFromDirections(List<Direction> directions, float speed, int color, float radius) {
+        Minecraft mc = Minecraft.getInstance();
+        for (Direction direction : directions) {
+            IConnection iConnection = getConnectionInDirection(direction);
+            if (iConnection == null) continue;
+            BezierConnection connection = iConnection.getThisEntranceConnection(mc.level);
+            if (connection == null) continue;
+            boolean inverted = connection.isInverted(getBlockPos());
+            BlockPos pos = connection.getFromPos().pos();
+            TubePulseRenderer.start(pos, connection, inverted, 2, 0.08f, speed, color,0.2f, 2, false, radius);
+        }
     }
 
     @Override

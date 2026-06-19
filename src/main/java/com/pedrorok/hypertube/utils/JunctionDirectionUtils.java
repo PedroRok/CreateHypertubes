@@ -8,6 +8,7 @@ import net.minecraft.util.Tuple;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -20,6 +21,7 @@ public final class JunctionDirectionUtils {
     private JunctionDirectionUtils() {
     }
 
+    @SuppressWarnings("D")
     public static Tuple<Direction, MoveDirection> resolveValidDirectionTuple(MoveDirection direction, BlockPos blockPos, LevelAccessor level, Direction junctionDirection) {
         Direction candidate = direction.map(junctionDirection);
 
@@ -28,7 +30,8 @@ public final class JunctionDirectionUtils {
             BlockState junctionState = junctionBlockEntity.getBlockState();
             if (junctionState.getBlock() instanceof HyperJunctionBlock junctionBlock) {
                 Direction entranceFace = junctionDirection.getOpposite();
-                List<Direction> connectedFaces = junctionBlock.getConnectedFaces(junctionState);
+
+                List<Direction> connectedFaces = getConnectedFaces(junctionState, entranceFace, junctionBlock);
 
                 boolean isValidExit = isValidExit(connectedFaces, candidate, entranceFace);
                 if (!isValidExit) {
@@ -39,6 +42,25 @@ public final class JunctionDirectionUtils {
             }
         }
         return new Tuple<>(candidate, MoveDirection.fromDirections(junctionDirection, candidate));
+    }
+
+    public static List<Direction> getConnectedFaces(BlockState junctionState, @Nullable Direction playerEntranceFace, HyperJunctionBlock junctionBlock) {
+        Direction junctionBlockDirection = junctionState.getValue(HyperJunctionBlock.FACING);
+        return switch (junctionState.getValue(HyperJunctionBlock.JUNCTION_MODE)) {
+            case FORCED_CONTINUE -> {
+                if (playerEntranceFace == junctionBlockDirection) {
+                    yield List.of(junctionBlockDirection.getCounterClockWise());
+                }
+                yield List.of(junctionBlockDirection.getClockWise(), junctionBlockDirection.getCounterClockWise());
+            }
+            case FORCED_CENTER -> {
+                if (playerEntranceFace != junctionBlockDirection) {
+                    yield List.of(junctionBlockDirection);
+                }
+                yield List.of(junctionBlockDirection.getClockWise());
+            }
+            case AUTOMATIC -> junctionBlock.getConnectedFaces(junctionState);
+        };
     }
 
     private static boolean isValidExit(List<Direction> connectedFaces, Direction candidate, Direction entranceFace) {
