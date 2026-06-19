@@ -4,19 +4,17 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
+import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Vec3i;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -29,7 +27,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @project Create Hypertube
  */
 @OnlyIn(Dist.CLIENT)
-@EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.GAME)
 public final class TubePulseRenderer {
 
     private static final List<TubePulseEffect> ACTIVE_EFFECTS = new CopyOnWriteArrayList<>();
@@ -54,7 +51,7 @@ public final class TubePulseRenderer {
 
     public static void start(BlockPos originBlockPos, BezierConnection connection, boolean invertDir,
                              int ringCount, float ringSpacing, float speed, int color, int fadeOutDistance, boolean cutNearList) {
-        start(originBlockPos, connection, invertDir, ringCount, ringSpacing, speed, color,0, fadeOutDistance, cutNearList, RING_RADIUS);
+        start(originBlockPos, connection, invertDir, ringCount, ringSpacing, speed, color, 0, fadeOutDistance, cutNearList, RING_RADIUS);
     }
 
     public static void start(BlockPos originBlockPos, BezierConnection connection, boolean invertDir,
@@ -70,7 +67,7 @@ public final class TubePulseRenderer {
         }
 
         if (cutNearList) {
-            relativePoints = relativePoints.subList(Math.min(relativePoints.size()-4, relativePoints.size()-1) , relativePoints.size());
+            relativePoints = relativePoints.subList(Math.min(relativePoints.size() - 4, relativePoints.size() - 1), relativePoints.size());
         }
 
         ACTIVE_EFFECTS.add(new TubePulseEffect(originBlockPos, relativePoints, ringCount, ringSpacing, speed, color, fadeInDistance, fadeOutDistance, ringRadius));
@@ -88,7 +85,7 @@ public final class TubePulseRenderer {
         BezierConnection entrance = simpleConnection.getThisEntranceConnection(level);
         if (entrance == null) return;
 
-        start(originBlockPos, entrance, invertDir, ringCount, ringSpacing, speed, color,0, DEFAULT_FADE_OUT_DISTANCE, false, RING_RADIUS);
+        start(originBlockPos, entrance, invertDir, ringCount, ringSpacing, speed, color, 0, DEFAULT_FADE_OUT_DISTANCE, false, RING_RADIUS);
     }
 
     public static void clear() {
@@ -97,28 +94,26 @@ public final class TubePulseRenderer {
 
     // Event
 
-    @SubscribeEvent
-    public static void onRenderLevelStage(RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) return;
+    public static void onRenderLevelStage(PoseStack poseStack, DeltaTracker deltaTracker, Camera camera) {
         if (ACTIVE_EFFECTS.isEmpty()) return;
 
-        float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(true);
+        // ✅ Substituição: delta de tempo REAL entre frames, não fração do tick de jogo
+        float deltaTime = deltaTracker.getRealtimeDeltaTicks();
 
-        PoseStack poseStack = event.getPoseStack();
         MultiBufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
         VertexConsumer builder = bufferSource.getBuffer(RenderType.lines());
 
-        Vec3 camPos = event.getCamera().getPosition();
+        Vec3 camPos = camera.getPosition();
 
         for (TubePulseEffect effect : ACTIVE_EFFECTS) {
-            effect.tick(partialTick);
+            effect.tick(deltaTime);
             if (effect.isFinished()) continue;
-
             renderEffect(effect, poseStack, builder, camPos);
         }
 
         ACTIVE_EFFECTS.removeIf(TubePulseEffect::isFinished);
     }
+
 
     // Render
     private static void renderEffect(TubePulseEffect effect, PoseStack poseStack, VertexConsumer builder, Vec3 camPos) {

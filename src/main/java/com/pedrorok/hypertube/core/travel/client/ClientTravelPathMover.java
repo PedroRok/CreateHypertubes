@@ -4,9 +4,13 @@ import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
 import com.pedrorok.hypertube.core.compat.Mods;
 import com.pedrorok.hypertube.core.compat.sable.SableCompat;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
-import com.pedrorok.hypertube.network.packets.*;
+import com.pedrorok.hypertube.network.packets.ActionPointReachPacket;
+import com.pedrorok.hypertube.network.packets.FinishPathPacket;
+import com.pedrorok.hypertube.network.packets.MovePathPacket;
+import com.pedrorok.hypertube.network.packets.SpeedChangePacket;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import lombok.Getter;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -15,21 +19,18 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 03/07/2025
  * @project Create Hypertube
  */
-@EventBusSubscriber(value = Dist.CLIENT)
 public class ClientTravelPathMover {
     private static final Int2ObjectArrayMap<PathData> ACTIVE_PATHS = new Int2ObjectArrayMap<>();
 
@@ -61,8 +62,7 @@ public class ClientTravelPathMover {
         }
     }
 
-    @SubscribeEvent
-    public static void onClientTick(ClientTickEvent.Pre event) {
+    public static void onClientTick() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.isPaused()) return;
         Level level = mc.level;
@@ -96,16 +96,12 @@ public class ClientTravelPathMover {
         }
     }
 
-
-
-
-    @SubscribeEvent
-    public static void onRenderTick(RenderFrameEvent.Pre event) {
+    public static void onRenderTick(DeltaTracker deltaTracker) {
         Minecraft mc = Minecraft.getInstance();
         Level level = mc.level;
         if (level == null) return;
 
-        float partialTicks = event.getPartialTick().getGameTimeDeltaPartialTick(false);
+        float partialTicks = deltaTracker.getGameTimeDeltaPartialTick(false);
 
         for (var entry : ACTIVE_PATHS.entrySet()) {
             int id = entry.getKey();

@@ -1,17 +1,20 @@
 package com.pedrorok.hypertube.core.travel.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.pedrorok.hypertube.blocks.HyperJunctionBlock;
 import com.pedrorok.hypertube.blocks.blockentities.HyperJunctionBlockEntity;
 import com.pedrorok.hypertube.core.camera.DetachedCameraController;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
+import com.pedrorok.hypertube.core.data.JunctionMode;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.network.packets.MoveDirectionPacket;
 import com.pedrorok.hypertube.utils.JunctionDirectionUtils;
 import com.pedrorok.hypertube.core.data.MoveDirection;
+import com.pedrorok.hypertube.utils.ModColors;
+import com.pedrorok.hypertube.utils.RenderUtils;
 import com.pedrorok.hypertube.utils.TubePulseRenderer;
 import net.createmod.catnip.math.AngleHelper;
-import net.createmod.catnip.placement.PlacementClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
@@ -20,6 +23,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,26 +36,36 @@ public class ClientTravelPathRender {
     private static MoveDirection lastValidMoveDir = MoveDirection.RIGHT;
     @Nullable
     private static Direction lastValidDirection = null;
+    private static boolean canChangeDirection = true;
     private static boolean isTraveling = false;
 
     protected static void handleStart(boolean endJunction, ClientTravelPathMover.PathData data) {
         lastValidMoveDir = MoveDirection.RIGHT;
         lastValidDirection = null;
         if (!endJunction) return;
-        Tuple<Direction, MoveDirection> directionTuple = JunctionDirectionUtils.resolveValidDirectionTuple(MoveDirection.RIGHT, data.getLastBlockPos(), Minecraft.getInstance().player.level(), data.getJunctionDirection());
-        if (directionTuple != null) {
-            System.out.println("Resolved direction tuple: " + directionTuple.getA() + " " + directionTuple.getB());
-            lastValidDirection = directionTuple.getA();
-            lastValidMoveDir = directionTuple.getB();
-        }
+        Level level = Minecraft.getInstance().player.level();
+        tryCacheDirectionTuple(level, data, MoveDirection.RIGHT);
         PacketDistributor.sendToServer(new MoveDirectionPacket(lastValidMoveDir));
         isTraveling = true;
+        canChangeDirection = level.getBlockState(data.getLastBlockPos()).getValue(HyperJunctionBlock.JUNCTION_MODE).equals(JunctionMode.AUTOMATIC);
+    }
+
+    private static void tryCacheDirectionTuple(Level level, ClientTravelPathMover.PathData data, MoveDirection moveDirection) {
+        Tuple<Direction, MoveDirection> directionTuple = JunctionDirectionUtils.resolveValidDirectionTuple(moveDirection, data.getLastBlockPos(), level, data.getJunctionDirection());
+        if (directionTuple != null) {
+            lastValidDirection = directionTuple.getA();
+            lastValidMoveDir = directionTuple.getB();
+        } else {
+            MoveDirection next = moveDirection.getNext();
+            if (next == MoveDirection.RIGHT) return;
+            tryCacheDirectionTuple(level, data, next);
+        }
     }
 
     protected static void handleClientPlayer(ClientTravelPathMover.PathData data) {
 
         if (!data.isJunctionEnd()) return;
-        MoveDirection direction = ClientKeyInputTracker.handlePlayerInputs();
+        MoveDirection direction = canChangeDirection ? ClientKeyInputTracker.handlePlayerInputs() : lastValidMoveDir;
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
 
@@ -84,9 +98,10 @@ public class ClientTravelPathRender {
         if (connection == null)
             return;
 
+
         boolean inverted = connection.isInverted(data.getLastBlockPos());
         BlockPos pos = connection.getFromPos().pos();
-        TubePulseRenderer.start(pos, connection, inverted, 8, 0.08f, 0.1f, 0x88FF88, 5, false);
+        TubePulseRenderer.start(pos, connection, inverted, 8, 0.08f, 0.6f, canChangeDirection ? ModColors.GREEN : ModColors.ORANGE, 5, false);
     }
 
     public static void renderOverlay(GuiGraphics guiGraphics, float partialTick) {
@@ -124,7 +139,7 @@ public class ClientTravelPathRender {
 
         poseStack.translate(91, -9, 0);
         poseStack.scale(0.925f, 0.925f, 1);
-        PlacementClient.textured(poseStack, 0, 0, 1, snappedAngle);
+        RenderUtils.directionArrow(poseStack, 0, 0, 1, canChangeDirection ? 0xffffff : ModColors.ORANGE, snappedAngle);
 
         poseStack.popPose();
     }

@@ -1,11 +1,9 @@
 package com.pedrorok.hypertube.blocks.blockentities;
 
 import com.pedrorok.hypertube.HypertubeMod;
-import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.blocks.HyperJunctionBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
-import com.pedrorok.hypertube.blocks.blockentities.parent.TravelInteractTubeBlockEntity;
 import com.pedrorok.hypertube.config.ServerConfig;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
@@ -14,6 +12,7 @@ import com.pedrorok.hypertube.core.data.JunctionMode;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.utils.JunctionDirectionUtils;
+import com.pedrorok.hypertube.utils.ModColors;
 import com.pedrorok.hypertube.utils.TubePulseRenderer;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
 import lombok.Getter;
@@ -127,10 +126,10 @@ public class HyperJunctionBlockEntity extends ActionTubeBlockEntity implements I
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return false;
         if (mc.player.tickCount % 10 != 0) return false;
+        if (mc.player.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG)) return false;
 
         List<Direction> connectedFaces = JunctionDirectionUtils.getConnectedFaces(getBlockState(), null, (HyperJunctionBlock) getBlockState().getBlock());
-        //List<Direction> fromCenterDirection = JunctionDirectionUtils.getConnectedFaces(getBlockState(), null, (HyperJunctionBlock) getBlockState().getBlock());
-        renderFromDirections(connectedFaces, 0.06f, 0x55FF55, 0.72f);
+        renderFromDirections(connectedFaces, 0.3f, ModColors.GREEN, 0.72f);
         if (!getBlockState().getValue(HyperJunctionBlock.JUNCTION_MODE).equals(JunctionMode.AUTOMATIC)) {
             List<Direction> fromCenterDirection = JunctionDirectionUtils.getConnectedFaces(getBlockState(), getBlockState().getValue(HyperJunctionBlock.FACING), (HyperJunctionBlock) getBlockState().getBlock());
             IConnection connectionInDirection = getConnectionInDirection(getBlockState().getValue(HyperJunctionBlock.FACING));
@@ -139,10 +138,10 @@ public class HyperJunctionBlockEntity extends ActionTubeBlockEntity implements I
                 if (thisEntranceConnection != null) {
                     boolean inverted = thisEntranceConnection.isInverted(getBlockPos());
                     BlockPos pos = thisEntranceConnection.getFromPos().pos();
-                    TubePulseRenderer.start(pos, thisEntranceConnection, !inverted, 2, 0.08f, 0.05f, 0xffee55, 2, 8, true, 0.6f);
+                    TubePulseRenderer.start(pos, thisEntranceConnection, !inverted, 2, 0.1f, 0.2f, ModColors.ORANGE, 2, 8, true, 0.6f);
                 }
             }
-            renderFromDirections(fromCenterDirection, 0.05f, 0xffee55, 0.6f);
+            renderFromDirections(fromCenterDirection, 0.2f, ModColors.ORANGE, 0.6f);
         }
 
         return false;
@@ -157,7 +156,7 @@ public class HyperJunctionBlockEntity extends ActionTubeBlockEntity implements I
             if (connection == null) continue;
             boolean inverted = connection.isInverted(getBlockPos());
             BlockPos pos = connection.getFromPos().pos();
-            TubePulseRenderer.start(pos, connection, inverted, 2, 0.08f, speed, color,0.2f, 2, false, radius);
+            TubePulseRenderer.start(pos, connection, inverted, 2, 0.1f, speed, color,0.2f, 2, false, radius);
         }
     }
 

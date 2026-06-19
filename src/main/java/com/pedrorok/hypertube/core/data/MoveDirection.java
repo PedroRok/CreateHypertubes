@@ -21,13 +21,13 @@ public enum MoveDirection implements StringRepresentable {
         return directionMapper.apply(direction);
     }
 
-    public static MoveDirection fromDirections(Direction from, Direction to) {
-        for (MoveDirection moveDirection : values()) {
-            if (moveDirection.map(from) == to) {
-                return moveDirection;
-            }
-        }
-        return NONE;
+    public MoveDirection getNext() {
+        return switch (this) {
+            case FRONT -> LEFT;
+            case LEFT -> RIGHT;
+            case RIGHT -> FRONT;
+            case NONE -> NONE;
+        };
     }
 
     @Override
@@ -38,5 +38,14 @@ public enum MoveDirection implements StringRepresentable {
             case RIGHT -> "right";
             case NONE -> "none";
         };
+    }
+
+    public static MoveDirection fromDirections(Direction from, Direction to) {
+        for (MoveDirection moveDirection : values()) {
+            if (moveDirection.map(from) == to) {
+                return moveDirection;
+            }
+        }
+        return NONE;
     }
 }

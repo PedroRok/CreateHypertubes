@@ -8,11 +8,14 @@ import com.pedrorok.hypertube.core.placement.TubePlacement;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravellerEntity;
+import com.pedrorok.hypertube.core.travel.client.ClientTravelPathMover;
 import com.pedrorok.hypertube.core.travel.client.ClientTravelPathRender;
+import com.pedrorok.hypertube.utils.TubePulseRenderer;
 import net.createmod.catnip.animation.AnimationTickHolder;
 import net.createmod.catnip.placement.PlacementClient;
 import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
@@ -51,15 +54,19 @@ public class ClientEvents {
         }
         TubePlacement.clientTick();
         DetachedCameraController.tickCamera();
+        ClientTravelPathMover.onClientTick();
     }
 
     @SubscribeEvent
     public static void renderFrame(RenderFrameEvent.Pre event) {
+        DeltaTracker partialTick = event.getPartialTick();
         long currentTime = System.nanoTime();
         if (currentTime - lastTickTime >= TICK_INTERVAL_NS) {
             DetachedPlayerDirController.tickPlayer();
             lastTickTime = currentTime;
         }
+
+        ClientTravelPathMover.onRenderTick(partialTick);
     }
 
     @SubscribeEvent
@@ -72,18 +79,21 @@ public class ClientEvents {
 
     @SubscribeEvent
     public static void onRenderWorld(RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) return;
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
+            PoseStack ms = event.getPoseStack();
+            ms.pushPose();
+            SuperRenderTypeBuffer buffer = DefaultSuperRenderTypeBuffer.getInstance();
+            Vec3 camera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
 
-        PoseStack ms = event.getPoseStack();
-        ms.pushPose();
-        SuperRenderTypeBuffer buffer = DefaultSuperRenderTypeBuffer.getInstance();
-        Vec3 camera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+            TubePlacement.drawCustomBlockSelection(ms, buffer, camera);
 
-        TubePlacement.drawCustomBlockSelection(ms, buffer, camera);
-
-        buffer.draw();
-        RenderSystem.enableCull();
-        ms.popPose();
+            buffer.draw();
+            RenderSystem.enableCull();
+            ms.popPose();
+        }
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
+            TubePulseRenderer.onRenderLevelStage(event.getPoseStack(), event.getPartialTick(), event.getCamera());
+        }
     }
 
     protected static boolean isGameActive() {
