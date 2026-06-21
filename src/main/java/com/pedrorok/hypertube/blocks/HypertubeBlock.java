@@ -185,15 +185,19 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
         if (blockState == null) {
             blockState = defaultBlockState();
         }
+
         boolean northSouth = isConnected(world, pos, Direction.NORTH) || isConnected(world, pos, Direction.SOUTH);
         boolean eastWest = isConnected(world, pos, Direction.EAST) || isConnected(world, pos, Direction.WEST);
         boolean upDown = isConnected(world, pos, Direction.UP) || isConnected(world, pos, Direction.DOWN);
 
+        if (!northSouth && !eastWest && !upDown) {
+            return blockState.setValue(CONNECTED, false);
+        }
         return blockState
                 .setValue(NORTH_SOUTH, northSouth)
                 .setValue(EAST_WEST, eastWest && !northSouth)
                 .setValue(UP_DOWN, upDown && !northSouth && !eastWest)
-                .setValue(CONNECTED, northSouth || eastWest || upDown);
+                .setValue(CONNECTED, true);
     }
 
     public void updateBlockStateFromEntity(BlockState state, Level world, BlockPos pos) {
