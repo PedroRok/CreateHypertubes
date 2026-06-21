@@ -94,10 +94,12 @@ public class TubePlacement {
         SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection, 0);
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
 
+        boolean isAngleInverted = false;
         if (bezierConnection.isAngleTooHigh()) {
             BezierConnection newBezierConnection = BezierConnection.of(connectionFrom, new SimpleConnection(pos, finalDirection.getOpposite(), 0));
             if (!newBezierConnection.isAngleTooHigh()) {
                 bezierConnection = newBezierConnection;
+                isAngleInverted = true;
             }
         }
 
@@ -111,7 +113,7 @@ public class TubePlacement {
             response = TubeUtils.checkBlockCollision(level, bezierConnection);
         }
         if (response.valid() && hypertubeHitResult) {
-            response = TubeUtils.checkClickedHypertube(level, pos, finalDirection.getOpposite());
+            response = TubeUtils.checkClickedHypertube(level, pos, isAngleInverted ? finalDirection : finalDirection.getOpposite());
         }
 
         animation.setValue(!response.valid() ? 0.2 : 0.8);
@@ -143,9 +145,11 @@ public class TubePlacement {
 
         BezierConnection connection = new BezierConnection(simpleConnection, new SimpleConnection(pos, direction.getOpposite(), -tubeEntity.getConnectionOffsetOnDirection(direction.getOpposite())));
 
+        boolean isAngleInverted = false;
         if (connection.isAngleTooHigh()) {
             BezierConnection newBezierConnection = BezierConnection.of(simpleConnection, new SimpleConnection(pos, direction, -tubeEntity.getConnectionOffsetOnDirection(direction)));
             if (!newBezierConnection.isAngleTooHigh()) {
+                isAngleInverted = true;
                 connection = newBezierConnection;
             }
         }
@@ -158,7 +162,7 @@ public class TubePlacement {
             validation = TubeUtils.checkBlockCollision(level, connection);
         }
         if (validation.valid()) {
-            validation = TubeUtils.checkClickedHypertube(level, pos, direction);
+            validation = TubeUtils.checkClickedHypertube(level, pos, isAngleInverted ? direction.getOpposite() : direction );
         }
 
         if (!validation.valid()) {
