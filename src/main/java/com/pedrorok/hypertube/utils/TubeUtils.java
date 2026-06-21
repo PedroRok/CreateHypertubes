@@ -1,8 +1,8 @@
 package com.pedrorok.hypertube.utils;
 
-import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import com.pedrorok.hypertube.core.placement.ResponseDTO;
 import com.pedrorok.hypertube.items.HypertubeItem;
 import com.pedrorok.hypertube.registry.ModBlocks;
@@ -30,8 +30,8 @@ public class TubeUtils {
 
 
     public static ResponseDTO checkClickedHypertube(Level level, BlockPos pos, Direction direction) {
-        if (level.getBlockEntity(pos) instanceof HypertubeBlockEntity tubeEntity
-            && !tubeEntity.getFacesConnectable().contains(direction)) {
+        if (level.getBlockEntity(pos) instanceof ITubeConnectionEntity tubeEntity
+                && !tubeEntity.getFacesConnectable().contains(direction)) {
             return ResponseDTO.invalid("placement.create_hypertube.cant_conn_to_face");
         }
         return ResponseDTO.get(true);
@@ -87,12 +87,12 @@ public class TubeUtils {
         for (int i = 1; i < positions.size() - 1; i++) {
             Vec3 pos = positions.get(i);
             if (hasCollision(level, pos) ||
-                hasCollision(level, pos.add(CHECK_DISTANCE_THRESHOLD, 0, 0)) ||
-                hasCollision(level, pos.add(0, 0, CHECK_DISTANCE_THRESHOLD)) ||
-                hasCollision(level, pos.add(CHECK_DISTANCE_THRESHOLD, 0, CHECK_DISTANCE_THRESHOLD)) ||
-                hasCollision(level, pos.add(-CHECK_DISTANCE_THRESHOLD, 0, 0)) ||
-                hasCollision(level, pos.add(0, 0, -CHECK_DISTANCE_THRESHOLD)) ||
-                hasCollision(level, pos.add(-CHECK_DISTANCE_THRESHOLD, 0, -CHECK_DISTANCE_THRESHOLD))) {
+                    hasCollision(level, pos.add(CHECK_DISTANCE_THRESHOLD, 0, 0)) ||
+                    hasCollision(level, pos.add(0, 0, CHECK_DISTANCE_THRESHOLD)) ||
+                    hasCollision(level, pos.add(CHECK_DISTANCE_THRESHOLD, 0, CHECK_DISTANCE_THRESHOLD)) ||
+                    hasCollision(level, pos.add(-CHECK_DISTANCE_THRESHOLD, 0, 0)) ||
+                    hasCollision(level, pos.add(0, 0, -CHECK_DISTANCE_THRESHOLD)) ||
+                    hasCollision(level, pos.add(-CHECK_DISTANCE_THRESHOLD, 0, -CHECK_DISTANCE_THRESHOLD))) {
                 return ResponseDTO.invalid("placement.create_hypertube.block_collision");
             }
         }
@@ -111,7 +111,7 @@ public class TubeUtils {
 
     public static ResponseDTO checkSurvivalItems(@NotNull Player player, int neededTubes, boolean simulate) {
         if (!player.isCreative()
-            && !checkPlayerInventory(player, neededTubes, simulate)) {
+                && !checkPlayerInventory(player, neededTubes, simulate)) {
             return ResponseDTO.invalid("placement.create_hypertube.no_enough_tubes");
         }
         return ResponseDTO.get(true);
