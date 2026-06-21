@@ -112,7 +112,7 @@ public abstract class TubeBlockEntity extends KineticBlockEntity implements ITub
     }
 
     @Override
-    public Vec3 getExitDirection() {
+    public Vec3 getExitDirection(@Nullable Direction connectonDirection) {
         List<IConnection> connections = getConnections();
         if (connections.isEmpty()) return null;
         IConnection first = connections.get(0);

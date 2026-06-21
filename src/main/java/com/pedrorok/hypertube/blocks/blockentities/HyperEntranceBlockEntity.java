@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -189,7 +190,7 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
     }
 
     @Override
-    public Vec3 getExitDirection() {
+    public Vec3 getExitDirection(@Nullable Direction connectionDirection) {
         if (getBlockState().hasProperty(HyperEntranceBlock.FACING)) {
             Direction facing = getBlockState().getValue(HyperEntranceBlock.FACING).getOpposite();
             return Vec3.atLowerCornerOf(facing.getNormal());

@@ -30,6 +30,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -158,7 +159,7 @@ public class HyperJunctionBlockEntity extends ActionTubeBlockEntity implements I
             if (connection == null) continue;
             boolean inverted = connection.isInverted(getBlockPos());
             BlockPos pos = connection.getFromPos().pos();
-            TubePulseRenderer.start(pos, connection, inverted, 2, 0.1f, speed, color,0.2f, 2, false, radius);
+            TubePulseRenderer.start(pos, connection, inverted, 2, 0.1f, speed, color, 0.2f, 2, false, radius);
         }
     }
 
@@ -220,14 +221,16 @@ public class HyperJunctionBlockEntity extends ActionTubeBlockEntity implements I
     }
 
     @Override
-    public Vec3 getExitDirection() {
-        if (getBlockState().hasProperty(HyperJunctionBlock.FACING)) {
+    public Vec3 getExitDirection(@Nullable Direction connectionDirection) {
+        if (getBlockState().hasProperty(HyperJunctionBlock.FACING)
+                && connectionDirection != null
+                && connectionDirection.getOpposite() == getBlockState().getValue(HyperJunctionBlock.FACING)) {
             Direction facing = getBlockState().getValue(HyperJunctionBlock.FACING);
             if (level == null) return Vec3.atLowerCornerOf(facing.getNormal());
             facing = level.getRandom().nextBoolean() ? facing.getClockWise() : facing.getCounterClockWise();
             return Vec3.atLowerCornerOf(facing.getNormal());
         }
-        return null;
+        return connectionDirection != null ? Vec3.atLowerCornerOf(connectionDirection.getNormal()) : null;
     }
 
     @Override

@@ -86,12 +86,17 @@ public class TravelPathData {
 
         if (blockState.getBlock() instanceof HyperJunctionBlock
                 && level.getBlockEntity(pos) instanceof TubeBlockEntity tubeBlockEntity
-                && tubeBlockEntity.getConnections().size() > 2 && !entrance) {
-            blockConnections.add(pos);
-            travelPoints.add(pos.getCenter());
-            junctionDirection = connectingFrom;
-            finishWithJunction = true;
-            return;
+                && !entrance) {
+            if (tubeBlockEntity.getConnections().size() > 2 ) {
+                junctionDirection = connectingFrom;
+                blockConnections.add(pos);
+                travelPoints.add(pos.getCenter());
+                finishWithJunction = true;
+                return;
+            }
+            if (tubeBlockEntity.getConnections().size() == 1) {
+                junctionDirection = connectingFrom;
+            }
         }
 
 
@@ -207,7 +212,7 @@ public class TravelPathData {
         if (blockConnections.isEmpty()) return null;
         BlockEntity blockEntity = level.getBlockEntity(blockConnections.getLast());
         if (blockEntity instanceof ITubeConnectionEntity connection) {
-            return connection.getExitDirection();
+            return connection.getExitDirection(junctionDirection);
         }
         return null;
     }

@@ -200,5 +200,5 @@ public interface ITubeConnectionEntity {
     boolean wrenchClicked(Direction direction);
 
     @Nullable
-    Vec3 getExitDirection();
+    Vec3 getExitDirection(@Nullable Direction connectionDirection);
 }
