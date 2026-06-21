@@ -94,6 +94,13 @@ public class TubePlacement {
         SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection, 0);
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
 
+        if (bezierConnection.isAngleTooHigh()) {
+            BezierConnection newBezierConnection = BezierConnection.of(connectionFrom, new SimpleConnection(pos, finalDirection.getOpposite(), 0));
+            if (!newBezierConnection.isAngleTooHigh()) {
+                bezierConnection = newBezierConnection;
+            }
+        }
+
         // Exception & visual
         ResponseDTO response = bezierConnection.getValidation();
 
@@ -136,6 +143,12 @@ public class TubePlacement {
 
         BezierConnection connection = new BezierConnection(simpleConnection, new SimpleConnection(pos, direction.getOpposite(), -tubeEntity.getConnectionOffsetOnDirection(direction.getOpposite())));
 
+        if (connection.isAngleTooHigh()) {
+            BezierConnection newBezierConnection = BezierConnection.of(simpleConnection, new SimpleConnection(pos, direction, -tubeEntity.getConnectionOffsetOnDirection(direction)));
+            if (!newBezierConnection.isAngleTooHigh()) {
+                connection = newBezierConnection;
+            }
+        }
 
         ResponseDTO validation = connection.getValidation();
         if (validation.valid()) {

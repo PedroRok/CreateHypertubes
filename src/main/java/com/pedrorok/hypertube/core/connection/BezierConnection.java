@@ -50,7 +50,7 @@ public class BezierConnection implements IConnection {
 
     private final static float MAX_REASONABLE_DISTANCE = 1000F;
     public static final float MAX_DISTANCE = 40.0f;
-    public static final float MAX_ANGLE = 0.6f;
+    public static final float MAX_ANGLE = 0.54f;
 
     @Getter
     private final UUID uuid = UUID.randomUUID();
@@ -204,15 +204,27 @@ public class BezierConnection implements IConnection {
         List<Vec3> points = getBezierPoints();
 
         if (distance() > MAX_REASONABLE_DISTANCE) return 0;
+        if (points.size() < 2) return 0;
 
-        Vec3 first = points.getFirst();
-        Vec3 second = points.get(1);
-        Direction direction = fromPos.direction();
-        Vec3 firstDirection = new Vec3(direction.getStepX(), direction.getStepY(), direction.getStepZ());
-        Vec3 secondDirection = second.subtract(first).normalize();
-        float initialAngle = (float) Math.acos(firstDirection.dot(secondDirection) / (firstDirection.length() * secondDirection.length()));
-        if (initialAngle >= 2.) {
-            return initialAngle;
+        Vec3 fromDir = new Vec3(
+                fromPos.direction().getStepX(),
+                fromPos.direction().getStepY(),
+                fromPos.direction().getStepZ()
+        );
+
+        Vec3 firstSegment = points.get(1).subtract(points.get(0)).normalize();
+        float firstAngle = (float) Math.acos(Math.clamp(fromDir.dot(firstSegment), -1.0, 1.0));
+        if (firstAngle >= MAX_ANGLE) return firstAngle;
+
+        Vec3 lastSegment = points.getLast().subtract(points.get(points.size() - 2)).normalize();
+        if (toPos != null && toPos.direction() != null) {
+            Vec3 toDir = new Vec3(
+                    toPos.direction().getStepX(),
+                    toPos.direction().getStepY(),
+                    toPos.direction().getStepZ()
+            );
+            float lastAngle = (float) Math.acos(Math.clamp(toDir.dot(lastSegment), -1.0, 1.0));
+            if (lastAngle >= MAX_ANGLE) return lastAngle;
         }
 
         return getMaxAngle(points);
@@ -246,7 +258,7 @@ public class BezierConnection implements IConnection {
             valid = ResponseDTO.invalid("placement.create_hypertube.no_valid_points");
             return valid;
         }
-        if (getMaxAngleBezierAngle() >= MAX_ANGLE) {
+        if (isAngleTooHigh()) {
             valid = ResponseDTO.invalid("placement.create_hypertube.angle_too_high");
             return valid;
         }
@@ -260,6 +272,11 @@ public class BezierConnection implements IConnection {
         }
 
         return ResponseDTO.get(true);
+    }
+
+    public boolean isAngleTooHigh() {
+        System.out.println(getMaxAngleBezierAngle());
+        return getMaxAngleBezierAngle() >= MAX_ANGLE;
     }
 
     public static BezierConnection of(SimpleConnection from, @Nullable SimpleConnection toPos) {

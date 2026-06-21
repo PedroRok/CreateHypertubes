@@ -52,7 +52,12 @@ public class TubeUtils {
         Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, null, true);
         SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection, 0);
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
-
+        if (bezierConnection.isAngleTooHigh()) {
+            BezierConnection newBezierConnection = BezierConnection.of(connectionFrom, new SimpleConnection(pos, finalDirection.getOpposite(), 0));
+            if (!newBezierConnection.isAngleTooHigh()) {
+                bezierConnection = newBezierConnection;
+            }
+        }
         return checkPlayerPlacingBlockValidation(player, bezierConnection, level);
     }
 

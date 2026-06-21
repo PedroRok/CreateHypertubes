@@ -263,6 +263,13 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
         SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection, 0);
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
 
+        if (bezierConnection.isAngleTooHigh()) {
+            BezierConnection newBezierConnection = BezierConnection.of(connectionFrom, new SimpleConnection(pos, finalDirection.getOpposite(), 0));
+            if (!newBezierConnection.isAngleTooHigh()) {
+                bezierConnection = newBezierConnection;
+            }
+        }
+
         if (!TubeUtils.checkPlayerPlacingBlockValidation(player, bezierConnection, level)) {
             level.playSound(placer, pos, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS,
                     1, 0.5f);
