@@ -275,7 +275,6 @@ public class BezierConnection implements IConnection {
     }
 
     public boolean isAngleTooHigh() {
-        System.out.println(getMaxAngleBezierAngle());
         return getMaxAngleBezierAngle() >= MAX_ANGLE;
     }
 

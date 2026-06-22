@@ -178,7 +178,6 @@ public class HyperAcceleratorBlock extends ActionTubeBlock implements EntityBloc
         newSpeed = Math.max(0.4333f, newSpeed);
         mover.setTravelSpeed(newSpeed);
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, new SpeedChangePacket(entity.getId(), newSpeed));
-        System.out.println(newSpeed);
         TubeSoundManager.playTubeSuctionSound(entity, entity.position(), 0.5f, Math.min(1.6f, newSpeed));
     }
 

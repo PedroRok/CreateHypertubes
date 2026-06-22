@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.core.travel.client;
 
+import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
 import com.pedrorok.hypertube.core.compat.Mods;
 import com.pedrorok.hypertube.core.compat.sable.SableCompat;
@@ -76,14 +77,16 @@ public class ClientTravelPathMover {
 
             Entity entity = level.getEntity(id);
             if (entity == null || !entity.isAlive() || entity.isSpectator()) {
+                HypertubeMod.LOGGER.debug("Entity {} is no longer valid, removing from active paths", id);
                 it.remove();
                 continue;
             }
 
-            if (data.isDone()) {
+            if (data.isDone() && !data.isJunctionEnd()) {
                 PacketDistributor.sendToServer(new FinishPathPacket(entity.getUUID()));
                 Mods.SABLE.executeIfInstalled(() -> () -> SableCompat.stickToSubLevel(entity, null));
                 it.remove();
+                HypertubeMod.LOGGER.debug("Entity {} has finished its path, removing from active paths", id);
                 continue;
             }
 
