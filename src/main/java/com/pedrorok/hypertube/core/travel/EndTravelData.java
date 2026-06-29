@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
  * @author Rok, Pedro Lucas nmm. 16/06/2026
  * @project Create Hypertube
  */
-public record EndTravelData(LivingEntity entity, boolean isJunctionEnd,@Nullable Direction direction, boolean isForced) {
+public record EndTravelData(LivingEntity entity, boolean isJunctionEnd, @Nullable Direction direction, boolean isForced) {
 
     public static EndTravelData forced(LivingEntity entity) {
         return new EndTravelData(entity, false, null, true);

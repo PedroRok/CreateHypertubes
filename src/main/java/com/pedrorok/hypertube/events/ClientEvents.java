@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.pedrorok.hypertube.core.camera.DetachedCameraController;
 import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
+import com.pedrorok.hypertube.core.escape.TubeEscapeHandler;
 import com.pedrorok.hypertube.core.placement.TubePlacement;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
@@ -50,6 +51,7 @@ public class ClientEvents {
 
         if (isPreEvent) {
             TubeSoundManager.tickClientPlayerSounds();
+            TubeEscapeHandler.onClientTick();
             return;
         }
         TubePlacement.clientTick();
@@ -71,10 +73,12 @@ public class ClientEvents {
 
     @SubscribeEvent
     public static void afterRenderOverlayLayer(RenderGuiLayerEvent.Post event) {
-        if (event.getName() != VanillaGuiLayers.CROSSHAIR)
-            return;
-
-        ClientTravelPathRender.renderOverlay(event.getGuiGraphics(), AnimationTickHolder.getPartialTicksUI());
+        if (event.getName() == VanillaGuiLayers.CROSSHAIR) {
+            ClientTravelPathRender.renderOverlay(event.getGuiGraphics(), AnimationTickHolder.getPartialTicksUI());
+        }
+        if (event.getName() == VanillaGuiLayers.HOTBAR) {
+            TubeEscapeHandler.onRenderGuiOverlay(event.getGuiGraphics(), event.getPartialTick());
+        }
     }
 
     @SubscribeEvent

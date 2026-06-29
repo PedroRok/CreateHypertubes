@@ -54,5 +54,9 @@ public class NetworkHandler {
                 MoveDirectionPacket.STREAM_CODEC,
                 MoveDirectionPacket::handle
         );
+        registrar.playToServer(EscapeTubePacket.TYPE,
+                EscapeTubePacket.STREAM_CODEC,
+                EscapeTubePacket::handle
+        );
     }
 }

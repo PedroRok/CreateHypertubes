@@ -56,6 +56,13 @@ public class ClientTravelPathMover {
         ClientKeyInputTracker.handlePlayerStart();
     }
 
+    public static void stopMoving(int entityId) {
+        PathData data = ACTIVE_PATHS.get(entityId);
+        if (data != null) {
+            ACTIVE_PATHS.remove(entityId);
+        }
+    }
+
     public static void updateEntitySpeed(SpeedChangePacket packet) {
         PathData data = ACTIVE_PATHS.get(packet.entityId());
         if (data != null) {

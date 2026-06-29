@@ -170,7 +170,7 @@ public class TravelManager {
 
         syncPersistentData(entity);
 
-        if (data.isJunctionEnd()) {
+        if (data.isJunctionEnd() && !data.isForced()) {
             BlockEntity blockState = level.getBlockEntity(pathMover.getLastPos());
             if (!tryStartTravel(entity, blockState, data.direction(), pathMover.getTravelSpeed())) return;
             TubeSoundManager.playTubeSuctionSound(entity, pathMover.getLastPos().getCenter(), 0.5f, 1.2f);
