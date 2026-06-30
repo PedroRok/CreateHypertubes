@@ -7,13 +7,13 @@ import com.pedrorok.hypertube.blocks.HyperJunctionBlock;
 import com.pedrorok.hypertube.config.ClientConfig;
 import com.pedrorok.hypertube.core.compat.Mods;
 import com.pedrorok.hypertube.core.compat.sable.SableCompat;
+import com.pedrorok.hypertube.core.data.MoveDirection;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.events.PlayerSyncEvents;
 import com.pedrorok.hypertube.network.packets.MovePathPacket;
 import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
 import com.pedrorok.hypertube.utils.JunctionDirectionUtils;
 import com.pedrorok.hypertube.utils.MessageUtils;
-import com.pedrorok.hypertube.core.data.MoveDirection;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -184,6 +184,17 @@ public class TravelManager {
             lastBlockPos = pathMover.getLastPos().relative(blockState.getValue(HyperEntranceBlock.FACING).getOpposite()).getCenter();
         }
 
+
+        if (forced) {
+            float yaw = entity.getYRot();
+            float pitch = entity.getXRot();
+            float radYaw = (float) Math.toRadians(yaw);
+            float radPitch = (float) Math.toRadians(pitch);
+            Vec3 direction = new Vec3(-Math.sin(radYaw) * Math.cos(radPitch), -Math.sin(radPitch), Math.cos(radYaw) * Math.cos(radPitch));
+            lastDir = direction.normalize();
+            lastBlockPos = entity.position();
+        }
+
         Pair<Vec3, Vec3> lastPosDir = Pair.of(lastBlockPos, lastDir);
         lastPosDir = Mods.SABLE.executeIfInstalled(() -> (posDir) -> SableCompat.transformToWorld(level, posDir.getFirst(), posDir.getSecond()), lastPosDir);
         lastBlockPos = lastPosDir.getFirst();
@@ -191,12 +202,11 @@ public class TravelManager {
         lastBlockPos = lastBlockPos.add(lastDir.scale(0.5));
 
         Mods.SABLE.executeIfInstalled(() -> () -> SableCompat.stickToSubLevel(entity, null));
-        if (!forced) {
-            if (level instanceof ServerLevel) {
-                entity.teleportTo((ServerLevel) level, lastBlockPos.x, lastBlockPos.y, lastBlockPos.z, RelativeMovement.ALL, entity.getYRot(), entity.getXRot());
-            }
-            entity.setDeltaMovement(lastDir.scale(Math.max(finalSpeed, 1f)));
+
+        if (level instanceof ServerLevel) {
+            entity.teleportTo((ServerLevel) level, lastBlockPos.x, lastBlockPos.y, lastBlockPos.z, RelativeMovement.ALL, entity.getYRot(), entity.getXRot());
         }
+        entity.setDeltaMovement(lastDir.scale(Math.max(finalSpeed, 1f)));
         entity.hurtMarked = true;
 
         entity.setPose(Pose.SWIMMING);
