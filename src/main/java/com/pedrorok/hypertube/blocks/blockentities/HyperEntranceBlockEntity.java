@@ -4,6 +4,8 @@ import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.config.ServerConfig;
+import com.pedrorok.hypertube.core.collision.TubeFiller;
+import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
@@ -49,9 +51,8 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
     @Override
     protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(compound, registries, clientPacket);
-        if (compound.contains("Connection")) {
-            connection = getConnectionRelative(compound, "Connection", worldPosition);
-        }
+        connection = compound.contains("Connection")
+                ? getConnectionRelative(compound, "Connection", worldPosition) : null;
     }
 
     @Override
@@ -152,6 +153,9 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
         } else {
             HypertubeMod.LOGGER.error(new TubeConnectionException("Connection could not define connection", this.connection, connection).getMessage());
             return;
+        }
+        if (ServerConfig.get().TUBE_COLLISION.get() && connection instanceof BezierConnection bezier) {
+            TubeFiller.place(level, bezier);
         }
         setChanged();
         sync();

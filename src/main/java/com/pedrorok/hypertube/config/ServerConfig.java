@@ -29,6 +29,8 @@ public class ServerConfig {
     public final ModConfigSpec.DoubleValue STRESS_IMPACT_ENTRANCE;
     public final ModConfigSpec.DoubleValue STRESS_IMPACT_ACCELERATOR;
 
+    public final ModConfigSpec.BooleanValue TUBE_COLLISION;
+
     private final Set<EntityType<?>> cachedWhitelist = new HashSet<>();
     private final Set<EntityType<?>> cachedBlacklist = new HashSet<>();
 
@@ -86,6 +88,20 @@ public class ServerConfig {
         STRESS_IMPACT_ACCELERATOR = builder
                 .comment("Stress impact of the Hyper Accelerator block.")
                 .defineInRange("acceleratorStressImpact", 4.0, 0.0, 100.0);
+
+        builder.pop();
+
+        builder.comment("Collision Settings")
+                .push("Collision Settings");
+
+        TUBE_COLLISION = builder
+                .comment("Whether hypertubes have solid collision along their curved path.",
+                        "When true,entities collide with it",
+                        "(you can stand on it, mobs can't pass through); travelers still pass through freely.",
+                        "When false, tubes are visual-only with no collision along the curve.",
+                        "Note: disabling only stops NEW tubes from gaining collision - existing tubes keep theirs",
+                        "until they are reconnected.")
+                .define("tubeCollision", true);
 
         builder.pop();
     }

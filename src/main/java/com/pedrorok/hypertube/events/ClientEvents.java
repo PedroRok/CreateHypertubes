@@ -2,6 +2,7 @@ package com.pedrorok.hypertube.events;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.pedrorok.hypertube.client.TubePathOutline;
 import com.pedrorok.hypertube.core.camera.DetachedCameraController;
 import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
 import com.pedrorok.hypertube.core.escape.TubeEscapeHandler;
@@ -44,6 +45,11 @@ public class ClientEvents {
     @SubscribeEvent
     public static void onTickPost(ClientTickEvent.Post event) {
         onTick(false);
+    }
+
+    @SubscribeEvent
+    public static void onRenderHighlight(RenderHighlightEvent.Block event) {
+        TubePathOutline.renderTubeOutline(event);
     }
 
     private static void onTick(boolean isPreEvent) {

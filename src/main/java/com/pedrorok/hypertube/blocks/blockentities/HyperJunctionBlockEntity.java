@@ -5,6 +5,7 @@ import com.pedrorok.hypertube.blocks.HyperJunctionBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
 import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.config.ServerConfig;
+import com.pedrorok.hypertube.core.collision.TubeFiller;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
@@ -59,15 +60,12 @@ public class HyperJunctionBlockEntity extends ActionTubeBlockEntity implements I
     @Override
     protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(compound, registries, clientPacket);
-        if (compound.contains("ConnectionOne")) {
-            connectionOne = getConnectionRelative(compound, "ConnectionOne", worldPosition);
-        }
-        if (compound.contains("ConnectionTwo")) {
-            connectionTwo = getConnectionRelative(compound, "ConnectionTwo", worldPosition);
-        }
-        if (compound.contains("ConnectionThree")) {
-            connectionThree = getConnectionRelative(compound, "ConnectionThree", worldPosition);
-        }
+        connectionOne = compound.contains("ConnectionOne")
+                ? getConnectionRelative(compound, "ConnectionOne", worldPosition) : null;
+        connectionTwo = compound.contains("ConnectionTwo")
+                ? getConnectionRelative(compound, "ConnectionTwo", worldPosition) : null;
+        connectionThree = compound.contains("ConnectionThree")
+                ? getConnectionRelative(compound, "ConnectionThree", worldPosition) : null;
     }
 
     @Override
@@ -189,6 +187,9 @@ public class HyperJunctionBlockEntity extends ActionTubeBlockEntity implements I
         } else {
             HypertubeMod.LOGGER.error(new TubeConnectionException("Connection could not define connection", connection, connectionOne, connectionTwo).getMessage());
             return;
+        }
+        if (ServerConfig.get().TUBE_COLLISION.get() && connection instanceof BezierConnection bezier) {
+            TubeFiller.place(level, bezier);
         }
         if (level != null && !level.isClientSide()) {
             BlockState blockState = level.getBlockState(worldPosition);

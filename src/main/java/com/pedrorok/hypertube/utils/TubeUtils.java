@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.utils;
 
+import com.pedrorok.hypertube.core.collision.TubeCollision;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
@@ -14,11 +15,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 11/06/2025
@@ -82,30 +79,22 @@ public class TubeUtils {
     }
 
 
-    private static final float CHECK_DISTANCE_THRESHOLD = 0.4f;
-
     public static ResponseDTO checkBlockCollision(@NotNull Level level, @NotNull BezierConnection bezierConnection) {
-        List<Vec3> positions = new ArrayList<>(bezierConnection.getBezierPoints().reversed());
-        positions.removeLast();
-        positions.removeFirst();
-
-        for (int i = 1; i < positions.size() - 1; i++) {
-            Vec3 pos = positions.get(i);
-            if (hasCollision(level, pos) ||
-                    hasCollision(level, pos.add(CHECK_DISTANCE_THRESHOLD, 0, 0)) ||
-                    hasCollision(level, pos.add(0, 0, CHECK_DISTANCE_THRESHOLD)) ||
-                    hasCollision(level, pos.add(CHECK_DISTANCE_THRESHOLD, 0, CHECK_DISTANCE_THRESHOLD)) ||
-                    hasCollision(level, pos.add(-CHECK_DISTANCE_THRESHOLD, 0, 0)) ||
-                    hasCollision(level, pos.add(0, 0, -CHECK_DISTANCE_THRESHOLD)) ||
-                    hasCollision(level, pos.add(-CHECK_DISTANCE_THRESHOLD, 0, -CHECK_DISTANCE_THRESHOLD))) {
-                return ResponseDTO.invalid("placement.create_hypertube.block_collision");
+        boolean collision = false;
+        for (BlockPos blockPos : TubeCollision.occupied(bezierConnection.getBezierPoints(level, bezierConnection.getFromPos().pos()))) {
+            if (hasCollision(level, blockPos)) {
+                if (!level.isClientSide) {
+                    return ResponseDTO.invalid("placement.create_hypertube.block_collision");
+                }
+                collision = true;
             }
         }
-        return ResponseDTO.get(true);
+        return collision
+                ? ResponseDTO.invalid("placement.create_hypertube.block_collision")
+                : ResponseDTO.get(true);
     }
 
-    private static boolean hasCollision(Level level, Vec3 pos) {
-        BlockPos blockPos = BlockPos.containing(pos);
+    private static boolean hasCollision(Level level, BlockPos blockPos) {
         boolean hasCollision = !level.getBlockState(blockPos).getCollisionShape(level, blockPos).isEmpty();
         if (hasCollision && level.isClientSide) {
             BezierConnection.outlineBlocks(blockPos);

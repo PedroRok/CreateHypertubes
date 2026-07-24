@@ -5,6 +5,7 @@ import com.pedrorok.hypertube.blocks.blockentities.HyperAcceleratorBlockEntity;
 import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
 import com.pedrorok.hypertube.blocks.blockentities.HyperJunctionBlockEntity;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
+import com.pedrorok.hypertube.blocks.blockentities.TubePathBlockEntity;
 import com.pedrorok.hypertube.client.renderer.AcceleratorEntityRenderer;
 import com.pedrorok.hypertube.client.renderer.EntranceBlockEntityRenderer;
 import com.pedrorok.hypertube.client.renderer.HypertubeBlockEntityRenderer;
@@ -41,6 +42,11 @@ public class ModBlockEntities {
             .blockEntity("hyper_junction_entity", HyperJunctionBlockEntity::new)
             .renderer(() -> JunctionEntityRenderer::new)
             .validBlocks(ModBlocks.HYPER_JUNCTION)
+            .register();
+
+    public static final BlockEntityEntry<TubePathBlockEntity> TUBE_PATH = REGISTRATE
+            .blockEntity("tube_path_entity", TubePathBlockEntity::new)
+            .validBlocks(ModBlocks.TUBE_PATH)
             .register();
 
     public static void register() {

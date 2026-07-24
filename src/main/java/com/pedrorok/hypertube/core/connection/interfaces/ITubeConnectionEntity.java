@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube.core.connection.interfaces;
 
 import com.pedrorok.hypertube.HypertubeMod;
+import com.pedrorok.hypertube.core.collision.TubeFiller;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
@@ -156,6 +157,7 @@ public interface ITubeConnectionEntity {
         BezierConnection thisEntranceConnection = connection.getThisEntranceConnection(level);
         if (thisEntranceConnection != null) {
             toDrop += (int) thisEntranceConnection.distance();
+            TubeFiller.remove(level, thisEntranceConnection);
         }
 
         IConnection connectionToClear = null;
