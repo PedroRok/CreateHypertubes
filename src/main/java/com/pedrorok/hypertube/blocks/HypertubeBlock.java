@@ -6,6 +6,7 @@ import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
+import com.pedrorok.hypertube.core.placement.TubePlacement;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
@@ -20,6 +21,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -102,15 +104,18 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
                     .setValue(WATERLOGGED, fluidstate.is(Fluids.WATER));
         }
 
-        Player player = context.getPlayer();
-        Direction direction = context.getPlayer().getDirection();
-        if (player.getXRot() < -45) {
-            direction = Direction.UP;
-        } else if (player.getXRot() > 45) {
-            direction = Direction.DOWN;
-        }
+        return getState(state, List.of(getPlacementFacing(context.getPlayer())), false)
+                .setValue(WATERLOGGED, fluidstate.is(Fluids.WATER));
+    }
 
-        return getState(state, List.of(direction), false).setValue(WATERLOGGED, fluidstate.is(Fluids.WATER));
+    public static Direction getPlacementFacing(@NotNull Player player) {
+        if (player.getXRot() < -45) {
+            return Direction.UP;
+        }
+        if (player.getXRot() > 45) {
+            return Direction.DOWN;
+        }
+        return player.getDirection();
     }
 
     // ------- Collision Shapes -------
@@ -253,6 +258,9 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
         if (!stack.hasFoil()) {
             level.playSound(null, pos, getSoundType(state, level, pos, placer).getPlaceSound(), SoundSource.BLOCKS,
                     1, level.random.nextFloat() * 0.1f + 0.9f);
+            if (!player.isShiftKeyDown() && stack == player.getItemInHand(InteractionHand.MAIN_HAND)) {
+                TubePlacement.continueFrom(level, player, pos, getPlacementFacing(player));
+            }
             return;
         }
 
@@ -292,6 +300,8 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
         MessageUtils.sendActionMessage(player, Component.empty(), true);
         if (!(level.getBlockState(pos).getBlock() instanceof HypertubeBlock hypertubeBlock)) return;
         hypertubeBlock.updateBlockState(level, pos, hypertubeBlock.getState(state, List.of(finalDirection), true));
+
+        TubePlacement.continueFrom(level, player, pos, bezierConnection.getToPos().direction().getOpposite());
     }
 
     @Override

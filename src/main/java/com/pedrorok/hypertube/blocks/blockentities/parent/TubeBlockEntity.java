@@ -56,7 +56,7 @@ public abstract class TubeBlockEntity extends KineticBlockEntity implements ITub
 
         possibleDirections.removeIf(direction -> {
             for (IConnection connection : connections) {
-                return getConnectionDirection(direction, connection);
+                if (getConnectionDirection(direction, connection)) return true;
             }
             return false;
         });

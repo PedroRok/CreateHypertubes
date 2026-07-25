@@ -112,9 +112,13 @@ public class HypertubeItem extends BlockItem {
             return ResponseDTO.get(false, "placement.create_hypertube.cant_conn_to_face");
         }
 
-        heldItem.set(ModDataComponent.TUBE_CONNECTING_FROM, new SimpleConnection(pos, direction, blockEntity.getConnectionOffsetOnDirection(direction)));
-        heldItem.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
+        setConnection(heldItem, new SimpleConnection(pos, direction, blockEntity.getConnectionOffsetOnDirection(direction)));
         return ResponseDTO.get(true);
+    }
+
+    public static void setConnection(ItemStack stack, SimpleConnection connection) {
+        stack.set(ModDataComponent.TUBE_CONNECTING_FROM, connection);
+        stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
     }
 
     public static void clearConnection(ItemStack stack) {

@@ -45,6 +45,12 @@ public class TubeUtils {
         }
 
         SimpleConnection connectionFrom = itemInHand.get(ModDataComponent.TUBE_CONNECTING_FROM);
+        if (connectionFrom == null) {
+            return true;
+        }
+        if (connectionFrom.pos().equals(pos)) {
+            return true;
+        }
 
         Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, null, true);
         SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection, 0);

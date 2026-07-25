@@ -36,6 +36,10 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 23/04/2025
@@ -185,8 +189,40 @@ public class TubePlacement {
         player.playSound(SoundEvents.ITEM_FRAME_ADD_ITEM, 1.0f, 1.0f);
 
 
-        HypertubeItem.clearConnection(player.getItemInHand(InteractionHand.MAIN_HAND));
+        continueFrom(level, player, pos, isAngleInverted ? direction.getOpposite() : direction);
         return true;
+    }
+
+    public static boolean continueFrom(Level level, Player player, BlockPos pos, @Nullable Direction usedFace) {
+        ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
+        if (!(stack.getItem() instanceof HypertubeItem)) return false;
+
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (!(level.getBlockState(pos).getBlock() instanceof HypertubeBlock)
+            || !(blockEntity instanceof ITubeConnectionEntity tubeEntity)) {
+            HypertubeItem.clearConnection(stack);
+            return false;
+        }
+
+        Direction nextFace = getNextConnectableFace(tubeEntity, usedFace);
+        if (nextFace == null) {
+            HypertubeItem.clearConnection(stack);
+            return false;
+        }
+
+        HypertubeItem.setConnection(stack, new SimpleConnection(pos, nextFace, tubeEntity.getConnectionOffsetOnDirection(nextFace)));
+        return true;
+    }
+
+    private static @Nullable Direction getNextConnectableFace(ITubeConnectionEntity tubeEntity, @Nullable Direction usedFace) {
+        if (!tubeEntity.hasConnectionAvailable()) return null;
+
+        List<Direction> faces = new ArrayList<>(tubeEntity.getFacesConnectable());
+        faces.removeIf(face -> tubeEntity.getConnectionInDirection(face) != null);
+        if (faces.isEmpty()) return null;
+
+        Direction ahead = usedFace == null ? null : usedFace.getOpposite();
+        return ahead != null && faces.contains(ahead) ? ahead : faces.getFirst();
     }
 
     // SERVER BLOCK VALIDATION
