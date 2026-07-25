@@ -28,6 +28,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * @author Rok, Pedro Lucas nmm. Created on 22/04/2025
  * @project Create Hypertube
  */
+@SuppressWarnings("ALL")
 @Mixin(Camera.class)
 public abstract class CameraMixin {
 
@@ -56,44 +57,81 @@ public abstract class CameraMixin {
         Options options = Minecraft.getInstance().options;
         Player player = Minecraft.getInstance().player;
         if (renderViewEntity != player) return;
-        boolean hasHypertubeData = !TravelManager.hasHyperTubeData(renderViewEntity);
-        if (hasHypertubeData || (
-                options.getCameraType().isFirstPerson() && ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get())) {
-            DetachedCameraController.get().setDetached(false);
-            if (hasHypertubeData) {
+
+        DetachedCameraController ctrl = DetachedCameraController.get();
+        boolean inTube = TravelManager.hasHyperTubeData(renderViewEntity);
+        boolean allowFpv = ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get();
+        boolean fpvInside = options.getCameraType().isFirstPerson() && allowFpv;
+
+        if (!inTube && !ctrl.isDetached()) {
+            DetachedPlayerDirController.get().setDetached(false);
+            return;
+        }
+
+        if (fpvInside) {
+            ctrl.setDetached(false);
+            ctrl.snapTransition(0f);
+            this.createHypertube$setDetachedExternal(false);
+            if (!inTube) {
                 DetachedPlayerDirController.get().setDetached(false);
             }
             return;
         }
 
-        if (!ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get()) {
-            options.setCameraType(CameraType.THIRD_PERSON_BACK);
+        if (inTube) {
+            if (!ctrl.isDetached()) {
+                if (!allowFpv) {
+                    options.setCameraType(CameraType.THIRD_PERSON_BACK);
+                }
+                ctrl.startCamera(renderViewEntity);
+                ctrl.snapTransition(0.2f);
+                ctrl.setDetached(true);
+                this.createHypertube$setDetachedExternal(true);
+            }
+            ctrl.setTransitionTarget(1f);
+        } else {
+            ctrl.setTransitionTarget(0f);
+            if (ctrl.getTransition() <= 0.2f) {
+                ctrl.snapTransition(0f);
+                DetachedPlayerDirController.get().setDetached(false);
+                this.createHypertube$setDetachedExternal(false);
+                if (!allowFpv) {
+                    options.setCameraType(CameraType.FIRST_PERSON);
+                }
+                ctrl.setDetached(false);
+                return;
+            }
+            if (!allowFpv) {
+                options.setCameraType(CameraType.THIRD_PERSON_BACK);
+            }
         }
 
         Camera cameraObj = (Camera) (Object) this;
         CameraAccessorMixin camera = (CameraAccessorMixin) cameraObj;
 
-        if (!DetachedCameraController.get().isDetached()) {
-            DetachedCameraController.get().startCamera(renderViewEntity);
-            DetachedCameraController.get().setDetached(true);
-            this.createHypertube$setDetachedExternal(true);
-        }
         long currentTime = System.nanoTime();
         boolean doTick = currentTime - createHypertube$lastTickTime >= createHypertube$TICK_INTERVAL_NS;
         if (doTick) {
-            DetachedCameraController.get().tickCamera(renderViewEntity);
+            ctrl.tickCamera(renderViewEntity);
             createHypertube$lastTickTime = currentTime;
-        }
-
-        if (doTick) {
             createHypertube$doTick(player);
         }
 
-        camera.createHypertube$callSetRotation(DetachedCameraController.get().getYaw() * (flipped ? -1 : 1), DetachedCameraController.get().getPitch());
+        ctrl.tickTransition();
+        float eased = ctrl.getEasedTransition();
 
+        float firstPersonYaw = renderViewEntity.getViewYRot(PartialTicks);
+        float firstPersonPitch = renderViewEntity.getViewXRot(PartialTicks);
+        float orbitYaw = ctrl.getYaw() * (flipped ? -1 : 1);
+        float orbitPitch = ctrl.getPitch();
+        camera.createHypertube$callSetRotation(
+                Mth.rotLerp(eased, firstPersonYaw, orbitYaw),
+                Mth.lerp(eased, firstPersonPitch, orbitPitch));
+
+        double eyeAdd = renderViewEntity.getEyeHeight() * (1f - eased);
         camera.createHypertube$callSetPosition(
                 Mth.lerp(PartialTicks, renderViewEntity.xo, renderViewEntity.getX()),
-                Mth.lerp(PartialTicks, renderViewEntity.yo, renderViewEntity.getY()),
+                Mth.lerp(PartialTicks, renderViewEntity.yo, renderViewEntity.getY()) + eyeAdd,
                 Mth.lerp(PartialTicks, renderViewEntity.zo, renderViewEntity.getZ()));
 
         float f;
@@ -102,7 +140,8 @@ public abstract class CameraMixin {
         } else {
             f = 1.0F;
         }
-        camera.createHypertube$callMove(-camera.createHypertube$callGetMaxZoom(ClientHooks.getDetachedCameraDistance(cameraObj, flipped, f, 4.0F) * f), 0.0F, 0.0F);
+        float zoom = camera.createHypertube$callGetMaxZoom(ClientHooks.getDetachedCameraDistance(cameraObj, flipped, f, 4.0F) * f);
+        camera.createHypertube$callMove(-zoom * eased, 0.0F, 0.0F);
 
         ci.cancel();
     }

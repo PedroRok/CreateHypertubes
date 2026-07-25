@@ -52,6 +52,13 @@ public class DetachedCameraController {
     private boolean detached = false;
 
     @Getter
+    private float transition = 0f;
+    private float transitionTarget = 0f;
+    private long lastTransitionNanos = 0;
+
+    private static final float TRANSITION_DURATION = 0.5f;
+
+    @Getter
     @Setter
     private float cameraHorizontalCompensation = 0;
 
@@ -69,6 +76,39 @@ public class DetachedCameraController {
         this.lastMouseMov = 0;
         this.yaw = this.targetYaw = Mth.wrapDegrees(renderViewEntity.getYRot());
         this.pitch = this.targetPitch = 30;
+    }
+
+    public void setTransitionTarget(float target) {
+        this.transitionTarget = Mth.clamp(target, 0f, 1f);
+    }
+
+    public void snapTransition(float value) {
+        this.transition = Mth.clamp(value, 0f, 1f);
+        this.transitionTarget = this.transition;
+        this.lastTransitionNanos = 0;
+    }
+
+    public void tickTransition() {
+        long now = System.nanoTime();
+        if (lastTransitionNanos == 0) {
+            lastTransitionNanos = now;
+            return;
+        }
+        float dt = (now - lastTransitionNanos) / 1_000_000_000f;
+        lastTransitionNanos = now;
+        dt = Math.min(dt, 0.1f);
+
+        float step = dt / TRANSITION_DURATION;
+        if (transition < transitionTarget) {
+            transition = Math.min(transitionTarget, transition + step);
+        } else if (transition > transitionTarget) {
+            transition = Math.max(transitionTarget, transition - step);
+        }
+    }
+
+    public float getEasedTransition() {
+        float t = Mth.clamp(transition, 0f, 1f);
+        return t * t * (3f - 2f * t);
     }
 
     public void updateCameraRotation(float deltaYaw, float deltaPitch, boolean isCamera) {

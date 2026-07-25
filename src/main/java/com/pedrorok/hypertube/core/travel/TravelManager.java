@@ -4,7 +4,6 @@ import com.mojang.datafixers.util.Pair;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
 import com.pedrorok.hypertube.blocks.HyperJunctionBlock;
-import com.pedrorok.hypertube.config.ClientConfig;
 import com.pedrorok.hypertube.core.compat.Mods;
 import com.pedrorok.hypertube.core.compat.sable.SableCompat;
 import com.pedrorok.hypertube.core.data.MoveDirection;
@@ -15,7 +14,6 @@ import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
 import com.pedrorok.hypertube.utils.JunctionDirectionUtils;
 import com.pedrorok.hypertube.utils.MessageUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
-import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -130,8 +128,6 @@ public class TravelManager {
         }
     }
 
-    private static boolean isTraveling;
-
     @OnlyIn(Dist.CLIENT)
     private static void clientTick(Player player) {
         Minecraft mc = Minecraft.getInstance();
@@ -139,13 +135,6 @@ public class TravelManager {
         if (!mc.player.is(player)) return;
         if (hasHyperTubeData(player)) {
             TubeSoundManager.TravelSound.enableClientPlayerSound(player, 0.8F, 1.0F);
-            isTraveling = true;
-            return;
-        }
-        if (isTraveling
-                && !ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get()) {
-            Minecraft.getInstance().options.setCameraType(CameraType.FIRST_PERSON);
-            isTraveling = false;
         }
     }
 
