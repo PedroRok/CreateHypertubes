@@ -1,18 +1,20 @@
 package com.pedrorok.hypertube.ponder.scenes;
 
 import com.pedrorok.hypertube.blocks.HyperJunctionBlock;
+import com.pedrorok.hypertube.blocks.blockentities.HyperJunctionBlockEntity;
 import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
-import com.pedrorok.hypertube.core.connection.SimpleConnection;
+import com.pedrorok.hypertube.core.connection.BezierConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.data.JunctionMode;
 import com.pedrorok.hypertube.core.smarttube.ITubeAttachment;
 import com.pedrorok.hypertube.items.TubeAttachmentItem;
+import com.pedrorok.hypertube.ponder.elements.TubePulsePonderElement;
 import com.pedrorok.hypertube.registry.ModItems;
 import com.pedrorok.hypertube.utils.ModColors;
-import com.pedrorok.hypertube.utils.TubePulseRenderer;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.foundation.ponder.CreateSceneBuilder;
-import net.createmod.catnip.gui.element.ScreenElement;
 import net.createmod.catnip.math.Pointing;
+import net.createmod.ponder.api.level.PonderLevel;
 import net.createmod.ponder.api.PonderPalette;
 import net.createmod.ponder.api.element.ElementLink;
 import net.createmod.ponder.api.element.ParrotElement;
@@ -20,11 +22,9 @@ import net.createmod.ponder.api.element.ParrotPose;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.createmod.ponder.api.scene.Selection;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 /**
  * @author Rok, Pedro Lucas nmm. 29/07/2026
@@ -32,7 +32,7 @@ import org.lwjgl.glfw.GLFW;
  */
 public class SplitterScenes {
 
-    private static final double BIRB_Y = 1.05;
+    private static final double BIRB_Y = 1.1;
 
     public static void splitterScene(SceneBuilder builder, SceneBuildingUtil util) {
         CreateSceneBuilder scene = new CreateSceneBuilder(builder);
@@ -78,11 +78,11 @@ public class SplitterScenes {
 
         // right branchs
         travel(scene, splitterPos, fromWest, new Vec3(4.5, 0, 0), 30,
-                new Vec3(0, 0, 4), 25, Direction.SOUTH);
+                new Vec3(0, 0, 4), 25, Direction.SOUTH, ModColors.GREEN);
         scene.idle(10);
         // left branch
         travel(scene, splitterPos, fromWest, new Vec3(4.5, 0, 0), 30,
-                new Vec3(0, 0, -4), 25, Direction.NORTH);
+                new Vec3(0, 0, -4), 25, Direction.NORTH, ModColors.GREEN);
         scene.idle(20);
 
         // FORCED CONTINUE MODE
@@ -94,7 +94,7 @@ public class SplitterScenes {
                 .text("Right Click it with a Wrench to cycle through the Splitter modes.");
         scene.idle(15);
         scene.overlay()
-                .showControls(splitterPos.getCenter().add(0, 0.5, 0), Pointing.DOWN, 30)
+                .showControls(splitterPos.getCenter().add(0, 1.1, -1), Pointing.RIGHT, 30)
                 .rightClick()
                 .withItem(AllItems.WRENCH.asStack());
         scene.idle(10);
@@ -111,12 +111,12 @@ public class SplitterScenes {
                 .text("On Continue mode, travelers always keep going through the side tubes.");
         scene.idle(20);
         travel(scene, splitterPos, fromNorth, new Vec3(0, 0, 3.5), 30,
-                new Vec3(0, 0, 4), 25, Direction.SOUTH);
+                new Vec3(0, 0, 4), 25, Direction.SOUTH, ModColors.ORANGE);
         scene.idle(20);
 
         // FORCED CENTER MODE
         scene.overlay()
-                .showControls(splitterPos.getCenter().add(0, 0.5, 0), Pointing.DOWN, 30)
+                .showControls(splitterPos.getCenter().add(0, 1.1, -1), Pointing.RIGHT, 30)
                 .rightClick()
                 .withItem(AllItems.WRENCH.asStack());
         scene.idle(10);
@@ -133,7 +133,7 @@ public class SplitterScenes {
                 .text("On Center mode, travelers are always routed through the front tube.");
         scene.idle(20);
         travel(scene, splitterPos, fromNorth, new Vec3(0, 0, 3.5), 30,
-                new Vec3(-5, 0, 0), 25, Direction.WEST);
+                new Vec3(-5, 0, 0), 25, Direction.WEST, ModColors.ORANGE);
         scene.idle(40);
 
         scene.rotateCameraY(180);
@@ -157,11 +157,13 @@ public class SplitterScenes {
         scene.idle(90);
     }
 
-    private static void travel(CreateSceneBuilder scene, BlockPos splitterPos, Vec3 from, Vec3 toSplitter, int enterTicks, Vec3 toExit, int exitTicks, Direction exitFace) {
+    private static void travel(CreateSceneBuilder scene, BlockPos splitterPos, Vec3 from, Vec3 toSplitter, int enterTicks, Vec3 toExit, int exitTicks, Direction exitFace, int pulseColor) {
+        showPulse(scene, splitterPos, exitFace, pulseColor, 50);
         ElementLink<ParrotElement> birb = scene.special()
                 .createBirb(from, ParrotPose.FlappyPose::new);
         scene.special().moveParrot(birb, toSplitter, enterTicks);
-        scene.idle(enterTicks - 5);
+        scene.idle(enterTicks - 15);
+        scene.idle(10);
         changeOpenClose(scene, splitterPos, true);
         scene.idle(5);
         scene.special().moveParrot(birb, toExit, exitTicks);
@@ -169,6 +171,22 @@ public class SplitterScenes {
         changeOpenClose(scene, splitterPos, false);
         scene.idle(exitTicks - 10);
         scene.special().hideElement(birb, exitFace);
+    }
+
+    private static void showPulse(CreateSceneBuilder scene, BlockPos splitterPos, Direction exitFace, int color, int durationTicks) {
+        scene.addInstruction(ponderScene -> {
+            PonderLevel level = ponderScene.getWorld();
+            if (!(level.getBlockEntity(splitterPos) instanceof HyperJunctionBlockEntity splitter)) return;
+
+            IConnection connection = splitter.getConnectionInDirection(exitFace);
+            if (connection == null) return;
+            BezierConnection bezier = connection.getThisEntranceConnection(level);
+            if (bezier == null) return;
+
+            TubePulsePonderElement pulse = TubePulsePonderElement.of(bezier, splitterPos, color, durationTicks);
+            if (pulse == null) return;
+            ponderScene.addElement(pulse);
+        });
     }
 
     private static void setMode(CreateSceneBuilder scene, BlockPos pos, JunctionMode mode) {

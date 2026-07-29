@@ -97,7 +97,6 @@ public final class TubePulseRenderer {
     public static void onRenderLevelStage(PoseStack poseStack, DeltaTracker deltaTracker, Camera camera) {
         if (ACTIVE_EFFECTS.isEmpty()) return;
 
-        // ✅ Substituição: delta de tempo REAL entre frames, não fração do tick de jogo
         float deltaTime = deltaTracker.getRealtimeDeltaTicks();
 
         MultiBufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
@@ -117,19 +116,21 @@ public final class TubePulseRenderer {
 
     // Render
     private static void renderEffect(TubePulseEffect effect, PoseStack poseStack, VertexConsumer builder, Vec3 camPos) {
-        List<Vec3> points = effect.getRelativePoints();
         BlockPos origin = effect.getOriginBlockPos();
-
         Vec3 originAbsolute = new Vec3(origin.getX(), origin.getY(), origin.getZ());
-        Vec3 renderOrigin = originAbsolute.subtract(camPos);
+
+        renderEffectAt(effect, poseStack, builder, originAbsolute.subtract(camPos), 0);
+    }
+
+    public static void renderEffectAt(TubePulseEffect effect, PoseStack poseStack, VertexConsumer builder, Vec3 renderOrigin, float partialTicks) {
+        List<Vec3> points = effect.getRelativePoints();
 
         poseStack.pushPose();
         poseStack.translate(renderOrigin.x, renderOrigin.y, renderOrigin.z);
         Matrix4f pose = poseStack.last().pose();
 
-        float traveled = effect.getTravelDistance();
+        float traveled = effect.getTravelDistance() + effect.getSpeed() * partialTicks;
         float spacing = effect.getRingSpacing();
-        int color = effect.getColor();
 
         for (int ring = 0; ring < effect.getRingCount(); ring++) {
             float distanceAlongPath = traveled - ring * spacing;
