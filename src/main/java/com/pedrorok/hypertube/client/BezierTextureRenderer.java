@@ -132,6 +132,10 @@ public class BezierTextureRenderer {
                 float uEnd_nextJ = uStart + (corner_nextJ_movement.dot(tangent) / TILING_UNIT);
 
                 boolean invertNormal = Minecraft.getInstance().screen instanceof PonderUI;
+                if (invertNormal) {
+                    lightCurrent = 0x00F000F0;
+                    lightNext = 0x00F000F0;
+                }
                 float vStart = 0, vEnd = 1;
                 if (doubleSided) {
                     addVertex(builder, pose, current.center(), currentOffsets.get(nextJ), uStart, vEnd, lightCurrent, packedOverlay, invertNormal);
