@@ -3,6 +3,7 @@ package com.pedrorok.hypertube.ponder;
 import com.pedrorok.hypertube.ponder.scenes.AcceleratorScenes;
 import com.pedrorok.hypertube.ponder.scenes.AttachmentScenes;
 import com.pedrorok.hypertube.ponder.scenes.EntranceScenes;
+import com.pedrorok.hypertube.ponder.scenes.SplitterScenes;
 import com.pedrorok.hypertube.ponder.scenes.TubeScenes;
 import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModItems;
@@ -25,6 +26,8 @@ public class HypertubesPonderScenes {
                 .addStoryBoard("entrance", EntranceScenes::entranceScene);
         HELPER.forComponents(ModBlocks.HYPER_ACCELERATOR)
                 .addStoryBoard("accelerator", AcceleratorScenes::acceleratorScene);
+        HELPER.forComponents(ModBlocks.HYPER_JUNCTION)
+                .addStoryBoard("splitter", SplitterScenes::splitterScene);
         HELPER.forComponents(ModItems.REDSTONE_DETECTOR, ModItems.TUBE_SCANNER)
                 .addStoryBoard("attachment", AttachmentScenes::attachmentScene);
     }

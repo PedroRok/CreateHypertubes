@@ -41,6 +41,7 @@ public class HypertubesPonderTags {
                 .add(ModBlocks.HYPERTUBE)
                 .add(ModBlocks.HYPERTUBE_ENTRANCE)
                 .add(ModBlocks.HYPER_ACCELERATOR)
+                .add(ModBlocks.HYPER_JUNCTION)
                 .add(ModItems.REDSTONE_DETECTOR)
                 .add(ModItems.TUBE_SCANNER)
         ;
