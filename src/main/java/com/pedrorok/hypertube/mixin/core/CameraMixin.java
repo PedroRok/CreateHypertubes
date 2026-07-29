@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube.mixin.core;
 
 import com.pedrorok.hypertube.config.ClientConfig;
+import com.pedrorok.hypertube.core.camera.CameraSmoothing;
 import com.pedrorok.hypertube.core.camera.DetachedCameraController;
 import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
 import com.pedrorok.hypertube.core.travel.TravelManager;
@@ -37,11 +38,8 @@ public abstract class CameraMixin {
 
     @Shadow public abstract Entity getEntity();
 
-    // FPS CONTROL
     @Unique
     private long createHypertube$lastTickTime = 0;
-    @Unique
-    private static final long createHypertube$TICK_INTERVAL_NS = 1_000_000_000L / 60;
 
 
     @Unique
@@ -110,12 +108,13 @@ public abstract class CameraMixin {
         CameraAccessorMixin camera = (CameraAccessorMixin) cameraObj;
 
         long currentTime = System.nanoTime();
-        boolean doTick = currentTime - createHypertube$lastTickTime >= createHypertube$TICK_INTERVAL_NS;
-        if (doTick) {
-            ctrl.tickCamera(renderViewEntity);
-            createHypertube$lastTickTime = currentTime;
-            createHypertube$doTick(player);
-        }
+        float deltaSeconds = createHypertube$lastTickTime == 0
+                ? 1 / CameraSmoothing.REFERENCE_RATE
+                : (currentTime - createHypertube$lastTickTime) / 1000000000f;
+        createHypertube$lastTickTime = currentTime;
+
+        ctrl.tickCamera(renderViewEntity, deltaSeconds);
+        createHypertube$doTick(player);
 
         ctrl.tickTransition();
         float eased = ctrl.getEasedTransition();

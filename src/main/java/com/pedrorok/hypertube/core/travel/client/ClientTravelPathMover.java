@@ -11,10 +11,14 @@ import com.pedrorok.hypertube.network.packets.MovePathPacket;
 import com.pedrorok.hypertube.network.packets.SpeedChangePacket;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import lombok.Getter;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
@@ -137,13 +141,7 @@ public class ClientTravelPathMover {
     public static void updateSegment(int entityId, int segment) {
         PathData data = ACTIVE_PATHS.get(entityId);
         if (data != null) {
-            if (data.lastUpdateTick > 0) {
-                data.lastUpdateTick--;
-                return;
-            }
-            data.lastUpdateTick = 5;
-            data.currentIndex = segment;
-            data.updateLogicalPosition();
+            data.syncServerSegment(segment);
         }
     }
 
@@ -155,9 +153,14 @@ public class ClientTravelPathMover {
         private final List<Vec3> points;
         private final Set<BlockPos> actionPoints;
         private double travelSpeed;
-        @Getter
-        private int currentIndex = 0;
-        private int lastUpdateTick = 0;
+
+        private final Vec3[] route;
+        private final double[] cumulative;
+        private final double totalLength;
+
+        private double traveled;
+        private double previousTraveled;
+        private int cachedSegment = 0;
 
         private Vec3 currentLogicalPos;
         private Vec3 previousLogicalPos;
@@ -180,22 +183,47 @@ public class ClientTravelPathMover {
             this.junctionEnd = isJunctionEnd;
             this.junctionDirection = junctionDirection;
 
+            this.route = new Vec3[points.size() + 1];
+            double pathLength = 0;
+            for (int i = 0; i < points.size(); i++) {
+                route[i + 1] = points.get(i).subtract(0, 0.25, 0);
+                if (i > 0) pathLength += route[i].distanceTo(route[i + 1]);
+            }
+
+            Vec3 start = entity.position();
             if (!points.isEmpty()) {
-                Vec3 entranceLogical = points.get(0).subtract(0, 0.25, 0);
+                Vec3 entranceLogical = route[1];
                 Vec3 entranceOffset = Mods.SABLE.executeIfInstalled(() -> (pos) -> SableCompat.Client.transformToSubLevel(entranceLogical, pos), entity.position()).subtract(entranceLogical);
 
-                this.currentLogicalPos = entranceLogical.add(entranceOffset);
-                this.previousLogicalPos = this.currentLogicalPos;
+                start = entranceLogical.add(entranceOffset);
+                if (start.distanceToSqr(entranceLogical) > pathLength * pathLength) {
+                    start = entranceLogical;
+                }
             }
+            route[0] = start;
+
+            this.cumulative = new double[route.length];
+            for (int i = 1; i < route.length; i++) {
+                cumulative[i] = cumulative[i - 1] + route[i - 1].distanceTo(route[i]);
+            }
+            this.totalLength = cumulative[cumulative.length - 1];
+
+            this.currentLogicalPos = start;
+            this.previousLogicalPos = start;
         }
 
         public boolean isDone() {
-            return currentIndex >= points.size();
+            return points.isEmpty() || traveled >= totalLength;
+        }
+
+        public int getCurrentIndex() {
+            return isDone() ? points.size() : segmentAt(traveled);
         }
 
         public Vec3 getCurrentTarget() {
-            if (currentIndex < points.size()) {
-                return points.get(currentIndex).subtract(0, 0.25, 0);
+            int index = getCurrentIndex();
+            if (index < points.size()) {
+                return route[index + 1];
             }
             return currentLogicalPos;
         }
@@ -203,21 +231,53 @@ public class ClientTravelPathMover {
         public void updateLogicalPosition() {
             if (isDone()) return;
 
-            Vec3 target = getCurrentTarget();
-            double distanceToTarget = currentLogicalPos.distanceTo(target);
-            boolean doHalfStep = true;
+            previousTraveled = traveled;
             previousLogicalPos = currentLogicalPos;
-            if (distanceToTarget < travelSpeed) {
-                currentLogicalPos = target;
-                currentIndex = (int) (currentIndex + Math.max(1, travelSpeed));
-                if (travelSpeed <= 1) {
-                    doHalfStep = false;
-                }
-            }
-            if (doHalfStep) {
-                Vec3 direction = target.subtract(currentLogicalPos).normalize().scale(travelSpeed);
-                currentLogicalPos = currentLogicalPos.add(direction);
-            }
+
+            traveled = Math.min(totalLength, traveled + travelSpeed);
+            currentLogicalPos = pointAt(traveled);
+        }
+
+        public void syncServerSegment(int segment) {
+            if (segment < 0 || segment >= points.size() || isDone()) return;
+
+            double segmentStart = cumulative[segment];
+            double segmentEnd = cumulative[segment + 1];
+            double tolerance = travelSpeed * (1 + latencyInTicks());
+            if (traveled >= segmentStart - tolerance && traveled <= segmentEnd + tolerance) return;
+
+            traveled = segmentStart;
+            previousTraveled = segmentStart;
+            currentLogicalPos = pointAt(segmentStart);
+            previousLogicalPos = currentLogicalPos;
+        }
+
+        private static double latencyInTicks() {
+            Minecraft mc = Minecraft.getInstance();
+            ClientPacketListener connection = mc.getConnection();
+            if (connection == null || mc.player == null) return 0;
+            PlayerInfo playerInfo = connection.getPlayerInfo(mc.player.getUUID());
+            if (playerInfo == null) return 0;
+            return (double) playerInfo.getLatency() / SharedConstants.MILLIS_PER_TICK;
+        }
+
+        private Vec3 pointAt(double distance) {
+            if (distance <= 0) return route[0];
+            if (distance >= totalLength) return route[route.length - 1];
+
+            int segment = segmentAt(distance);
+            double segmentLength = cumulative[segment + 1] - cumulative[segment];
+            if (segmentLength <= 0) return route[segment];
+            return route[segment].lerp(route[segment + 1], (distance - cumulative[segment]) / segmentLength);
+        }
+
+        private int segmentAt(double distance) {
+            if (route.length < 2) return 0;
+            int segment = Mth.clamp(cachedSegment, 0, route.length - 2);
+            while (segment > 0 && cumulative[segment] > distance) segment--;
+            while (segment < route.length - 2 && cumulative[segment + 1] <= distance) segment++;
+            cachedSegment = segment;
+            return segment;
         }
 
         public float getPitch() {
@@ -251,7 +311,8 @@ public class ClientTravelPathMover {
         }
 
         public Vec3 getRenderPosition(float partialTicks) {
-            Vec3 logicalRender = previousLogicalPos.lerp(currentLogicalPos, partialTicks);
+            double renderDistance = Mth.lerp(Mth.clamp(partialTicks, 0f, 1f), previousTraveled, traveled);
+            Vec3 logicalRender = pointAt(renderDistance);
             return Mods.SABLE.executeIfInstalled(() -> (pos) -> SableCompat.Client.transformToWorld(pos, true), logicalRender);
         }
 

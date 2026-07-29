@@ -1,5 +1,6 @@
 package com.pedrorok.hypertube.core.travel;
 
+import com.mojang.datafixers.util.Pair;
 import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.core.compat.Mods;
 import com.pedrorok.hypertube.core.compat.sable.SableCompat;
@@ -69,7 +70,8 @@ public class TravelPathMover {
         this.currentStart = entity.position();
         this.currentEnd = pathPoints.getFirst().subtract(0, 0.25, 0);
 
-        if (this.currentStart.distanceToSqr(this.currentEnd) > 262144) {
+        double pathLength = getPathLength();
+        if (this.currentStart.distanceToSqr(this.currentEnd) > pathLength * pathLength) {
             this.currentStart = this.currentEnd;
         }
 
@@ -89,6 +91,14 @@ public class TravelPathMover {
         this.pathPoints.add(pathPoints.getLast().add(this.lastDirection.scale(1)));
     }
 
+    private double getPathLength() {
+        double length = 0;
+        for (int i = 1; i < pathPoints.size(); i++) {
+            length += pathPoints.get(i - 1).distanceTo(pathPoints.get(i));
+        }
+        return length;
+    }
+
     @SuppressWarnings("D")
     public void tickEntity(LivingEntity entity) {
         if (entity.isSpectator() || !entity.isAlive()) {
@@ -101,7 +111,9 @@ public class TravelPathMover {
             return;
         }
 
-        if (traveled >= totalDistance) {
+        double remaining = travelSpeed;
+        while (remaining >= totalDistance - traveled) {
+            remaining -= totalDistance - traveled;
             currentSegment++;
             if (currentSegment >= pathPoints.size()) {
                 onFinishCallback.accept(EndTravelData.normal(entity, isJunction, chosenDirection));
@@ -112,6 +124,7 @@ public class TravelPathMover {
             totalDistance = currentStart.distanceTo(currentEnd);
             traveled = 0;
         }
+        traveled += remaining;
 
         if (!activeActionPoints.isEmpty()) {
             BlockPos actionPos = activeActionPoints.iterator().next();
@@ -126,17 +139,17 @@ public class TravelPathMover {
             }
         }
 
-        Vec3 direction = currentEnd.subtract(currentStart).normalize().scale(travelSpeed);
-        direction = Mods.SABLE.executeIfInstalled(() -> (dir) -> SableCompat.transformToWorld(entity.level(), currentStart, dir).getSecond(), direction);
+        Pair<Vec3, Vec3> posDir = Pair.of(currentStart.lerp(currentEnd, traveled / totalDistance),
+                currentEnd.subtract(currentStart).normalize());
+        posDir = Mods.SABLE.executeIfInstalled(() -> (pd) -> SableCompat.transformToWorld(entity.level(), pd.getFirst(), pd.getSecond()), posDir);
 
-        Vec3 newPos = entity.position().add(direction);
+        Vec3 newPos = posDir.getFirst();
 
         entity.moveTo(newPos.x, newPos.y, newPos.z);
-        traveled += travelSpeed;
 
         entity.resetFallDistance();
 
-        handleEntityDirection(entity, direction);
+        handleEntityDirection(entity, posDir.getSecond());
         if (entity instanceof Player player) {
             if (player.isFallFlying())
                 player.stopFallFlying();

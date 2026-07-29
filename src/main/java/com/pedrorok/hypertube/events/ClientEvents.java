@@ -3,6 +3,7 @@ package com.pedrorok.hypertube.events;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.pedrorok.hypertube.client.TubePathOutline;
+import com.pedrorok.hypertube.core.camera.CameraSmoothing;
 import com.pedrorok.hypertube.core.camera.DetachedCameraController;
 import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
 import com.pedrorok.hypertube.core.escape.TubeEscapeHandler;
@@ -34,8 +35,7 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 @EventBusSubscriber(Dist.CLIENT)
 public class ClientEvents {
 
-    private static long lastTickTime = 0;
-    private static final long TICK_INTERVAL_NS = 1_000_000_000L / 60;
+    private static long lastFrameTime = 0;
 
     @SubscribeEvent
     public static void onTickPre(ClientTickEvent.Pre event) {
@@ -68,11 +68,12 @@ public class ClientEvents {
     @SubscribeEvent
     public static void renderFrame(RenderFrameEvent.Pre event) {
         DeltaTracker partialTick = event.getPartialTick();
+
         long currentTime = System.nanoTime();
-        if (currentTime - lastTickTime >= TICK_INTERVAL_NS) {
-            DetachedPlayerDirController.tickPlayer();
-            lastTickTime = currentTime;
-        }
+        float deltaSeconds = lastFrameTime == 0 ? 1 / CameraSmoothing.REFERENCE_RATE : (currentTime - lastFrameTime) / 1_000_000_000f;
+        lastFrameTime = currentTime;
+
+        DetachedPlayerDirController.tickPlayer(deltaSeconds);
 
         ClientTravelPathMover.onRenderTick(partialTick);
     }

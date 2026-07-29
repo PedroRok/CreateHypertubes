@@ -112,11 +112,15 @@ public class DetachedCameraController {
     }
 
     public void updateCameraRotation(float deltaYaw, float deltaPitch, boolean isCamera) {
+        updateCameraRotation(deltaYaw, deltaPitch, isCamera, 1);
+    }
+
+    public void updateCameraRotation(float deltaYaw, float deltaPitch, boolean isCamera, float decaySteps) {
         this.targetYaw = Mth.wrapDegrees(this.targetYaw + deltaYaw);
         this.targetPitch = Mth.clamp(this.targetPitch + deltaPitch, -90, 90);
 
         if (lastMouseMov != 0) {
-            lastMouseMov = Math.max(0, lastMouseMov - 0.015f);
+            lastMouseMov = Math.max(0, lastMouseMov - 0.015f * decaySteps);
         }
         if (isCamera && deltaYaw != 0) {
             lastMouseMov = 2;
@@ -148,24 +152,29 @@ public class DetachedCameraController {
                 .add(0, 3, 0);
     }
 
-    public void tickCamera(Entity renderViewEntity) {
+    public void tickCamera(Entity renderViewEntity, float deltaSeconds) {
         Vec3 entityPos = renderViewEntity.position();
         Vec3 relativeCameraPos = getRelativeCameraPos(renderViewEntity);
 
-        updateCameraRotation(getCameraYaw(entityPos, relativeCameraPos) * 0.1f, getCameraPitch(renderViewEntity.getXRot()) * 0.1f, false);
+        float alignment = CameraSmoothing.factor(0.1, deltaSeconds);
+        updateCameraRotation(getCameraYaw(entityPos, relativeCameraPos) * alignment,
+                getCameraPitch(renderViewEntity.getXRot()) * alignment,
+                false,
+                CameraSmoothing.steps(deltaSeconds));
 
         updateTargetPosition(relativeCameraPos);
-        tickCameraPosRot();
+        tickCameraPosRot(deltaSeconds);
     }
 
     public void updateTargetPosition(Vec3 pos) {
         this.targetPos = pos;
     }
 
-    public void tickCameraPosRot() {
-        this.currentPos = this.currentPos.lerp(this.targetPos, SMOOTHING);
-        this.yaw = lerpAngle(this.yaw, this.targetYaw, (float) SMOOTHING_ROTATION);
-        this.pitch = (float) Mth.lerp(SMOOTHING_ROTATION, this.pitch, this.targetPitch);
+    public void tickCameraPosRot(float deltaSeconds) {
+        this.currentPos = this.currentPos.lerp(this.targetPos, CameraSmoothing.factor(SMOOTHING, deltaSeconds));
+        float rotationSmoothing = CameraSmoothing.factor(SMOOTHING_ROTATION, deltaSeconds);
+        this.yaw = lerpAngle(this.yaw, this.targetYaw, rotationSmoothing);
+        this.pitch = Mth.lerp(rotationSmoothing, this.pitch, this.targetPitch);
     }
 
     private float lerpAngle(float from, float to, float t) {
