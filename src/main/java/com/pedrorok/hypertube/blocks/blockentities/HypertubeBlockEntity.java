@@ -2,6 +2,10 @@ package com.pedrorok.hypertube.blocks.blockentities;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
+import com.pedrorok.hypertube.blocks.blockentities.parent.TubeBlockEntity;
+import com.pedrorok.hypertube.config.ServerConfig;
+import com.pedrorok.hypertube.core.collision.TubeFiller;
+import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import lombok.Getter;
@@ -36,12 +40,10 @@ public class HypertubeBlockEntity extends TubeBlockEntity {
     @Override
     protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
-        if (compound.contains("ConnectionTo")) {
-            this.connectionOne = getConnectionRelative(compound, "ConnectionTo", worldPosition);
-        }
-        if (compound.contains("ConnectionFrom")) {
-            this.connectionTwo = getConnectionRelative(compound, "ConnectionFrom", worldPosition);
-        }
+        this.connectionOne = compound.contains("ConnectionTo")
+                ? getConnectionRelative(compound, "ConnectionTo", worldPosition) : null;
+        this.connectionTwo = compound.contains("ConnectionFrom")
+                ? getConnectionRelative(compound, "ConnectionFrom", worldPosition) : null;
     }
 
     @Override
@@ -90,6 +92,9 @@ public class HypertubeBlockEntity extends TubeBlockEntity {
             HypertubeMod.LOGGER.error(new TubeConnectionException("Connection could not define connection", connection, connectionOne, connectionTwo).getMessage());
             return;
         }
+        if (ServerConfig.get().TUBE_COLLISION.get() && connection instanceof BezierConnection bezier) {
+            TubeFiller.place(level, bezier);
+        }
         if (level != null && !level.isClientSide()) {
             BlockState blockState = level.getBlockState(worldPosition);
             if (blockState.getBlock() instanceof HypertubeBlock hypertubeBlock) {
@@ -123,6 +128,11 @@ public class HypertubeBlockEntity extends TubeBlockEntity {
         }
         setChanged();
         sync();
+    }
+
+    @Override
+    public float getConnectionOffsetOnDirection(Direction direction) {
+        return 0;
     }
 
     @Override

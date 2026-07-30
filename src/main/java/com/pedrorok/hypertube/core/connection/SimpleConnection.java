@@ -8,13 +8,31 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-public record SimpleConnection(BlockPos pos, Direction direction) implements IConnection {
+public record SimpleConnection(BlockPos pos, Direction direction, float offset) implements IConnection {
+
+    @Deprecated
+    public SimpleConnection(BlockPos pos, Direction direction) {
+        this(pos, direction, 0f);
+    }
+
     public static final Codec<SimpleConnection> CODEC = RecordCodecBuilder.create(i -> i.group(
             BlockPos.CODEC.fieldOf("pos").forGetter(SimpleConnection::pos),
-            Direction.CODEC.fieldOf("direction").forGetter(SimpleConnection::direction)
+            Direction.CODEC.fieldOf("direction").forGetter(SimpleConnection::direction),
+            Codec.FLOAT.optionalFieldOf("offset", 0f).forGetter(SimpleConnection::offset)
     ).apply(i, SimpleConnection::new));
+
+    public Vec3 getOffsetCenter() {
+        Vec3 center = pos.getCenter();
+        if (offset == 0f) return center;
+        return center.add(
+                direction.getStepX() * offset,
+                direction.getStepY() * offset,
+                direction.getStepZ() * offset
+        );
+    }
 
     @Override
     @Nullable
@@ -37,7 +55,7 @@ public record SimpleConnection(BlockPos pos, Direction direction) implements ICo
 
     @Override
     public boolean isSameConnection(IConnection connection) {
-        if (connection instanceof SimpleConnection && connection.equals(this)) return true;
+        if (connection instanceof SimpleConnection other && other.pos().equals(this.pos) && other.direction() == this.direction) return true;
         return connection instanceof BezierConnection bezier && bezier.getFromPos().equals(this);
     }
 
@@ -60,5 +78,9 @@ public record SimpleConnection(BlockPos pos, Direction direction) implements ICo
 
     public Direction direction() {
         return direction;
+    }
+
+    public float offset() {
+        return offset;
     }
 }

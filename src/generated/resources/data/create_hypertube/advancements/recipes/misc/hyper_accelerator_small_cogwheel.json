@@ -22,8 +22,8 @@
   },
   "requirements": [
     [
-      "has_the_recipe",
-      "has_precision_mechanism"
+      "has_precision_mechanism",
+      "has_the_recipe"
     ]
   ],
   "rewards": {

@@ -1,6 +1,6 @@
 package com.pedrorok.hypertube.network.packets;
 
-import com.pedrorok.hypertube.core.travel.ClientTravelPathMover;
+import com.pedrorok.hypertube.core.travel.client.ClientTravelPathMover;
 import com.pedrorok.hypertube.network.Packet;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;

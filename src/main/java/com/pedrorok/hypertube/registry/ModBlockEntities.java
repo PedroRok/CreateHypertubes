@@ -3,10 +3,13 @@ package com.pedrorok.hypertube.registry;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.blockentities.HyperAcceleratorBlockEntity;
 import com.pedrorok.hypertube.blocks.blockentities.HyperEntranceBlockEntity;
+import com.pedrorok.hypertube.blocks.blockentities.HyperJunctionBlockEntity;
 import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
+import com.pedrorok.hypertube.blocks.blockentities.TubePathBlockEntity;
 import com.pedrorok.hypertube.client.renderer.AcceleratorEntityRenderer;
 import com.pedrorok.hypertube.client.renderer.EntranceBlockEntityRenderer;
 import com.pedrorok.hypertube.client.renderer.HypertubeBlockEntityRenderer;
+import com.pedrorok.hypertube.client.renderer.JunctionEntityRenderer;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import net.minecraft.core.registries.Registries;
@@ -40,6 +43,17 @@ public class ModBlockEntities {
             .blockEntity("hyper_accelerator_entity", HyperAcceleratorBlockEntity::new)
             .renderer(() -> AcceleratorEntityRenderer::new)
             .validBlocks(ModBlocks.HYPER_ACCELERATOR)
+            .register();
+
+    public static final BlockEntityEntry<HyperJunctionBlockEntity> HYPER_JUNCTION = REGISTRATE
+            .blockEntity("hyper_junction_entity", HyperJunctionBlockEntity::new)
+            .renderer(() -> JunctionEntityRenderer::new)
+            .validBlocks(ModBlocks.HYPER_JUNCTION)
+            .register();
+
+    public static final BlockEntityEntry<TubePathBlockEntity> TUBE_PATH = REGISTRATE
+            .blockEntity("tube_path_entity", TubePathBlockEntity::new)
+            .validBlocks(ModBlocks.TUBE_PATH)
             .register();
 
     public static void register() {

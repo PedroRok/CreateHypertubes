@@ -1,0 +1,26 @@
+{
+  "type": "create:mechanical_crafting",
+  "acceptMirrored": true,
+  "key": {
+    "B": {
+      "item": "create:brass_sheet"
+    },
+    "F": {
+      "item": "create_hypertube:hypertube_funnel"
+    },
+    "H": {
+      "item": "create_hypertube:hypertube"
+    },
+    "T": {
+      "item": "create:transmitter"
+    }
+  },
+  "pattern": [
+    "BTB",
+    "FHF",
+    " F "
+  ],
+  "result": {
+    "item": "create_hypertube:hypertube_junction"
+  }
+}

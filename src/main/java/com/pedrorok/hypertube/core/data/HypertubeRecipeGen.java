@@ -5,6 +5,7 @@ import com.pedrorok.hypertube.registry.ModBlocks;
 import com.pedrorok.hypertube.registry.ModItems;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
+import com.simibubi.create.foundation.data.recipe.MechanicalCraftingRecipeBuilder;
 import com.simibubi.create.content.kinetics.deployer.DeployerApplicationRecipe;
 import com.simibubi.create.content.processing.sequenced.SequencedAssemblyRecipeBuilder;
 import net.minecraft.data.PackOutput;
@@ -12,7 +13,6 @@ import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.common.Tags;
 import org.jetbrains.annotations.NotNull;
@@ -40,36 +40,38 @@ public class HypertubeRecipeGen extends RecipeProvider {
                 .unlockedBy("has_brass_sheet", has(AllItems.BRASS_SHEET))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.HYPERTUBE_ENTRANCE.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.HYPERTUBE_FUNNEL.get())
+                .pattern(" B ")
+                .pattern(" H ")
                 .pattern(" K ")
-                .pattern(" C ")
-                .pattern(" G ")
+                .define('B', AllItems.BRASS_SHEET)
+                .define('H', ModBlocks.HYPERTUBE.get())
                 .define('K', Items.DRIED_KELP)
-                .define('C', AllBlocks.SMART_CHUTE)
-                .define('G', AllBlocks.COGWHEEL)
                 .unlockedBy("has_brass_sheet", has(AllItems.BRASS_SHEET))
                 .save(consumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.HYPER_ACCELERATOR.get(), 2)
-                .pattern(" P ")
-                .pattern("CEC")
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.HYPERTUBE_ENTRANCE.get())
+                .pattern(" F ")
+                .pattern(" G ")
+                .pattern(" C ")
+                .define('F', ModItems.HYPERTUBE_FUNNEL)
+                .define('G', AllBlocks.COGWHEEL)
+                .define('C', AllBlocks.SMART_CHUTE)
+                .unlockedBy("has_brass_sheet", has(AllItems.BRASS_SHEET))
+                .save(consumer);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.HYPER_ACCELERATOR.get())
+                .pattern(" F ")
+                .pattern("CPC")
+                .pattern(" F ")
                 .define('P', AllItems.PRECISION_MECHANISM)
-                .define('E', ModBlocks.HYPERTUBE_ENTRANCE.get())
+                .define('F', ModItems.HYPERTUBE_FUNNEL.get())
                 .define('C', AllBlocks.COGWHEEL)
                 .unlockedBy("has_precision_mechanism", has(AllItems.PRECISION_MECHANISM))
                 .save(consumer, HypertubeMod.of("hyper_accelerator_small_cogwheel"));
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.HYPER_ACCELERATOR.get(), 2)
-                .pattern(" P ")
-                .pattern(" E ")
-                .pattern(" C ")
-                .define('P', AllItems.PRECISION_MECHANISM)
-                .define('E', ModBlocks.HYPERTUBE_ENTRANCE.get())
-                .define('C', AllBlocks.LARGE_COGWHEEL)
-                .unlockedBy("has_precision_mechanism", has(AllItems.PRECISION_MECHANISM))
-                .save(consumer, HypertubeMod.of("hyper_accelerator_large_cogwheel"));
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.REDSTONE_DETECTOR.get())
-                .pattern( "ACA")
+                .pattern("ACA")
                 .pattern("AHA")
                 .define('A', AllItems.ANDESITE_ALLOY)
                 .define('C', Items.COMPARATOR)
@@ -85,6 +87,16 @@ public class HypertubeRecipeGen extends RecipeProvider {
                 .addStep(DeployerApplicationRecipe::new, rb -> rb.require(AllItems.BRASS_SHEET))
                 .require(ModItems.REDSTONE_DETECTOR)
                 .loops(1)
+                .build(consumer);
+
+        MechanicalCraftingRecipeBuilder.shapedRecipe(ModBlocks.HYPER_JUNCTION.get())
+                .key('B', AllItems.BRASS_SHEET)
+                .key('T', AllItems.TRANSMITTER)
+                .key('F', ModItems.HYPERTUBE_FUNNEL)
+                .key('H', ModBlocks.HYPERTUBE)
+                .patternLine("BTB")
+                .patternLine("FHF")
+                .patternLine(" F ")
                 .build(consumer);
     }
 }

@@ -1,6 +1,8 @@
 package com.pedrorok.hypertube.network.packets;
 
 import com.pedrorok.hypertube.HypertubeMod;
+import com.pedrorok.hypertube.core.travel.TravelConstants;
+import com.pedrorok.hypertube.core.travel.client.ClientTravelPathMover;
 import com.pedrorok.hypertube.network.Packet;
 import com.simibubi.create.foundation.networking.ISyncPersistentData;
 import net.minecraft.client.Minecraft;
@@ -44,6 +46,9 @@ public record SyncPersistentDataPacket(int entityId, CompoundTag readData) imple
             CompoundTag data = entityByID.getPersistentData();
             new HashSet<>(data.getAllKeys()).forEach(data::remove);
             data.merge(packet.readData);
+            if (!data.getBoolean(TravelConstants.TRAVEL_TAG)) {
+                ClientTravelPathMover.stopMoving(packet.entityId);
+            }
             if (!(entityByID instanceof ISyncPersistentData))
                 return;
             ((ISyncPersistentData) entityByID).onPersistentDataUpdated();

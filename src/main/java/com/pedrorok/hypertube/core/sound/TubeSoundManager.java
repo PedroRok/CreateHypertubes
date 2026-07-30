@@ -139,14 +139,17 @@ public class TubeSoundManager {
         }
     }
 
-
     public static void playTubeSuctionSound(LivingEntity entity, Vec3 pos) {
+        playTubeSuctionSound(entity, pos, 1, 0.8f);
+    }
+
+    public static void playTubeSuctionSound(LivingEntity entity, Vec3 pos, float baseVolume, float basePitch) {
         RandomSource random = entity.level().random;
-        float pitch = 0.8F + random.nextFloat() * 0.4F;
+        float pitch = basePitch + random.nextFloat() * 0.4F;
         int seed = random.nextInt(1000);
         for (Player oPlayer : entity.level().players()) {
-            ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(ModSounds.HYPERTUBE_SUCTION.getHolder().get(),
-                    SoundSource.BLOCKS, pos.x, pos.y, pos.z, 1, pitch, seed));
+            ((ServerPlayer) oPlayer).connection.send(new ClientboundSoundPacket(ModSounds.HYPERTUBE_SUCTION.getHolder().orElseThrow(),
+                    SoundSource.BLOCKS, pos.x, pos.y, pos.z, baseVolume, pitch, seed));
         }
     }
 }

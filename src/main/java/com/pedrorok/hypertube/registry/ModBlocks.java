@@ -1,18 +1,14 @@
 package com.pedrorok.hypertube.registry;
 
 import com.pedrorok.hypertube.HypertubeMod;
-import com.pedrorok.hypertube.blocks.HyperAcceleratorBlock;
-import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
-import com.pedrorok.hypertube.blocks.HypertubeBlock;
+import com.pedrorok.hypertube.blocks.*;
 import com.pedrorok.hypertube.items.HypertubeItem;
 import com.simibubi.create.foundation.data.CreateRegistrate;
-import com.simibubi.create.infrastructure.config.CStress;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
-import static com.simibubi.create.foundation.data.ModelGen.customItemModel;
 import static com.simibubi.create.foundation.data.TagGen.axeOrPickaxe;
 
 
@@ -33,10 +29,14 @@ public class ModBlocks {
     private static final CreateRegistrate REGISTRATE = HypertubeMod.get();
 
     public static final BlockEntry<HypertubeBlock> HYPERTUBE = REGISTRATE.block("hypertube", HypertubeBlock::new)
-            .item(HypertubeItem::new).build()
+            .item(HypertubeItem::new)
+            .model((ctx, prov) -> {
+            })
+            .build()
             .properties((a) -> PROPERTIES)
             .transform(axeOrPickaxe())
-            .defaultBlockstate()
+            .blockstate((ctx, prov) -> {
+            })
             .defaultLoot()
             .register();
 
@@ -44,20 +44,49 @@ public class ModBlocks {
             .simpleItem()
             .properties((a) -> PROPERTIES)
             .transform(axeOrPickaxe())
-            .defaultBlockstate()
+            .blockstate((ctx, prov) -> {
+            })
             .defaultLoot()
             .item(BlockItem::new)
-            .transform(customItemModel())
+            .model((ctx, prov) -> {
+            })
+            .build()
             .register();
 
     public static final BlockEntry<HyperAcceleratorBlock> HYPER_ACCELERATOR = REGISTRATE.block("hypertube_accelerator", HyperAcceleratorBlock::new)
             .simpleItem()
             .properties((a) -> PROPERTIES)
             .transform(axeOrPickaxe())
-            .defaultBlockstate()
+            .blockstate((ctx, prov) -> {
+            })
             .defaultLoot()
             .item(BlockItem::new)
-            .transform(customItemModel())
+            .model((ctx, prov) -> {
+            })
+            .build()
+            .register();
+
+    public static final BlockEntry<HyperJunctionBlock> HYPER_JUNCTION = REGISTRATE.block("hypertube_junction", HyperJunctionBlock::new)
+            .simpleItem()
+            .properties((a) -> PROPERTIES)
+            .transform(axeOrPickaxe())
+            .blockstate((ctx, prov) -> {
+            })
+            .defaultLoot()
+            .item(BlockItem::new)
+            .model((ctx, prov) -> {
+            })
+            .build()
+            .register();
+
+    public static final BlockEntry<TubePathBlock> TUBE_PATH = REGISTRATE.block("tube_path", TubePathBlock::new)
+            .properties(p -> p.strength(-1.0F, 3600000.0F)
+                    .noOcclusion()
+                    .noLootTable()
+                    .isViewBlocking((state, level, pos) -> false)
+                    .isSuffocating((state, level, pos) -> false))
+            .blockstate((ctx, prov) -> {
+            })
             .register();
 
     public static void register() {

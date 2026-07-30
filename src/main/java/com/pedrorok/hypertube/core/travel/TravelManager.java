@@ -1,36 +1,43 @@
 package com.pedrorok.hypertube.core.travel;
 
+import com.mojang.datafixers.util.Pair;
 import com.pedrorok.hypertube.HypertubeMod;
-import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
-import com.pedrorok.hypertube.config.ClientConfig;
+import com.pedrorok.hypertube.blocks.HyperJunctionBlock;
+import com.pedrorok.hypertube.core.compat.Mods;
+import com.pedrorok.hypertube.core.compat.sable.SableCompat;
+import com.pedrorok.hypertube.core.data.MoveDirection;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
 import com.pedrorok.hypertube.events.PlayerSyncEvents;
 import com.pedrorok.hypertube.network.NetworkHandler;
 import com.pedrorok.hypertube.network.packets.MovePathPacket;
 import com.pedrorok.hypertube.network.packets.SyncPersistentDataPacket;
+import com.pedrorok.hypertube.utils.JunctionDirectionUtils;
 import com.pedrorok.hypertube.utils.MessageUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.PacketDistributor;
 
+import java.util.Collections;
 import java.util.UUID;
 
 import static com.pedrorok.hypertube.core.travel.TravelConstants.*;
@@ -43,60 +50,69 @@ public class TravelManager {
 
     private static final Object2ObjectArrayMap<UUID, TravelPathMover> travelDataMap = new Object2ObjectArrayMap<>();
 
-    public static void tryStartTravel(LivingEntity entity, BlockPos pos, BlockState state, float speed) {
+    @SuppressWarnings("D")
+    public static boolean tryStartTravel(LivingEntity entity, BlockEntity blockEntity, Direction facingDirection, float speed) {
+        if (blockEntity == null) return false;
+        BlockState state = blockEntity.getBlockState();
+        BlockPos pos = blockEntity.getBlockPos();
+        boolean isJunction = state.getBlock() instanceof HyperJunctionBlock;
+
         CompoundTag entityPersistentData = entity.getPersistentData();
-        if (entityPersistentData.getBoolean(TRAVEL_TAG)) return;
+        if (entityPersistentData.getBoolean(TRAVEL_TAG) && !isJunction) return false;
 
         boolean isPlayer = entity instanceof ServerPlayer;
         ServerPlayer player = isPlayer ? (ServerPlayer) entity : null;
 
+        if (isPlayer && player.gameMode.getGameModeForPlayer().equals(GameType.SPECTATOR)) return false;
+
         long lastTravelTime = entityPersistentData.getLong(LAST_TRAVEL_TIME);
 
-        if (entityPersistentData.contains(LAST_TRAVEL_BLOCKPOS)) {
+        if (entityPersistentData.contains(LAST_TRAVEL_BLOCKPOS) && !isJunction) {
             BlockPos lastTravelPos = BlockPos.of(entityPersistentData.getLong(LAST_TRAVEL_BLOCKPOS));
             if (lastTravelPos.equals(pos)
                     && lastTravelTime > System.currentTimeMillis()) {
-                return;
+                return false;
             }
         }
 
-        if (lastTravelTime - DEFAULT_AFTER_TUBE_CAMERA > System.currentTimeMillis()) {
+        if (lastTravelTime - DEFAULT_AFTER_TUBE_CAMERA > System.currentTimeMillis() && !isJunction) {
             speed += entityPersistentData.getFloat(LAST_TRAVEL_SPEED);
         }
 
-        BlockPos relative = pos.relative(state.getValue(HyperEntranceBlock.FACING));
-        TravelPathData travelPathData = new TravelPathData(relative, entity.level(), pos);
+        TravelPathData travelPathData = new TravelPathData(facingDirection, entity.level(), pos);
 
         if (travelPathData.getTravelPoints().size() < 3) {
-            if (!isPlayer) return;
+            if (!isPlayer) return false;
             MessageUtils.sendActionMessage(player, Component.translatable("hypertube.travel.too_short").withStyle(ChatFormatting.RED), true);
-            return;
+            return false;
         }
         entityPersistentData.putBoolean(TRAVEL_TAG, true);
 
         float finalSpeed = (speed * TravelConstants.DEFAULT_SPEED_MULTIPLIER);
 
         TravelPathMover pathMover = new TravelPathMover(
-                pos,
+                blockEntity,
+                travelPathData,
                 entity,
-                travelPathData.getTravelPoints(),
-                travelPathData.getActionPoints(),
                 finalSpeed,
-                travelPathData.getEndDirection(entity.level()),
-                travelPathData.getLastBlockPos(),
                 TravelManager::finishTravel);
         travelDataMap.put(entity.getUUID(), pathMover);
 
-        MovePathPacket movePathPacket = new MovePathPacket(entity.getId(), travelPathData.getTravelPoints(), travelPathData.getActionPoints(), finalSpeed);
+        MovePathPacket movePathPacket = new MovePathPacket(entity.getId(),
+                travelPathData.getTravelPoints(),
+                travelPathData.getActionPoints(),
+                finalSpeed,
+                travelPathData.isFinishWithJunction(),
+                travelPathData.getJunctionDirection());
         NetworkHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
                 movePathPacket);
-
         Vec3 center = pos.getCenter();
-        TubeSoundManager.playTubeSuctionSound(entity, center);
+        Mods.SABLE.executeIfInstalled(() -> () -> SableCompat.stickToSubLevel(entity, center));
 
         syncPersistentData(entity);
 
-        HypertubeMod.LOGGER.debug("Travel started: {} to {} and speed {}", entity.getName().getString(), relative, pathMover.getTravelSpeed());
+        HypertubeMod.LOGGER.debug("Travel started: {} to {} and speed {}", entity.getName().getString(), pos, pathMover.getTravelSpeed());
+        return true;
     }
 
     public static void entityTick(LivingEntity entity) {
@@ -115,8 +131,6 @@ public class TravelManager {
         }
     }
 
-    private static boolean isTraveling;
-
     @OnlyIn(Dist.CLIENT)
     private static void clientTick(Player player) {
         Minecraft mc = Minecraft.getInstance();
@@ -124,24 +138,19 @@ public class TravelManager {
         if (!mc.player.is(player)) return;
         if (hasHyperTubeData(player)) {
             TubeSoundManager.TravelSound.enableClientPlayerSound(player, 0.8F, 1.0F);
-            isTraveling = true;
-            return;
-        }
-        if (isTraveling
-                && !ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get()) {
-            Minecraft.getInstance().options.setCameraType(CameraType.FIRST_PERSON);
-            isTraveling = false;
         }
     }
 
     public static void finishTravel(ServerPlayer player) {
         if (!travelDataMap.containsKey(player.getUUID())) return;
-        finishTravel(player, true);
+        finishTravel(EndTravelData.forced(player));
     }
 
-    private static void finishTravel(LivingEntity entity, boolean forced) {
-        Level level = entity.level();
-        //if (level.isClientSide) return;
+    private static void finishTravel(EndTravelData data) {
+        final boolean forced = data.isForced();
+        final LivingEntity entity = data.entity();
+        final Level level = entity.level();
+        if (level.isClientSide) return;
         TravelPathMover pathMover = travelDataMap.get(entity.getUUID());
         travelDataMap.remove(entity.getUUID());
 
@@ -157,18 +166,39 @@ public class TravelManager {
 
         syncPersistentData(entity);
 
+        if (data.isJunctionEnd() && !data.isForced()) {
+            BlockEntity blockState = level.getBlockEntity(pathMover.getLastPos());
+            if (!tryStartTravel(entity, blockState, data.direction(), pathMover.getTravelSpeed())) return;
+            TubeSoundManager.playTubeSuctionSound(entity, pathMover.getLastPos().getCenter(), 0.5f, 1.2f);
+            return;
+        }
+
         Vec3 lastDir = pathMover.getLastDir();
-        Vec3 lastBlockPos = pathMover.getLastPos().getCenter();
-        BlockState blockState = level.getBlockState(BlockPos.containing(lastBlockPos));
-        if (blockState.getBlock() instanceof HyperEntranceBlock) {
-            lastBlockPos = pathMover.getLastPos().relative(blockState.getValue(HyperEntranceBlock.FACING).getOpposite()).getCenter();
+        Vec3 exitPos = pathMover.getPathEndPos();
+        if (forced) {
+            float yaw = entity.getYRot();
+            float pitch = entity.getXRot();
+            float radYaw = (float) Math.toRadians(yaw);
+            float radPitch = (float) Math.toRadians(pitch);
+            Vec3 direction = new Vec3(-Math.sin(radYaw) * Math.cos(radPitch), -Math.sin(radPitch), Math.cos(radYaw) * Math.cos(radPitch));
+            lastDir = direction.normalize();
+            exitPos = entity.position();
         }
-        if (!forced) {
-            if (level instanceof ServerLevel) {
-                entity.teleportTo(lastBlockPos.x, lastBlockPos.y, lastBlockPos.z);
-            }
-            entity.setDeltaMovement(lastDir.scale(Math.max(finalSpeed, 1f)));
+
+        Pair<Vec3, Vec3> lastPosDir = Pair.of(exitPos, lastDir);
+        lastPosDir = Mods.SABLE.executeIfInstalled(() -> (posDir) -> SableCompat.transformToWorld(level, posDir.getFirst(), posDir.getSecond()), lastPosDir);
+        exitPos = lastPosDir.getFirst();
+        lastDir = lastPosDir.getSecond();
+        if (forced) {
+            exitPos = exitPos.add(lastDir.scale(0.5));
         }
+
+        Mods.SABLE.executeIfInstalled(() -> () -> SableCompat.stickToSubLevel(entity, null));
+
+        if (level instanceof ServerLevel) {
+            entity.teleportTo((ServerLevel) level, exitPos.x, exitPos.y, exitPos.z, Collections.emptySet(), entity.getYRot(), entity.getXRot());
+        }
+        entity.setDeltaMovement(lastDir.scale(Math.max(finalSpeed, TravelConstants.MIN_EXIT_SPEED)));
         entity.hurtMarked = true;
 
         entity.setPose(Pose.SWIMMING);
@@ -178,7 +208,6 @@ public class TravelManager {
         if (!(entity instanceof Player player)) return;
         player.startFallFlying();
     }
-
 
     // FIXING Steam n' Rails Dismount Bug
     private static void removeDismountedData(LivingEntity entity) {
@@ -190,6 +219,18 @@ public class TravelManager {
                 persistentData.put("ForgeData", forgeData);
             }
         }
+    }
+
+    public static void changeDirection(MoveDirection direction, UUID entityUuid, Level level) {
+        TravelPathMover travelPathMover = travelDataMap.get(entityUuid);
+        if (travelPathMover == null) return;
+
+        Direction junctionDirection = travelPathMover.getJunctionDirection();
+        if (junctionDirection == null) return;
+
+        Tuple<Direction, MoveDirection> directionTuple = JunctionDirectionUtils.resolveValidDirectionTuple(direction, travelPathMover.getLastPos(), level, junctionDirection);
+        if (directionTuple == null) return;
+        travelPathMover.setChosenDirection(directionTuple.getA());
     }
 
     public static void finishTravel(UUID entityUuid) {

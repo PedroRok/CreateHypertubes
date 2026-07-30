@@ -58,12 +58,13 @@ public class DetachedPlayerDirController {
         this.targetPitch = newPitch;
     }
 
-    public void tickPlayerDirection() {
+    public void tickPlayerDirection(float deltaSeconds) {
         if (!detached) return;
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
-        this.yaw = lerpAngle(this.yaw, this.targetYaw, (float) SMOOTHING_ROTATION);
-        this.pitch = (float) Mth.lerp(SMOOTHING_ROTATION, this.pitch, this.targetPitch);
+        float smoothing = CameraSmoothing.factor(SMOOTHING_ROTATION, deltaSeconds);
+        this.yaw = lerpAngle(this.yaw, this.targetYaw, smoothing);
+        this.pitch = Mth.lerp(smoothing, this.pitch, this.targetPitch);
         player.setYRot(this.yaw);
         player.setXRot(this.pitch);
     }
@@ -73,8 +74,8 @@ public class DetachedPlayerDirController {
         return from + delta * t;
     }
 
-    public static void tickPlayer() {
-        get().tickPlayerDirection();
+    public static void tickPlayer(float deltaSeconds) {
+        get().tickPlayerDirection(deltaSeconds);
     }
 
 

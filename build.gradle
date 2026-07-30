@@ -73,14 +73,19 @@ mixin {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
-    maven { url = "https://maven.createmod.net" }
-    maven { url = "https://mvn.devos.one/snapshots" }
-    maven { url = "https://maven.tterrag.com" }
-    maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" }
+    maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
+    maven { url = "https://mvn.devos.one/snapshots" } // Registrate
+    maven { url = "https://maven.tterrag.com" } // Registrate
+    maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
 
     maven {
         name = "CurseMaven"
         url = "https://cursemaven.com"
+    }
+
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
     }
 }
 
@@ -107,6 +112,9 @@ dependencies {
     // Fix better third person
     compileOnly fg.deobf("curse.maven:betterthirdperson-435044:4596768")
     //runtimeOnly fg.deobf("curse.maven:betterthirdperson-435044:4596768")
+
+    // Sable is NeoForge 1.21.1+ only, so there is no dependency here.
+    // The compat layer in core/compat/sable is a no-op stub on this branch.
 }
 
 tasks.named('processResources', ProcessResources).configure {

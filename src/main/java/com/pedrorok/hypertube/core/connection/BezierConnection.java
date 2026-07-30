@@ -11,6 +11,7 @@ import net.createmod.catnip.outliner.Outliner;
 import net.createmod.catnip.theme.Color;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -39,7 +40,7 @@ public class BezierConnection implements IConnection {
 
     private final static float MAX_REASONABLE_DISTANCE = 1000F;
     public static final float MAX_DISTANCE = 40.0f;
-    public static final float MAX_ANGLE = 0.6f;
+    public static final float MAX_ANGLE = 0.54f;
 
     @Getter
     private final UUID uuid = UUID.randomUUID();
@@ -79,17 +80,15 @@ public class BezierConnection implements IConnection {
 
     private List<Vec3> calculateRelativeBezierPoints() {
         if (toPos == null) return List.of();
+        if (distance() >= MAX_REASONABLE_DISTANCE) return List.of();
 
-        // Calculate offset between from and to positions
-        BlockPos storedFromPos = fromPos.pos();
-        BlockPos storedToPos = toPos.pos();
-        BlockPos offset = storedToPos.subtract(storedFromPos);
+        Vec3 fromAbsolute = fromPos.getOffsetCenter();
+        Vec3 toAbsolute = toPos.getOffsetCenter();
 
-        // Create relative positions (fromPos is at origin 0,0,0)
-        Vec3 fromRelative = new Vec3(0.5, 0.5, 0.5); // Center of origin block
-        Vec3 toRelative = new Vec3(offset.getX() + 0.5, offset.getY() + 0.5, offset.getZ() + 0.5);
+        Vec3 originAbsolute = Vec3.atLowerCornerOf(fromPos.pos());
+        Vec3 fromRelative = fromAbsolute.subtract(originAbsolute);
+        Vec3 toRelative = toAbsolute.subtract(originAbsolute);
 
-        // Calculate bezier curve in relative space
         double distance = fromRelative.distanceTo(toRelative);
         Vec3 controlPoint1 = createFirstControlPoint(fromRelative, fromPos.direction(), distance);
         Vec3 controlPoint2 = createSecondControlPoint(toRelative, fromPos.direction(), distance,
@@ -109,7 +108,6 @@ public class BezierConnection implements IConnection {
     public List<Vec3> getBezierPoints() {
         if (cachedRelativeBezierPoints.isEmpty()) return List.of();
 
-        // Convert cached relative points to absolute using stored fromPos
         Vec3 originAbsolute = Vec3.atLowerCornerOf(fromPos.pos());
         List<Vec3> absolutePoints = new ArrayList<>(cachedRelativeBezierPoints.size());
         for (Vec3 relativePoint : cachedRelativeBezierPoints) {
@@ -121,7 +119,6 @@ public class BezierConnection implements IConnection {
     public List<Vec3> getBezierPoints(Level level, BlockPos currentFromPos) {
         if (cachedRelativeBezierPoints.isEmpty()) return List.of();
 
-        // Convert cached relative points to absolute using CURRENT block position
         Vec3 originAbsolute = Vec3.atLowerCornerOf(currentFromPos);
         List<Vec3> absolutePoints = new ArrayList<>(cachedRelativeBezierPoints.size());
         for (Vec3 relativePoint : cachedRelativeBezierPoints) {
@@ -133,12 +130,10 @@ public class BezierConnection implements IConnection {
     public List<Vec3> getRelativeBezierPoints(BlockPos originPos) {
         if (cachedRelativeBezierPoints.isEmpty()) return List.of();
 
-        // If originPos matches fromPos, return cached points directly
         if (originPos.equals(fromPos.pos())) {
             return new ArrayList<>(cachedRelativeBezierPoints);
         }
 
-        // Otherwise, calculate offset and adjust cached points
         BlockPos offset = fromPos.pos().subtract(originPos);
         Vec3 offsetVec = new Vec3(offset.getX(), offset.getY(), offset.getZ());
         List<Vec3> adjustedPoints = new ArrayList<>(cachedRelativeBezierPoints.size());
@@ -199,18 +194,28 @@ public class BezierConnection implements IConnection {
         List<Vec3> points = getBezierPoints();
 
         if (distance() > MAX_REASONABLE_DISTANCE) return 0;
+        if (points.size() < 2) return 0;
 
-        // THIS IS TO PREVENT FROM PLACING BACK
-        Vec3 first = getBezierPoints().get(0);
-        Vec3 second = getBezierPoints().get(1);
-        Direction direction = fromPos.direction();
-        Vec3 firstDirection = new Vec3(direction.getStepX(), direction.getStepY(), direction.getStepZ());
-        Vec3 secondDirection = second.subtract(first).normalize();
-        float initialAngle = (float) Math.acos(firstDirection.dot(secondDirection) / (firstDirection.length() * secondDirection.length()));
-        if (initialAngle >= 2.) {
-            return initialAngle;
+        Vec3 fromDir = new Vec3(
+                fromPos.direction().getStepX(),
+                fromPos.direction().getStepY(),
+                fromPos.direction().getStepZ()
+        );
+
+        Vec3 firstSegment = points.get(1).subtract(points.get(0)).normalize();
+        float firstAngle = (float) Math.acos(Mth.clamp(fromDir.dot(firstSegment), -1.0, 1.0));
+        if (firstAngle >= MAX_ANGLE) return firstAngle;
+
+        Vec3 lastSegment = points.get(points.size() - 1).subtract(points.get(points.size() - 2)).normalize();
+        if (toPos != null && toPos.direction() != null) {
+            Vec3 toDir = new Vec3(
+                    toPos.direction().getStepX(),
+                    toPos.direction().getStepY(),
+                    toPos.direction().getStepZ()
+            );
+            float lastAngle = (float) Math.acos(Mth.clamp(toDir.dot(lastSegment), -1.0, 1.0));
+            if (lastAngle >= MAX_ANGLE) return lastAngle;
         }
-        // END OF PREVENTION
 
         return getMaxAngle(points);
     }
@@ -243,7 +248,7 @@ public class BezierConnection implements IConnection {
             valid = ResponseDTO.invalid("placement.create_hypertube.no_valid_points");
             return valid;
         }
-        if (getMaxAngleBezierAngle() >= MAX_ANGLE) {
+        if (isAngleTooHigh()) {
             valid = ResponseDTO.invalid("placement.create_hypertube.angle_too_high");
             return valid;
         }
@@ -258,6 +263,10 @@ public class BezierConnection implements IConnection {
         return ResponseDTO.get(true);
     }
 
+    public boolean isAngleTooHigh() {
+        return getMaxAngleBezierAngle() >= MAX_ANGLE;
+    }
+
     public static BezierConnection of(SimpleConnection from, @Nullable SimpleConnection toPos) {
         return new BezierConnection(from, toPos);
     }
@@ -267,9 +276,13 @@ public class BezierConnection implements IConnection {
     public void drawPath(LerpedFloat animation, boolean isValid) {
         if (distance() > MAX_REASONABLE_DISTANCE) return;
 
-        Vec3 pos1 = fromPos.pos().getCenter();
+        List<Vec3> points = getBezierPoints();
+        if (points.isEmpty()) return;
+
+        Vec3 pos1 = points.get(0);
         int id = 0;
-        for (Vec3 bezierPoint : getBezierPoints()) {
+        for (int i = 1; i < points.size(); i++) {
+            Vec3 bezierPoint = points.get(i);
             line(uuid, id, pos1, bezierPoint, animation, !isValid);
             pos1 = bezierPoint;
             id++;
@@ -299,12 +312,16 @@ public class BezierConnection implements IConnection {
                 .disableLineNormals();
     }
 
+    public boolean isInverted(BlockPos refencePos) {
+        return toPos.pos().equals(refencePos);
+    }
+
     public BezierConnection invert() {
         return new BezierConnection(
-            new SimpleConnection(toPos.pos(), toPos.direction().getOpposite()),
-            new SimpleConnection(fromPos.pos(), fromPos.direction().getOpposite()),
-            tubeSegments,
-            detailLevel
+                new SimpleConnection(toPos.pos(), toPos.direction().getOpposite(), toPos.offset()),
+                new SimpleConnection(fromPos.pos(), fromPos.direction().getOpposite(), fromPos.offset()),
+                tubeSegments,
+                detailLevel
         );
     }
 
@@ -339,9 +356,9 @@ public class BezierConnection implements IConnection {
     @Override
     public String toString() {
         return "BezierConnection{" +
-               "fromPos=" + fromPos +
-               ", toPos=" + toPos +
-               ", isValid=" + valid +
-               '}';
+                "fromPos=" + fromPos +
+                ", toPos=" + toPos +
+                ", isValid=" + valid +
+                '}';
     }
 }

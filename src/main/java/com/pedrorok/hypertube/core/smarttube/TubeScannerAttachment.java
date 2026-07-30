@@ -1,10 +1,11 @@
 package com.pedrorok.hypertube.core.smarttube;
 
 import com.pedrorok.hypertube.blocks.ActionTubeBlock;
-import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
+import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.registry.ModItems;
 import com.pedrorok.hypertube.registry.ModPartialModels;
+import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
@@ -28,10 +29,11 @@ public class TubeScannerAttachment implements ITubeAttachment {
 
     @Override
     public PartialModel getPartialModel(BlockState blockState, ActionTubeBlockEntity blockEntity, Direction facing) {
+        boolean hasCog = blockEntity instanceof ICogWheel;
         if (blockState.getValue(ActionTubeBlock.POWER) > 0) {
-            return ModPartialModels.TUBE_SCANNER_ACTIVE;
+            return hasCog ? ModPartialModels.TUBE_SCANNER_ACTIVE : ModPartialModels.TUBE_SCANNER_NO_COG_ACTIVE;
         }
-        return ModPartialModels.TUBE_SCANNER;
+        return hasCog ? ModPartialModels.TUBE_SCANNER : ModPartialModels.TUBE_SCANNER_NO_COG;
     }
 
     @Override
@@ -47,13 +49,12 @@ public class TubeScannerAttachment implements ITubeAttachment {
                 int currentPower = currentState.getValue(ActionTubeBlock.POWER);
                 int newPower = entity != null && entity.isBaby() ? 8 : 15;
 
-                if (newPower >= currentPower) {
-                    if (newPower != currentPower) {
-                        level.setBlock(pos, currentState.setValue(ActionTubeBlock.POWER, newPower), 3);
-                    }
-                    level.scheduleTick(pos, currentState.getBlock(), 20);
-                    level.updateNeighborsAt(pos, currentState.getBlock());
+                if (newPower < currentPower) return;
+                if (newPower != currentPower) {
+                    level.setBlock(pos, currentState.setValue(ActionTubeBlock.POWER, newPower), 3);
                 }
+                level.scheduleTick(pos, currentState.getBlock(), 20);
+                level.updateNeighborsAt(pos, currentState.getBlock());
             }
         });
     }

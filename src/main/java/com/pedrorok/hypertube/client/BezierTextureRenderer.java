@@ -4,11 +4,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
-import net.createmod.ponder.Ponder;
-import net.createmod.ponder.api.level.PonderLevel;
 import net.createmod.ponder.foundation.ui.PonderUI;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
@@ -72,19 +70,21 @@ public class BezierTextureRenderer {
 
         List<TubeRing> tubeGeometry = calculateAndCacheGeometry(bezierPoints);
 
+        int[] ringLights = calculateRingLights(level, blockPosInitial, tubeGeometry);
+
         VertexConsumer builderExterior = bufferSource.getBuffer(RenderType.entityTranslucentCull(textureTube));
-        renderComponent(builderExterior, pose, packedLight, packedOverlay, tubeGeometry, SectionType.EXTERIOR, segmentDistance);
+        renderComponent(builderExterior, pose, ringLights, packedOverlay, tubeGeometry, SectionType.EXTERIOR, segmentDistance);
 
         VertexConsumer builderInterior = bufferSource.getBuffer(RenderType.entityTranslucent(textureTube));
-        renderComponent(builderInterior, pose, packedLight, packedOverlay, tubeGeometry, SectionType.INTERIOR, segmentDistance);
+        renderComponent(builderInterior, pose, ringLights, packedOverlay, tubeGeometry, SectionType.INTERIOR, segmentDistance);
 
         VertexConsumer builderLine = bufferSource.getBuffer(RenderType.entityTranslucentCull(textureLine));
-        renderComponent(builderLine, pose, packedLight, packedOverlay, tubeGeometry, SectionType.LINE, segmentDistance);
+        renderComponent(builderLine, pose, ringLights, packedOverlay, tubeGeometry, SectionType.LINE, segmentDistance);
 
         poseStack.popPose();
     }
 
-    private void renderComponent(VertexConsumer builder, Matrix4f pose, int packedLight, int packedOverlay,
+    private void renderComponent(VertexConsumer builder, Matrix4f pose, int[] ringLights, int packedOverlay,
                                  List<TubeRing> tubeGeometry, SectionType sectionType, int segmentDistance) {
 
         if (tubeGeometry.size() < 2) return;
@@ -101,6 +101,9 @@ public class BezierTextureRenderer {
 
             TubeRing current = tubeGeometry.get(i);
             TubeRing next = tubeGeometry.get(i + 1);
+
+            int lightCurrent = ringLights[i];
+            int lightNext = ringLights[i + 1];
 
             Vec3 dirVec = next.center().subtract(current.center());
             float segmentLength = (float) dirVec.length();
@@ -128,27 +131,45 @@ public class BezierTextureRenderer {
                 );
                 float uEnd_nextJ = uStart + (corner_nextJ_movement.dot(tangent) / TILING_UNIT);
 
+                boolean invertNormal = Minecraft.getInstance().screen instanceof PonderUI;
+                if (invertNormal) {
+                    lightCurrent = 0x00F000F0;
+                    lightNext = 0x00F000F0;
+                }
                 float vStart = 0, vEnd = 1;
                 if (doubleSided) {
-                    addVertex(builder, pose, current.center(), currentOffsets.get(nextJ), uStart, vEnd, packedLight, packedOverlay, false);
-                    addVertex(builder, pose, next.center(), nextOffsets.get(nextJ), uEnd_nextJ, vEnd, packedLight, packedOverlay, false);
-                    addVertex(builder, pose, next.center(), nextOffsets.get(j), uEnd_j, vStart, packedLight, packedOverlay, false);
-                    addVertex(builder, pose, current.center(), currentOffsets.get(j), uStart, vStart, packedLight, packedOverlay, false);
+                    addVertex(builder, pose, current.center(), currentOffsets.get(nextJ), uStart, vEnd, lightCurrent, packedOverlay, invertNormal);
+                    addVertex(builder, pose, next.center(), nextOffsets.get(nextJ), uEnd_nextJ, vEnd, lightNext, packedOverlay, invertNormal);
+                    addVertex(builder, pose, next.center(), nextOffsets.get(j), uEnd_j, vStart, lightNext, packedOverlay, invertNormal);
+                    addVertex(builder, pose, current.center(), currentOffsets.get(j), uStart, vStart, lightCurrent, packedOverlay, invertNormal);
                 }
 
                 if (interiorTube) {
-                    addVertex(builder, pose, current.center(), currentOffsets.get(nextJ), uStart, vEnd, packedLight, packedOverlay, true);
-                    addVertex(builder, pose, next.center(), nextOffsets.get(nextJ), uEnd_nextJ, vEnd, packedLight, packedOverlay,true);
-                    addVertex(builder, pose, next.center(), nextOffsets.get(j), uEnd_j, vStart, packedLight, packedOverlay, true);
-                    addVertex(builder, pose, current.center(), currentOffsets.get(j), uStart, vStart, packedLight, packedOverlay, true);
+                    addVertex(builder, pose, current.center(), currentOffsets.get(nextJ), uStart, vEnd, lightCurrent, packedOverlay, !invertNormal);
+                    addVertex(builder, pose, next.center(), nextOffsets.get(nextJ), uEnd_nextJ, vEnd, lightNext, packedOverlay, !invertNormal);
+                    addVertex(builder, pose, next.center(), nextOffsets.get(j), uEnd_j, vStart, lightNext, packedOverlay, !invertNormal);
+                    addVertex(builder, pose, current.center(), currentOffsets.get(j), uStart, vStart, lightCurrent, packedOverlay, !invertNormal);
                 } else {
-                    addVertex(builder, pose, current.center(), currentOffsets.get(j), uStart, vStart, packedLight, packedOverlay, doubleSided);
-                    addVertex(builder, pose, next.center(), nextOffsets.get(j), uEnd_j, vStart, packedLight, packedOverlay, doubleSided);
-                    addVertex(builder, pose, next.center(), nextOffsets.get(nextJ), uEnd_nextJ, vEnd, packedLight, packedOverlay, doubleSided);
-                    addVertex(builder, pose, current.center(), currentOffsets.get(nextJ), uStart, vEnd, packedLight, packedOverlay, doubleSided);
+                    addVertex(builder, pose, current.center(), currentOffsets.get(j), uStart, vStart, lightCurrent, packedOverlay, doubleSided);
+                    addVertex(builder, pose, next.center(), nextOffsets.get(j), uEnd_j, vStart, lightNext, packedOverlay, doubleSided);
+                    addVertex(builder, pose, next.center(), nextOffsets.get(nextJ), uEnd_nextJ, vEnd, lightNext, packedOverlay, doubleSided);
+                    addVertex(builder, pose, current.center(), currentOffsets.get(nextJ), uStart, vEnd, lightCurrent, packedOverlay, doubleSided);
                 }
             }
         }
+    }
+
+    private int[] calculateRingLights(Level level, BlockPos blockPosInitial, List<TubeRing> tubeGeometry) {
+        int[] ringLights = new int[tubeGeometry.size()];
+        for (int i = 0; i < tubeGeometry.size(); i++) {
+            Vec3 center = tubeGeometry.get(i).center();
+            BlockPos lightPos = BlockPos.containing(
+                    blockPosInitial.getX() + center.x,
+                    blockPosInitial.getY() + center.y,
+                    blockPosInitial.getZ() + center.z);
+            ringLights[i] = LevelRenderer.getLightColor(level, lightPos);
+        }
+        return ringLights;
     }
 
     private List<TubeRing> calculateAndCacheGeometry(List<Vec3> points) {

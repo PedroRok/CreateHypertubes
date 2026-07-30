@@ -2,7 +2,10 @@ package com.pedrorok.hypertube.blocks.blockentities;
 
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperEntranceBlock;
+import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.config.ServerConfig;
+import com.pedrorok.hypertube.core.collision.TubeFiller;
+import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
@@ -10,7 +13,6 @@ import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.core.travel.TravelManager;
 import com.pedrorok.hypertube.utils.TubeUtils;
 import com.simibubi.create.api.equipment.goggles.IHaveHoveringInformation;
-import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import lombok.Getter;
 import net.minecraft.ChatFormatting;
@@ -28,6 +30,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,9 +53,8 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
     @Override
     protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
-        if (compound.contains("Connection")) {
-            connection = getConnectionRelative(compound, "Connection", worldPosition);
-        }
+        connection = compound.contains("Connection")
+                ? getConnectionRelative(compound, "Connection", worldPosition) : null;
     }
 
     @Override
@@ -79,9 +81,8 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
             tickClient(isBlocked);
             return;
         }
-        if (isBlocked) {
-            return;
-        }
+        if (isBlocked) return;
+
 
         BlockState state = this.getBlockState();
         BlockPos pos = this.getBlockPos();
@@ -89,10 +90,9 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
         float actualSpeed = Math.abs(this.getSpeed());
         Boolean isOpen = state.getValue(HyperEntranceBlock.OPEN);
         if (actualSpeed < TravelConstants.NEEDED_SPEED) {
-            if (isOpen) {
-                level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, false), 3);
-                playOpenCloseSound(false);
-            }
+            if (!isOpen) return;
+            level.setBlock(pos, state.setValue(HyperEntranceBlock.OPEN, false), 3);
+            playOpenCloseSound(false);
             return;
         }
 
@@ -100,7 +100,6 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
         LivingEntity nearbyEntity = getNearbyLivingEntities((ServerLevel) level, pos.getCenter());
 
         boolean canOpen = nearbyEntity != null && (isNotLocked || nearbyEntity.isShiftKeyDown() || nearbyEntity.getPersistentData().getBoolean(TravelConstants.TRAVEL_TAG));
-
 
         if (isTubeClosed(canOpen, isOpen)) return;
 
@@ -111,7 +110,9 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
             return;
         }
 
-        TravelManager.tryStartTravel(inRangeEntity, pos, state, TubeUtils.calculateTravelSpeed(actualSpeed));
+        boolean hasStartedTravel = TravelManager.tryStartTravel(inRangeEntity, this, state.getValue(HyperEntranceBlock.FACING), TubeUtils.calculateTravelSpeed(actualSpeed));
+        if (!hasStartedTravel) return;
+        TubeSoundManager.playTubeSuctionSound(inRangeEntity, getBlockPos().getCenter());
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -163,6 +164,9 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
             HypertubeMod.LOGGER.error(new TubeConnectionException("Connection could not define connection", this.connection, connection).getMessage());
             return;
         }
+        if (ServerConfig.get().TUBE_COLLISION.get() && connection instanceof BezierConnection bezier) {
+            TubeFiller.place(level, bezier);
+        }
         setChanged();
         sync();
     }
@@ -177,6 +181,11 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
         }
         setChanged();
         sync();
+    }
+
+    @Override
+    public float getConnectionOffsetOnDirection(Direction direction) {
+        return 0.3f;
     }
 
     @Override
@@ -195,7 +204,7 @@ public class HyperEntranceBlockEntity extends ActionTubeBlockEntity implements I
     }
 
     @Override
-    public Vec3 getExitDirection() {
+    public Vec3 getExitDirection(@Nullable Direction connectionDirection) {
         if (getBlockState().hasProperty(HyperEntranceBlock.FACING)) {
             Direction facing = getBlockState().getValue(HyperEntranceBlock.FACING).getOpposite();
             return Vec3.atLowerCornerOf(facing.getNormal());

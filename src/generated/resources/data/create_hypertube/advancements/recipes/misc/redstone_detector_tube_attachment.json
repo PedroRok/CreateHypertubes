@@ -5,7 +5,9 @@
       "conditions": {
         "items": [
           {
-            "items": "create_hypertube:hypertube_entrance"
+            "items": [
+              "create_hypertube:hypertube_entrance"
+            ]
           }
         ]
       },
@@ -20,13 +22,14 @@
   },
   "requirements": [
     [
-      "has_the_recipe",
-      "has_hypertube_entrance"
+      "has_hypertube_entrance",
+      "has_the_recipe"
     ]
   ],
   "rewards": {
     "recipes": [
       "create_hypertube:redstone_detector_tube_attachment"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }
