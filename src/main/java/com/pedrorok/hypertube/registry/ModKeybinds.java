@@ -5,12 +5,13 @@ import com.pedrorok.hypertube.HypertubeMod;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import org.lwjgl.glfw.GLFW;
 
-@EventBusSubscriber(modid = HypertubeMod.MOD_ID)
+@EventBusSubscriber(modid = HypertubeMod.MOD_ID, value = Dist.CLIENT)
 public enum ModKeybinds {
 
 	ESCAPE("tube_escape", GLFW.GLFW_KEY_LEFT_SHIFT);

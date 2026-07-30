@@ -5,14 +5,18 @@ import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.core.compat.Mods;
 import com.pedrorok.hypertube.core.compat.sable.SableCompat;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
+import com.pedrorok.hypertube.core.data.MoveDirection;
 import com.pedrorok.hypertube.network.packets.EntityTravelDirDataPacket;
 import com.pedrorok.hypertube.network.packets.SyncEntityPosPacket;
+import com.pedrorok.hypertube.utils.JunctionDirectionUtils;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
@@ -81,12 +85,27 @@ public class TravelPathMover {
         this.isJunction = data.isFinishWithJunction();
         this.junctionDirection = data.getJunctionDirection();
 
-        if (isJunction) return;
+        if (isJunction) {
+            this.chosenDirection = resolveDefaultDirection(entity.level());
+            return;
+        }
         this.lastDirection = data.getEndDirection(entity.level());
         if (lastDirection == null) {
             this.lastDirection = pathPoints.getLast().subtract(pathPoints.get(pathPoints.size() - 2)).normalize();
         }
         this.pathPoints.add(pathPoints.getLast().add(this.lastDirection.scale(1)));
+    }
+
+    private Direction resolveDefaultDirection(Level level) {
+        if (junctionDirection == null || lastPos == null) return chosenDirection;
+        MoveDirection moveDirection = MoveDirection.RIGHT;
+        do {
+            Tuple<Direction, MoveDirection> directionTuple =
+                    JunctionDirectionUtils.resolveValidDirectionTuple(moveDirection, lastPos, level, junctionDirection);
+            if (directionTuple != null) return directionTuple.getA();
+            moveDirection = moveDirection.getNext();
+        } while (moveDirection != MoveDirection.RIGHT);
+        return chosenDirection;
     }
 
     private double getPathLength() {
