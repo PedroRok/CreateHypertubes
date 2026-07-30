@@ -89,14 +89,14 @@ public class HypertubeRecipeGen extends RecipeProvider {
                 .loops(1)
                 .build(consumer);
 
-        //MechanicalCraftingRecipeBuilder.shapedRecipe(ModBlocks.HYPER_JUNCTION.get())
-        //        .key('B', AllItems.BRASS_SHEET)
-        //        .key('T', AllItems.)
-        //        .key('F', ModItems.HYPERTUBE_FUNNEL)
-        //        .key('H', ModBlocks.HYPERTUBE)
-        //        .patternLine("BTB")
-        //        .patternLine("FHF")
-        //        .patternLine(" F ")
-        //        .build(consumer);
+        MechanicalCraftingRecipeBuilder.shapedRecipe(ModBlocks.HYPER_JUNCTION.get())
+                .key('B', AllItems.BRASS_SHEET)
+                .key('T', AllBlocks.REDSTONE_LINK.asItem())
+                .key('F', ModItems.HYPERTUBE_FUNNEL)
+                .key('H', ModBlocks.HYPERTUBE)
+                .patternLine("BTB")
+                .patternLine("FHF")
+                .patternLine(" F ")
+                .build(consumer);
     }
 }
