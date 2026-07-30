@@ -20,9 +20,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -106,6 +104,19 @@ public class TravelPathMover {
             return;
         }
 
+        while (!activeActionPoints.isEmpty()) {
+            BlockPos actionPos = activeActionPoints.iterator().next();
+            activeActionPoints.remove(actionPos);
+            Block block = entity.level().getBlockState(actionPos).getBlock();
+            if (block instanceof ITubeActionPoint travelAction) {
+                travelAction.handleTravelPath(entity, this, actionPos);
+            }
+            BlockEntity be = entity.level().getBlockEntity(actionPos);
+            if (be instanceof ActionTubeBlockEntity actionTubeBlockEntity && actionTubeBlockEntity.hasAnyTubeAttachment()) {
+                actionTubeBlockEntity.activateAllTubeAttachments(entity, this, actionPos);
+            }
+        }
+
         if (finished) {
             onFinishCallback.accept(EndTravelData.normal(entity, isJunction, chosenDirection));
             return;
@@ -125,19 +136,6 @@ public class TravelPathMover {
             traveled = 0;
         }
         traveled += remaining;
-
-        if (!activeActionPoints.isEmpty()) {
-            BlockPos actionPos = activeActionPoints.iterator().next();
-            activeActionPoints.remove(actionPos);
-            Block block = entity.level().getBlockState(actionPos).getBlock();
-            if (block instanceof ITubeActionPoint travelAction) {
-                travelAction.handleTravelPath(entity, this, actionPos);
-            }
-            BlockEntity be = entity.level().getBlockEntity(actionPos);
-            if (be instanceof ActionTubeBlockEntity actionTubeBlockEntity && actionTubeBlockEntity.hasAnyTubeAttachment()) {
-                actionTubeBlockEntity.activateAllTubeAttachments(entity, this, actionPos);
-            }
-        }
 
         Pair<Vec3, Vec3> posDir = Pair.of(currentStart.lerp(currentEnd, traveled / totalDistance),
                 currentEnd.subtract(currentStart).normalize());

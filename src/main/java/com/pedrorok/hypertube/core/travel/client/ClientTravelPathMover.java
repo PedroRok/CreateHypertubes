@@ -102,7 +102,7 @@ public class ClientTravelPathMover {
             }
 
             data.updateLogicalPosition();
-            entity.setDeltaMovement(data.getCurrentDirection());
+            entity.setDeltaMovement(data.getCurrentVelocity());
             if (data.isClientPlayer()) {
                 handleEntityDirection(data.getWorldDirection());
                 ClientTravelPathRender.handleClientPlayer(data);
@@ -289,10 +289,8 @@ public class ClientTravelPathMover {
         }
 
         public void handleActionPoint(LivingEntity entity) {
-            BlockPos entityPos = entity.getOnPos();
-            if (!actionPoints.contains(entityPos)) return;
-            actionPoints.remove(entityPos);
             BlockPos actionPos = entity.getOnPos();
+            if (!actionPoints.remove(actionPos)) return;
             Block block = entity.level().getBlockState(actionPos).getBlock();
             if (block instanceof ITubeActionPoint travelAction) {
                 PacketDistributor.sendToServer(new ActionPointReachPacket(entity.getUUID(), actionPos));
@@ -304,6 +302,15 @@ public class ClientTravelPathMover {
                 return Vec3.ZERO;
             }
             return currentLogicalPos.subtract(previousLogicalPos).normalize();
+        }
+
+        /**
+         * How much the entity actually moved this tick. The position is forced every frame, so this is only
+         * what vanilla carries over once the path ends: with a plain direction the entity would leave the tube
+         * at one block per tick, throwing away the speed it was travelling at.
+         */
+        public Vec3 getCurrentVelocity() {
+            return getWorldDirection().scale(previousLogicalPos.distanceTo(currentLogicalPos));
         }
 
         public Vec3 getWorldDirection() {
