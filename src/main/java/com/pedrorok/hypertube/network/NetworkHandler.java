@@ -32,6 +32,8 @@ public class NetworkHandler {
         register(EntityTravelDirDataPacket.class);
         register(SpeedChangePacket.class);
         register(ActionPointReachPacket.class);
+        register(MoveDirectionPacket.class);
+        register(EscapeTubePacket.class);
     }
 
     private static <T extends Packet<T>> void register(Class<T> clazz) {

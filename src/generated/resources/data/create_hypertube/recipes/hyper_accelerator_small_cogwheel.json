@@ -5,19 +5,19 @@
     "C": {
       "item": "create:cogwheel"
     },
-    "E": {
-      "item": "create_hypertube:hypertube_entrance"
+    "F": {
+      "item": "create_hypertube:hypertube_funnel"
     },
     "P": {
       "item": "create:precision_mechanism"
     }
   },
   "pattern": [
-    " P ",
-    "CEC"
+    " F ",
+    "CPC",
+    " F "
   ],
   "result": {
-    "count": 2,
     "item": "create_hypertube:hypertube_accelerator"
   },
   "show_notification": true

@@ -1,0 +1,159 @@
+{
+	"format_version": "1.21.6",
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"texture_size": [64, 64],
+	"textures": {
+		"1": "create_hypertube:block/hypertube_entrance",
+		"particle": "create_hypertube:block/hypertube_entrance"
+	},
+	"elements": [
+		{
+			"from": [1, 1, 9],
+			"to": [15, 15, 12],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 7.76955]},
+			"faces": {
+				"east": {"uv": [7, 0.75, 10.5, 0], "rotation": 270, "texture": "#1"},
+				"south": {"uv": [0.25, 0.25, 3.75, 3.75], "rotation": 180, "texture": "#1"},
+				"west": {"uv": [7, 0.75, 10.5, 0], "rotation": 90, "texture": "#1"},
+				"up": {"uv": [7, 0.75, 10.5, 0], "rotation": 180, "texture": "#1"},
+				"down": {"uv": [7, 0.75, 10.5, 0], "texture": "#1"}
+			}
+		},
+		{
+			"from": [4.23576, 2, 1.04783],
+			"to": [4.23576, 14, 5.04783],
+			"rotation": {"angle": 22.5, "axis": "y", "origin": [8, 8, 7.76955]},
+			"faces": {
+				"east": {"uv": [6.5, 4, 9.5, 3], "rotation": 270, "texture": "#1"}
+			}
+		},
+		{
+			"from": [11.76424, 2, 1.04783],
+			"to": [11.76424, 14, 5.04783],
+			"rotation": {"angle": -22.5, "axis": "y", "origin": [8, 8, 7.76955]},
+			"faces": {
+				"west": {"uv": [6.5, 4, 9.5, 3], "rotation": 90, "texture": "#1"}
+			}
+		},
+		{
+			"from": [2, 4.23576, 1.04783],
+			"to": [14, 4.23576, 5.04783],
+			"rotation": {"angle": -22.5, "axis": "x", "origin": [8, 8, 7.76955]},
+			"faces": {
+				"up": {"uv": [6.5, 4, 9.5, 3], "rotation": 180, "texture": "#1"}
+			}
+		},
+		{
+			"from": [2, 11.76424, 1.04783],
+			"to": [14, 11.76424, 5.04783],
+			"rotation": {"angle": 22.5, "axis": "x", "origin": [8, 8, 7.76955]},
+			"faces": {
+				"down": {"uv": [6.5, 4, 9.5, 3], "texture": "#1"}
+			}
+		},
+		{
+			"from": [0, 0, 6.7],
+			"to": [16, 16, 8],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 7.76955]},
+			"faces": {
+				"north": {"uv": [0, 9.5, 4, 5.5], "texture": "#1"}
+			}
+		},
+		{
+			"from": [0.025, 0.025, 3],
+			"to": [15.975, 15.975, 9],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 7.76955]},
+			"faces": {
+				"north": {"uv": [0, 4, 4, 0], "texture": "#1"},
+				"east": {"uv": [0, 5.5, 4, 4], "rotation": 270, "texture": "#1"},
+				"south": {"uv": [0, 0, 4, 4], "rotation": 180, "texture": "#1"},
+				"west": {"uv": [0, 5.5, 4, 4], "rotation": 90, "texture": "#1"},
+				"up": {"uv": [0, 5.5, 4, 4], "rotation": 180, "texture": "#1"},
+				"down": {"uv": [0, 5.5, 4, 4], "texture": "#1"}
+			}
+		},
+		{
+			"name": "Front",
+			"from": [1.95, 1.95, 9],
+			"to": [14.05, 14.05, 13],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 10.975]},
+			"faces": {
+				"east": {"uv": [6.5, 5.25, 9.5, 4.25], "rotation": 270, "texture": "#1"},
+				"south": {"uv": [4, 0, 7, 3], "rotation": 180, "texture": "#1"},
+				"west": {"uv": [6.5, 5.25, 9.5, 4.25], "rotation": 90, "texture": "#1"},
+				"up": {"uv": [6.5, 5.25, 9.5, 4.25], "rotation": 180, "texture": "#1"},
+				"down": {"uv": [6.5, 5.25, 9.5, 4.25], "texture": "#1"}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [75, 45, 0],
+			"translation": [0, 2.5, 0],
+			"scale": [0.375, 0.375, 0.375]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [75, 45, 0],
+			"translation": [0, 2.5, 0],
+			"scale": [0.375, 0.375, 0.375]
+		},
+		"firstperson_righthand": {
+			"rotation": [123.56, 74.49, -122.66],
+			"scale": [0.4, 0.4, 0.4]
+		},
+		"firstperson_lefthand": {
+			"rotation": [123.56, 74.49, -122.66],
+			"scale": [0.4, 0.4, 0.4]
+		},
+		"ground": {
+			"translation": [0, 2, 0],
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"gui": {
+			"rotation": [30, -135, 0],
+			"scale": [0.625, 0.625, 0.625]
+		},
+		"head": {
+			"translation": [0, 0, -5.75]
+		},
+		"fixed": {
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"on_shelf": {
+			"rotation": [180, -57.5, 180]
+		}
+	},
+	"groups": [
+		{
+			"name": "block_retracted",
+			"origin": [8, 8, 8],
+			"scope": 0,
+			"color": 0,
+			"children": [
+				{
+					"name": "BeltFunnel",
+					"origin": [9, -4, 8],
+					"scope": 0,
+					"color": 0,
+					"children": [
+						{
+							"name": "FrontSection",
+							"origin": [9, -4, 8],
+							"scope": 0,
+							"color": 0,
+							"children": [0, 1, 2, 3, 4, 5, 6]
+						},
+						{
+							"name": "Base",
+							"origin": [9, -4, 8],
+							"scope": 0,
+							"color": 0,
+							"children": [7]
+						}
+					]
+				}
+			]
+		}
+	]
+}

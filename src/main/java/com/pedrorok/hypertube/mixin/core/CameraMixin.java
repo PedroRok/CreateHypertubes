@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube.mixin.core;
 
 import com.pedrorok.hypertube.config.ClientConfig;
+import com.pedrorok.hypertube.core.camera.CameraSmoothing;
 import com.pedrorok.hypertube.core.camera.DetachedCameraController;
 import com.pedrorok.hypertube.core.camera.DetachedPlayerDirController;
 import com.pedrorok.hypertube.core.travel.TravelManager;
@@ -12,7 +13,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import org.spongepowered.asm.mixin.Mixin;
@@ -26,6 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * @author Rok, Pedro Lucas nmm. Created on 22/04/2025
  * @project Create Hypertube
  */
+@SuppressWarnings("ALL")
 @Mixin(Camera.class)
 public class CameraMixin {
 
@@ -35,11 +36,8 @@ public class CameraMixin {
     @Shadow
     private Entity entity;
 
-    // FPS CONTROL
     @Unique
     private long createHypertube$lastTickTime = 0;
-    @Unique
-    private static final long createHypertube$TICK_INTERVAL_NS = 1_000_000_000L / 60;
 
 
     @Unique
@@ -55,47 +53,87 @@ public class CameraMixin {
         Options options = Minecraft.getInstance().options;
         Player player = Minecraft.getInstance().player;
         if (renderViewEntity != player) return;
-        boolean hasHypertubeData = !TravelManager.hasHyperTubeData(renderViewEntity);
-        if (hasHypertubeData || (
-                options.getCameraType().isFirstPerson() && ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get())) {
-            DetachedCameraController.get().setDetached(false);
-            if (hasHypertubeData) {
+
+        DetachedCameraController ctrl = DetachedCameraController.get();
+        boolean inTube = TravelManager.hasHyperTubeData(renderViewEntity);
+        boolean allowFpv = ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get();
+        boolean fpvInside = options.getCameraType().isFirstPerson() && allowFpv;
+
+        if (!inTube && !ctrl.isDetached()) {
+            DetachedPlayerDirController.get().setDetached(false);
+            return;
+        }
+
+        if (fpvInside) {
+            ctrl.setDetached(false);
+            ctrl.snapTransition(0f);
+            this.createHypertube$setDetachedExternal(false);
+            if (!inTube) {
                 DetachedPlayerDirController.get().setDetached(false);
             }
             return;
         }
 
-        if (!ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get()) {
-            options.setCameraType(CameraType.THIRD_PERSON_BACK);
+        if (inTube) {
+            if (!ctrl.isDetached()) {
+                if (!allowFpv) {
+                    options.setCameraType(CameraType.THIRD_PERSON_BACK);
+                }
+                ctrl.startCamera(renderViewEntity);
+                ctrl.snapTransition(0.2f);
+                ctrl.setDetached(true);
+                this.createHypertube$setDetachedExternal(true);
+            }
+            ctrl.setTransitionTarget(1f);
+        } else {
+            ctrl.setTransitionTarget(0f);
+            // the travel is over: the player aims again right away, only the camera keeps easing back
+            DetachedPlayerDirController.get().setDetached(false);
+            if (ctrl.getTransition() <= 0.2f) {
+                ctrl.snapTransition(0f);
+                this.createHypertube$setDetachedExternal(false);
+                if (!allowFpv) {
+                    options.setCameraType(CameraType.FIRST_PERSON);
+                }
+                ctrl.setDetached(false);
+                return;
+            }
+            if (!allowFpv) {
+                options.setCameraType(CameraType.THIRD_PERSON_BACK);
+            }
         }
 
         Camera cameraObj = (Camera) (Object) this;
         CameraAccessorMixin camera = (CameraAccessorMixin) cameraObj;
 
-        if (!DetachedCameraController.get().isDetached()) {
-            DetachedCameraController.get().startCamera(renderViewEntity);
-            DetachedCameraController.get().setDetached(true);
-            this.createHypertube$setDetachedExternal(true);
-        }
         long currentTime = System.nanoTime();
-        boolean doTick = currentTime - createHypertube$lastTickTime >= createHypertube$TICK_INTERVAL_NS;
-        if (doTick) {
-            DetachedCameraController.get().tickCamera(renderViewEntity);
-            createHypertube$lastTickTime = currentTime;
-        }
+        float deltaSeconds = createHypertube$lastTickTime == 0
+                ? 1 / CameraSmoothing.REFERENCE_RATE
+                : (currentTime - createHypertube$lastTickTime) / 1000000000f;
+        createHypertube$lastTickTime = currentTime;
 
-        if (doTick) {
-            createHypertube$doTick(player);
-        }
+        ctrl.tickCamera(renderViewEntity, deltaSeconds);
+        createHypertube$doTick(player);
 
-        camera.callSetRotation(DetachedCameraController.get().getYaw() * (flipped ? -1 : 1), DetachedCameraController.get().getPitch());
+        ctrl.tickTransition();
+        float eased = ctrl.getEasedTransition();
 
+        float firstPersonYaw = renderViewEntity.getViewYRot(PartialTicks);
+        float firstPersonPitch = renderViewEntity.getViewXRot(PartialTicks);
+        float orbitYaw = ctrl.getYaw() * (flipped ? -1 : 1);
+        float orbitPitch = ctrl.getPitch();
+        camera.callSetRotation(
+                Mth.rotLerp(eased, firstPersonYaw, orbitYaw),
+                Mth.lerp(eased, firstPersonPitch, orbitPitch));
+
+        double eyeAdd = renderViewEntity.getEyeHeight() * (1f - eased);
         camera.callSetPosition(
                 Mth.lerp(PartialTicks, renderViewEntity.xo, renderViewEntity.getX()),
-                Mth.lerp(PartialTicks, renderViewEntity.yo, renderViewEntity.getY()),
+                Mth.lerp(PartialTicks, renderViewEntity.yo, renderViewEntity.getY()) + eyeAdd,
                 Mth.lerp(PartialTicks, renderViewEntity.zo, renderViewEntity.getZ()));
 
-        camera.callMove(-camera.callGetMaxZoom(4.0F), 0.0F, 0.0F);
+        double zoom = camera.callGetMaxZoom(4.0D);
+        camera.callMove(-zoom * eased, 0.0F, 0.0F);
 
         ci.cancel();
     }

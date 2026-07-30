@@ -2,6 +2,7 @@ package com.pedrorok.hypertube.core.travel;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import com.pedrorok.hypertube.core.travel.client.ClientTravelPathMover;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 

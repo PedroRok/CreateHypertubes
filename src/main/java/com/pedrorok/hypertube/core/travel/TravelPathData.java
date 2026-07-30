@@ -1,6 +1,8 @@
 package com.pedrorok.hypertube.core.travel;
 
-import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
+import com.pedrorok.hypertube.blocks.HyperJunctionBlock;
+import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
+import com.pedrorok.hypertube.blocks.blockentities.parent.TubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
@@ -22,26 +24,36 @@ import java.util.*;
  * @author Rok, Pedro Lucas nmm. Created on 25/04/2025
  * @project Create Hypertube
  */
+@SuppressWarnings("D")
 public class TravelPathData {
 
     @Getter
-    private final List<Vec3> travelPoints;
+    private final ArrayList<Vec3> travelPoints;
     private final List<UUID> bezierConnections;
     private final List<BlockPos> blockConnections;
     @Getter
     private final Set<BlockPos> actionPoints;
+    private final Direction facingDirection;
 
-    public TravelPathData(BlockPos firstPipe, Level level, BlockPos entrancePos) {
+    @Getter
+    private boolean finishWithJunction = false;
+    @Getter
+    private Direction junctionDirection;
+
+    public TravelPathData(Direction facingDirection, Level level, BlockPos entrancePos) {
         this.travelPoints = new ArrayList<>();
         this.bezierConnections = new ArrayList<>();
         this.blockConnections = new ArrayList<>();
         this.actionPoints = new HashSet<>();
+        this.facingDirection = facingDirection;
         travelPoints.add(entrancePos.getCenter());
         blockConnections.add(entrancePos);
+
+        BlockPos firstPipe = entrancePos.relative(facingDirection);
         travelPoints.add(firstPipe.getCenter());
         blockConnections.add(firstPipe);
-        addTravelPoint(entrancePos, level);
-        addTravelPoint(firstPipe, level);
+        addTravelPoint(entrancePos, level, true, facingDirection);
+        addTravelPoint(firstPipe, level, facingDirection);
         checkAndRemoveNearPoints();
     }
 
@@ -61,14 +73,34 @@ public class TravelPathData {
         }
     }
 
-    private void addTravelPoint(BlockPos pos, Level level) {
+    private void addTravelPoint(BlockPos pos, Level level, Direction connectingFrom) {
+        addTravelPoint(pos, level, false, connectingFrom);
+    }
+
+    private void addTravelPoint(BlockPos pos, Level level, boolean entrance, Direction connectingFrom) {
         BlockState blockState = level.getBlockState(pos);
         if (level.getBlockState(pos).getBlock() instanceof ITubeActionPoint ||
                 (level.getBlockEntity(pos) instanceof ActionTubeBlockEntity tubeEntity && tubeEntity.hasAnyTubeAttachment())) {
             actionPoints.add(pos);
         }
 
-        if (addCurvedTravelPoint(pos, level)) return;
+        if (blockState.getBlock() instanceof HyperJunctionBlock
+                && level.getBlockEntity(pos) instanceof TubeBlockEntity tubeBlockEntity
+                && !entrance) {
+            if (tubeBlockEntity.getConnections().size() > 2 ) {
+                junctionDirection = connectingFrom;
+                blockConnections.add(pos);
+                travelPoints.add(pos.getCenter());
+                finishWithJunction = true;
+                return;
+            }
+            if (tubeBlockEntity.getConnections().size() == 1) {
+                junctionDirection = connectingFrom;
+            }
+        }
+
+
+        if (addCurvedTravelPoint(pos, level, entrance)) return;
         Block block = blockState.getBlock();
         if (!(block instanceof ITubeConnection pipeBlock)) return;
         List<Direction> connectedFaces = pipeBlock.getConnectedFaces(blockState);
@@ -81,16 +113,25 @@ public class TravelPathData {
                 continue;
             travelPoints.add(nextPipe.getCenter());
             blockConnections.add(nextPipe);
-            addTravelPoint(nextPipe, level);
+            addTravelPoint(nextPipe, level, direction);
             break;
         }
     }
 
 
-    private boolean addCurvedTravelPoint(BlockPos pos, Level level) {
+    private boolean addCurvedTravelPoint(BlockPos pos, Level level, boolean entrance) {
         if (!(level.getBlockEntity(pos) instanceof ITubeConnectionEntity hypertubeBlockEntity)) return false;
         boolean connected = false;
-        for (IConnection connection : hypertubeBlockEntity.getConnections()) {
+        List<IConnection> connections = hypertubeBlockEntity.getConnections();
+
+        if (entrance) {
+            IConnection connectionInDirection = hypertubeBlockEntity.getConnectionInDirection(facingDirection);
+            if (connectionInDirection != null) {
+                connections = List.of(connectionInDirection);
+            }
+        }
+
+        for (IConnection connection : connections) {
             BezierConnection bezier;
             boolean inverse = false;
             BlockPos currentFromPos;
@@ -114,6 +155,16 @@ public class TravelPathData {
             if (inverse) {
                 Collections.reverse(bezierPoints);
             }
+            Direction entranceDirectionForToPosFinal = null;
+            if (bezierPoints.size() >= 2) {
+                Vec3 secondToLast = bezierPoints.get(bezierPoints.size() - 2);
+                Vec3 last = bezierPoints.get(bezierPoints.size() - 1);
+                Vec3 arrivalVector = last.subtract(secondToLast);
+                if (arrivalVector.lengthSqr() > 0.01) {
+                    entranceDirectionForToPosFinal = Direction.getNearest(arrivalVector.x, arrivalVector.y, arrivalVector.z);
+                }
+            }
+
             bezierPoints.remove(bezierPoints.size() - 1);
             bezierPoints.remove(0);
             travelPoints.addAll(bezierPoints);
@@ -144,8 +195,9 @@ public class TravelPathData {
                 }
             }
 
-            addTravelPoint(toPosFinal, level);
+            addTravelPoint(toPosFinal, level, entranceDirectionForToPosFinal);
             connected = true;
+            break;
         }
         return connected;
     }
@@ -159,7 +211,7 @@ public class TravelPathData {
         if (blockConnections.isEmpty()) return null;
         BlockEntity blockEntity = level.getBlockEntity(blockConnections.get(blockConnections.size() - 1));
         if (blockEntity instanceof ITubeConnectionEntity connection) {
-            return connection.getExitDirection();
+            return connection.getExitDirection(junctionDirection);
         }
         return null;
     }

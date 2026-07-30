@@ -1,4 +1,4 @@
-package com.pedrorok.hypertube.blocks.blockentities;
+package com.pedrorok.hypertube.blocks.blockentities.parent;
 
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
@@ -57,7 +57,7 @@ public abstract class TubeBlockEntity extends KineticBlockEntity implements ITub
 
         possibleDirections.removeIf(direction -> {
             for (IConnection connection : connections) {
-                return getConnectionDirection(direction, connection);
+                if (getConnectionDirection(direction, connection)) return true;
             }
             return false;
         });
@@ -113,7 +113,7 @@ public abstract class TubeBlockEntity extends KineticBlockEntity implements ITub
     }
 
     @Override
-    public Vec3 getExitDirection() {
+    public Vec3 getExitDirection(@Nullable Direction connectonDirection) {
         List<IConnection> connections = getConnections();
         if (connections.isEmpty()) return null;
         IConnection first = connections.get(0);

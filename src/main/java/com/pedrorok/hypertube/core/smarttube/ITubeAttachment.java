@@ -1,7 +1,7 @@
 package com.pedrorok.hypertube.core.smarttube;
 
 import com.jozufozu.flywheel.core.PartialModel;
-import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
+import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;

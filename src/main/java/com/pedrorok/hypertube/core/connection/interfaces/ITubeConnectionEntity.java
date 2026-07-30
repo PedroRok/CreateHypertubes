@@ -1,6 +1,7 @@
 package com.pedrorok.hypertube.core.connection.interfaces;
 
 import com.pedrorok.hypertube.HypertubeMod;
+import com.pedrorok.hypertube.core.collision.TubeFiller;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
@@ -59,11 +60,13 @@ public interface ITubeConnectionEntity {
             if (isNewFormat) {
                 SimpleConnection fromAbsolute = new SimpleConnection(
                         connection.getFromPos().pos().offset(referencePos),
-                        connection.getFromPos().direction()
+                        connection.getFromPos().direction(),
+                        connection.getFromPos().offset()
                 );
                 SimpleConnection toAbsolute = connection.getToPos() != null ? new SimpleConnection(
                         connection.getToPos().pos().offset(referencePos),
-                        connection.getToPos().direction()
+                        connection.getToPos().direction(),
+                        connection.getToPos().offset()
                 ) : null;
                 return new BezierConnection(fromAbsolute, toAbsolute, connection.getTubeSegments(), connection.getCachedRelativeBezierPoints());
             }
@@ -82,7 +85,8 @@ public interface ITubeConnectionEntity {
                 if (isNewFormat) {
                     return new SimpleConnection(
                             connection.pos().offset(referencePos),
-                            connection.direction()
+                            connection.direction(),
+                            connection.offset()
                     );
                 }
                 return connection;
@@ -104,9 +108,11 @@ public interface ITubeConnectionEntity {
             // Convert absolute position to relative
             BlockPos pos = simpleConn.pos();
             Direction direction = simpleConn.direction();
+            float offset = simpleConn.offset();
             SimpleConnection relative = new SimpleConnection(
                     pos.subtract(referencePos),
-                    direction
+                    direction,
+                    offset
             );
             tag.put(key, SimpleConnection.CODEC.encodeStart(NbtOps.INSTANCE, relative)
                     .get().orThrow());
@@ -114,11 +120,13 @@ public interface ITubeConnectionEntity {
             // Convert absolute positions to relative
             SimpleConnection fromRelative = new SimpleConnection(
                     bezierConnection.getFromPos().pos().subtract(referencePos),
-                    bezierConnection.getFromPos().direction()
+                    bezierConnection.getFromPos().direction(),
+                    bezierConnection.getFromPos().offset()
             );
             SimpleConnection toRelative = bezierConnection.getToPos() != null ? new SimpleConnection(
                     bezierConnection.getToPos().pos().subtract(referencePos),
-                    bezierConnection.getToPos().direction()
+                    bezierConnection.getToPos().direction(),
+                    bezierConnection.getToPos().offset()
             ) : null;
             BezierConnection relative = new BezierConnection(fromRelative, toRelative, bezierConnection.getTubeSegments(), bezierConnection.getCachedRelativeBezierPoints());
             tag.put(key, BezierConnection.CODEC.encodeStart(NbtOps.INSTANCE, relative)
@@ -145,11 +153,14 @@ public interface ITubeConnectionEntity {
      */
     int blockBroken();
 
+    float getConnectionOffsetOnDirection(Direction direction);
+
     default int blockBroken(Level level, IConnection connection, BlockPos selfPos) {
         int toDrop = 0;
         BezierConnection thisEntranceConnection = connection.getThisEntranceConnection(level);
         if (thisEntranceConnection != null) {
             toDrop += (int) thisEntranceConnection.distance();
+            TubeFiller.remove(level, thisEntranceConnection);
         }
 
         IConnection connectionToClear = null;
@@ -194,5 +205,5 @@ public interface ITubeConnectionEntity {
     boolean wrenchClicked(Direction direction);
 
     @Nullable
-    Vec3 getExitDirection();
+    Vec3 getExitDirection(@Nullable Direction connectionDirection);
 }

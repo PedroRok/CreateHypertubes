@@ -28,9 +28,13 @@ public class TravelConstants {
     public static final int DEFAULT_TRAVEL_TIME = 2000;
     public static final int DEFAULT_AFTER_TUBE_CAMERA = 1500; // 0.5 seconds (subtracting default travel time)
 
-    public static final float DEFAULT_SPEED_MULTIPLIER = 1;
+    public static final float DEFAULT_SPEED_MULTIPLIER = 1.2f;
 
     public static final float NEEDED_SPEED = 16;
+
+    public static final double PATH_Y_OFFSET = 0.25;
+
+    public static final float MIN_EXIT_SPEED = 0.3f;
 
 
     public static final TagKey<EntityType<?>> TRAVELLER_ENTITIES =

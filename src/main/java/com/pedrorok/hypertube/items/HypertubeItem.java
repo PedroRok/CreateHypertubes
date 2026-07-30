@@ -36,6 +36,7 @@ public class HypertubeItem extends BlockItem {
         super(pBlock, pProperties);
     }
 
+    @SuppressWarnings("D")
     @Override
     public @NotNull InteractionResult useOn(UseOnContext pContext) {
         ItemStack stack = pContext.getItemInHand();
@@ -112,13 +113,18 @@ public class HypertubeItem extends BlockItem {
             return ResponseDTO.get(false, "placement.create_hypertube.cant_conn_to_face");
         }
 
-        ModDataComponent.encodeSimpleConnection(pos, direction, heldItem);
-        heldItem.getTag().putBoolean("foil", true);
+        setConnection(heldItem, new SimpleConnection(pos, direction, blockEntity.getConnectionOffsetOnDirection(direction)));
         return ResponseDTO.get(true);
     }
 
+    public static void setConnection(ItemStack stack, SimpleConnection connection) {
+        ModDataComponent.encodeSimpleConnection(connection, stack);
+        stack.getOrCreateTag().putBoolean("foil", true);
+    }
+
     public static void clearConnection(ItemStack stack) {
-        stack.getTag().remove("foil");
+        if (stack.hasTag())
+            stack.getTag().remove("foil");
         ModDataComponent.removeSimpleConnection(stack);
     }
 

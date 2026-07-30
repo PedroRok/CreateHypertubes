@@ -1,8 +1,9 @@
 package com.pedrorok.hypertube.utils;
 
-import com.pedrorok.hypertube.blocks.blockentities.HypertubeBlockEntity;
+import com.pedrorok.hypertube.core.collision.TubeCollision;
 import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.SimpleConnection;
+import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
 import com.pedrorok.hypertube.core.placement.ResponseDTO;
 import com.pedrorok.hypertube.items.HypertubeItem;
 import com.pedrorok.hypertube.registry.ModBlocks;
@@ -14,11 +15,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 11/06/2025
@@ -30,8 +27,8 @@ public class TubeUtils {
 
 
     public static ResponseDTO checkClickedHypertube(Level level, BlockPos pos, Direction direction) {
-        if (level.getBlockEntity(pos) instanceof HypertubeBlockEntity tubeEntity
-            && !tubeEntity.getFacesConnectable().contains(direction)) {
+        if (level.getBlockEntity(pos) instanceof ITubeConnectionEntity tubeEntity
+                && !tubeEntity.getFacesConnectable().contains(direction)) {
             return ResponseDTO.invalid("placement.create_hypertube.cant_conn_to_face");
         }
         return ResponseDTO.get(true);
@@ -48,11 +45,22 @@ public class TubeUtils {
         }
 
         SimpleConnection connectionFrom = ModDataComponent.decodeSimpleConnection(itemInHand);
+        if (connectionFrom == null) {
+            return true;
+        }
+        if (connectionFrom.pos().equals(pos)) {
+            return true;
+        }
 
         Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, null, true);
-        SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
+        SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection, 0);
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
-
+        if (bezierConnection.isAngleTooHigh()) {
+            BezierConnection newBezierConnection = BezierConnection.of(connectionFrom, new SimpleConnection(pos, finalDirection.getOpposite(), 0));
+            if (!newBezierConnection.isAngleTooHigh()) {
+                bezierConnection = newBezierConnection;
+            }
+        }
         return checkPlayerPlacingBlockValidation(player, bezierConnection, level);
     }
 
@@ -77,30 +85,22 @@ public class TubeUtils {
     }
 
 
-    private static final float CHECK_DISTANCE_THRESHOLD = 0.4f;
-
     public static ResponseDTO checkBlockCollision(@NotNull Level level, @NotNull BezierConnection bezierConnection) {
-        List<Vec3> positions = new ArrayList<>(bezierConnection.getBezierPoints());
-        positions.remove(positions.size() -1);
-        positions.remove(0);
-
-        for (int i = 1; i < positions.size() - 1; i++) {
-            Vec3 pos = positions.get(i);
-            if (hasCollision(level, pos) ||
-                hasCollision(level, pos.add(CHECK_DISTANCE_THRESHOLD, 0, 0)) ||
-                hasCollision(level, pos.add(0, 0, CHECK_DISTANCE_THRESHOLD)) ||
-                hasCollision(level, pos.add(CHECK_DISTANCE_THRESHOLD, 0, CHECK_DISTANCE_THRESHOLD)) ||
-                hasCollision(level, pos.add(-CHECK_DISTANCE_THRESHOLD, 0, 0)) ||
-                hasCollision(level, pos.add(0, 0, -CHECK_DISTANCE_THRESHOLD)) ||
-                hasCollision(level, pos.add(-CHECK_DISTANCE_THRESHOLD, 0, -CHECK_DISTANCE_THRESHOLD))) {
-                return ResponseDTO.invalid("placement.create_hypertube.block_collision");
+        boolean collision = false;
+        for (BlockPos blockPos : TubeCollision.occupied(bezierConnection.getBezierPoints(level, bezierConnection.getFromPos().pos()))) {
+            if (hasCollision(level, blockPos)) {
+                if (!level.isClientSide) {
+                    return ResponseDTO.invalid("placement.create_hypertube.block_collision");
+                }
+                collision = true;
             }
         }
-        return ResponseDTO.get(true);
+        return collision
+                ? ResponseDTO.invalid("placement.create_hypertube.block_collision")
+                : ResponseDTO.get(true);
     }
 
-    private static boolean hasCollision(Level level, Vec3 pos) {
-        BlockPos blockPos = BlockPos.containing(pos);
+    private static boolean hasCollision(Level level, BlockPos blockPos) {
         boolean hasCollision = !level.getBlockState(blockPos).getCollisionShape(level, blockPos).isEmpty();
         if (hasCollision && level.isClientSide) {
             BezierConnection.outlineBlocks(blockPos);
@@ -111,7 +111,7 @@ public class TubeUtils {
 
     public static ResponseDTO checkSurvivalItems(@NotNull Player player, int neededTubes, boolean simulate) {
         if (!player.isCreative()
-            && !checkPlayerInventory(player, neededTubes, simulate)) {
+                && !checkPlayerInventory(player, neededTubes, simulate)) {
             return ResponseDTO.invalid("placement.create_hypertube.no_enough_tubes");
         }
         return ResponseDTO.get(true);

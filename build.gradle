@@ -86,6 +86,11 @@ repositories {
         name = "CurseMaven"
         url = "https://cursemaven.com"
     }
+
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+    }
 }
 
 dependencies {
@@ -111,6 +116,10 @@ dependencies {
     // Fix better third person
     compileOnly fg.deobf("curse.maven:betterthirdperson-435044:4596768")
     //runtimeOnly fg.deobf("curse.maven:betterthirdperson-435044:4596768")
+    runtimeOnly fg.deobf("curse.maven:jei-238222:8526990")
+
+    // Sable is NeoForge 1.21.1+ only, so there is no dependency here.
+    // The compat layer in core/compat/sable is a no-op stub on this branch.
 }
 
 tasks.named('processResources', ProcessResources).configure {

@@ -25,5 +25,6 @@ public class DataGenerators {
         CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
 
         generator.addProvider(event.includeServer(), new HypertubeRecipeGen(packOutput));
+        //event.getGenerator().addProvider(true, HypertubeMod.get().setDataProvider(new RegistrateDataProvider(HypertubeMod.get(), HypertubeMod.MOD_ID, event)));
     }
 }

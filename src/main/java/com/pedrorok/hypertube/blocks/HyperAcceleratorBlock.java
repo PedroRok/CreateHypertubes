@@ -1,6 +1,6 @@
 package com.pedrorok.hypertube.blocks;
 
-import com.pedrorok.hypertube.blocks.blockentities.ActionTubeBlockEntity;
+import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.blocks.blockentities.HyperAcceleratorBlockEntity;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeActionPoint;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
@@ -25,7 +25,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -182,7 +181,7 @@ public class HyperAcceleratorBlock extends ActionTubeBlock implements EntityBloc
         mover.setTravelSpeed(newSpeed);
         NetworkHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
                 new SpeedChangePacket(entity.getId(), newSpeed));
-        TubeSoundManager.playTubeSuctionSound(entity, entity.position());
+        TubeSoundManager.playTubeSuctionSound(entity, entity.position(), 0.5f, Math.min(1.6f, newSpeed));
     }
 
     // ------- Collision Shapes -------

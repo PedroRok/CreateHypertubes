@@ -52,6 +52,13 @@ public class DetachedCameraController {
     private boolean detached = false;
 
     @Getter
+    private float transition = 0f;
+    private float transitionTarget = 0f;
+    private long lastTransitionNanos = 0;
+
+    private static final float TRANSITION_DURATION = 0.5f;
+
+    @Getter
     @Setter
     private float cameraHorizontalCompensation = 0;
 
@@ -71,12 +78,49 @@ public class DetachedCameraController {
         this.pitch = this.targetPitch = 30;
     }
 
+    public void setTransitionTarget(float target) {
+        this.transitionTarget = Mth.clamp(target, 0f, 1f);
+    }
+
+    public void snapTransition(float value) {
+        this.transition = Mth.clamp(value, 0f, 1f);
+        this.transitionTarget = this.transition;
+        this.lastTransitionNanos = 0;
+    }
+
+    public void tickTransition() {
+        long now = System.nanoTime();
+        if (lastTransitionNanos == 0) {
+            lastTransitionNanos = now;
+            return;
+        }
+        float dt = (now - lastTransitionNanos) / 1_000_000_000f;
+        lastTransitionNanos = now;
+        dt = Math.min(dt, 0.1f);
+
+        float step = dt / TRANSITION_DURATION;
+        if (transition < transitionTarget) {
+            transition = Math.min(transitionTarget, transition + step);
+        } else if (transition > transitionTarget) {
+            transition = Math.max(transitionTarget, transition - step);
+        }
+    }
+
+    public float getEasedTransition() {
+        float t = Mth.clamp(transition, 0f, 1f);
+        return t * t * (3f - 2f * t);
+    }
+
     public void updateCameraRotation(float deltaYaw, float deltaPitch, boolean isCamera) {
+        updateCameraRotation(deltaYaw, deltaPitch, isCamera, 1);
+    }
+
+    public void updateCameraRotation(float deltaYaw, float deltaPitch, boolean isCamera, float decaySteps) {
         this.targetYaw = Mth.wrapDegrees(this.targetYaw + deltaYaw);
         this.targetPitch = Mth.clamp(this.targetPitch + deltaPitch, -90, 90);
 
         if (lastMouseMov != 0) {
-            lastMouseMov = Math.max(0, lastMouseMov - 0.015f);
+            lastMouseMov = Math.max(0, lastMouseMov - 0.015f * decaySteps);
         }
         if (isCamera && deltaYaw != 0) {
             lastMouseMov = 2;
@@ -108,24 +152,29 @@ public class DetachedCameraController {
                 .add(0, 3, 0);
     }
 
-    public void tickCamera(Entity renderViewEntity) {
+    public void tickCamera(Entity renderViewEntity, float deltaSeconds) {
         Vec3 entityPos = renderViewEntity.position();
         Vec3 relativeCameraPos = getRelativeCameraPos(renderViewEntity);
 
-        updateCameraRotation(getCameraYaw(entityPos, relativeCameraPos) * 0.1f, getCameraPitch(renderViewEntity.getXRot()) * 0.1f, false);
+        float alignment = CameraSmoothing.factor(0.1, deltaSeconds);
+        updateCameraRotation(getCameraYaw(entityPos, relativeCameraPos) * alignment,
+                getCameraPitch(renderViewEntity.getXRot()) * alignment,
+                false,
+                CameraSmoothing.steps(deltaSeconds));
 
         updateTargetPosition(relativeCameraPos);
-        tickCameraPosRot();
+        tickCameraPosRot(deltaSeconds);
     }
 
     public void updateTargetPosition(Vec3 pos) {
         this.targetPos = pos;
     }
 
-    public void tickCameraPosRot() {
-        this.currentPos = this.currentPos.lerp(this.targetPos, SMOOTHING);
-        this.yaw = lerpAngle(this.yaw, this.targetYaw, (float) SMOOTHING_ROTATION);
-        this.pitch = (float) Mth.lerp(SMOOTHING_ROTATION, this.pitch, this.targetPitch);
+    public void tickCameraPosRot(float deltaSeconds) {
+        this.currentPos = this.currentPos.lerp(this.targetPos, CameraSmoothing.factor(SMOOTHING, deltaSeconds));
+        float rotationSmoothing = CameraSmoothing.factor(SMOOTHING_ROTATION, deltaSeconds);
+        this.yaw = lerpAngle(this.yaw, this.targetYaw, rotationSmoothing);
+        this.pitch = Mth.lerp(rotationSmoothing, this.pitch, this.targetPitch);
     }
 
     private float lerpAngle(float from, float to, float t) {
@@ -136,7 +185,7 @@ public class DetachedCameraController {
     private static double lastMouseX = 0;
     private static double lastMouseY = 0;
 
-    public static void cameraTick() {
+    public static void tickCamera() {
         Minecraft mc = Minecraft.getInstance();
         if ((mc.options.getCameraType().isFirstPerson() && ClientConfig.get().ALLOW_FPV_INSIDE_TUBE.get())
             || mc.isPaused()

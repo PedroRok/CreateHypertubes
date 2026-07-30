@@ -6,6 +6,7 @@ import com.pedrorok.hypertube.core.connection.SimpleConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnection;
 import com.pedrorok.hypertube.core.connection.interfaces.ITubeConnectionEntity;
+import com.pedrorok.hypertube.core.placement.TubePlacement;
 import com.pedrorok.hypertube.core.travel.TravelConstants;
 import com.pedrorok.hypertube.registry.ModBlockEntities;
 import com.pedrorok.hypertube.registry.ModBlocks;
@@ -22,6 +23,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -113,15 +115,18 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
                     .setValue(WATERLOGGED, fluidstate.is(Fluids.WATER));
         }
 
-        Player player = context.getPlayer();
-        Direction direction = context.getPlayer().getDirection();
-        if (player.getXRot() < -45) {
-            direction = Direction.UP;
-        } else if (player.getXRot() > 45) {
-            direction = Direction.DOWN;
-        }
+        return getState(state, List.of(getPlacementFacing(context.getPlayer())), false)
+                .setValue(WATERLOGGED, fluidstate.is(Fluids.WATER));
+    }
 
-        return getState(state, List.of(direction), false).setValue(WATERLOGGED, fluidstate.is(Fluids.WATER));
+    public static Direction getPlacementFacing(@NotNull Player player) {
+        if (player.getXRot() < -45) {
+            return Direction.UP;
+        }
+        if (player.getXRot() > 45) {
+            return Direction.DOWN;
+        }
+        return player.getDirection();
     }
 
     // ------- Collision Shapes -------
@@ -196,15 +201,19 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
         if (blockState == null) {
             blockState = defaultBlockState();
         }
+
         boolean northSouth = isConnected(world, pos, Direction.NORTH) || isConnected(world, pos, Direction.SOUTH);
         boolean eastWest = isConnected(world, pos, Direction.EAST) || isConnected(world, pos, Direction.WEST);
         boolean upDown = isConnected(world, pos, Direction.UP) || isConnected(world, pos, Direction.DOWN);
 
+        if (!northSouth && !eastWest && !upDown) {
+            return blockState.setValue(CONNECTED, false);
+        }
         return blockState
                 .setValue(NORTH_SOUTH, northSouth)
                 .setValue(EAST_WEST, eastWest && !northSouth)
                 .setValue(UP_DOWN, upDown && !northSouth && !eastWest)
-                .setValue(CONNECTED, northSouth || eastWest || upDown);
+                .setValue(CONNECTED, true);
     }
 
     public void updateBlockStateFromEntity(BlockState state, Level world, BlockPos pos) {
@@ -260,6 +269,9 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
         if (!stack.hasFoil()) {
             level.playSound(null, pos, getSoundType(state, level, pos, placer).getPlaceSound(), SoundSource.BLOCKS,
                     1, level.random.nextFloat() * 0.1f + 0.9f);
+            if (!player.isShiftKeyDown() && stack == player.getItemInHand(InteractionHand.MAIN_HAND)) {
+                TubePlacement.continueFrom(level, player, pos, getPlacementFacing(player));
+            }
             return;
         }
 
@@ -267,8 +279,15 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
         if (connectionFrom == null) return;
 
         Direction finalDirection = RayCastUtils.getDirectionFromHitResult(player, () -> state.getBlock() instanceof ITubeConnection, true);
-        SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection);
+        SimpleConnection connectionTo = new SimpleConnection(pos, finalDirection, 0);
         BezierConnection bezierConnection = BezierConnection.of(connectionFrom, connectionTo);
+
+        if (bezierConnection.isAngleTooHigh()) {
+            BezierConnection newBezierConnection = BezierConnection.of(connectionFrom, new SimpleConnection(pos, finalDirection.getOpposite(), 0));
+            if (!newBezierConnection.isAngleTooHigh()) {
+                bezierConnection = newBezierConnection;
+            }
+        }
 
         if (!TubeUtils.checkPlayerPlacingBlockValidation(player, bezierConnection, level)) {
             level.playSound(placer, pos, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS,
@@ -292,6 +311,8 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
         MessageUtils.sendActionMessage(player, Component.empty(), true);
         if (!(level.getBlockState(pos).getBlock() instanceof HypertubeBlock hypertubeBlock)) return;
         hypertubeBlock.updateBlockState(level, pos, hypertubeBlock.getState(state, List.of(finalDirection), true));
+
+        TubePlacement.continueFrom(level, player, pos, bezierConnection.getToPos().direction().getOpposite());
     }
 
     @Override
@@ -328,7 +349,7 @@ public class HypertubeBlock extends TubeBlock implements EntityBlock {
             state = getState(state, List.of(context.getClickedFace()), false);
         }
 
-        level.playSound(player, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.75f, 1);
+        playRotateSound(context.getLevel(), context.getClickedPos());
 
         return super.onWrenched(state, context);
     }

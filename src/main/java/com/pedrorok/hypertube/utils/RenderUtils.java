@@ -1,8 +1,15 @@
 package com.pedrorok.hypertube.utils;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
+import com.simibubi.create.foundation.gui.AllGuiTextures;
+import com.simibubi.create.foundation.ponder.ui.PonderUI;
 import com.simibubi.create.foundation.render.SuperByteBuffer;
+import com.simibubi.create.infrastructure.config.AllConfigs;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.Direction;
+import org.joml.Matrix4f;
 import net.minecraft.util.Mth;
 import org.joml.Quaternionf;
 
@@ -39,5 +46,48 @@ public class RenderUtils {
             if ((attachmentDirection == Direction.UP || attachmentDirection == Direction.DOWN) && tubeFacing != Direction.NORTH && tubeFacing != Direction.SOUTH) return;
             model.rotateCentered(Axis.XP.rotationDegrees(90));
         }
+    }
+
+    public static void directionArrow(PoseStack ms, float centerX, float centerY, float alpha, int color, float snappedAngle) {
+        //RenderSystem.enableTexture();
+        AllGuiTextures.PLACEMENT_INDICATOR_SHEET.bind();
+        RenderSystem.enableDepthTest();
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+
+        ms.pushPose();
+        ms.translate(centerX, centerY, 50);
+        float scale = AllConfigs.client().indicatorScale.get()
+                .floatValue() * .75f;
+        ms.scale(scale, scale, 1);
+        ms.scale(12, 12, 1);
+
+        float index = snappedAngle / 22.5f;
+        float tex_size = 16f / 256f;
+
+        float tx = 0;
+        float ty = index * tex_size;
+        float tw = 1f;
+        float th = tex_size;
+
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder buffer = tesselator.getBuilder();
+        buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+
+        float r = ((color >> 16) & 0xFF) / 255f;
+        float g = ((color >> 8) & 0xFF) / 255f;
+        float b = (color & 0xFF) / 255f;
+
+        Matrix4f mat = ms.last().pose();
+        buffer.vertex(mat, -1, -1, 0).uv(tx, ty).color(r, g, b, alpha).endVertex();
+        buffer.vertex(mat, -1, 1, 0).uv(tx, ty + th).color(r, g, b, alpha).endVertex();
+        buffer.vertex(mat, 1, 1, 0).uv(tx + tw, ty + th).color(1f, g, b, alpha).endVertex();
+        buffer.vertex(mat, 1, -1, 0).uv(tx + tw, ty).color(r, g, b, alpha).endVertex();
+
+        BufferUploader.drawWithShader(buffer.end());
+
+        RenderSystem.disableBlend();
+        ms.popPose();
     }
 }

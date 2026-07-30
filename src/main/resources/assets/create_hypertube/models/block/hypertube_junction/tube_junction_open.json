@@ -1,0 +1,10 @@
+{
+	"parent": "create_hypertube:block/hypertube_junction/tube_junction_no_redstone",
+	"textures": {
+		"1": "create_hypertube:block/tube_entrance_open",
+		"2": "create_hypertube:block/hypertube",
+		"3": "create_hypertube:block/empty",
+		"4": "create_hypertube:block/middle_tube",
+		"particle": "create_hypertube:block/tube_entrance_open"
+	}
+}

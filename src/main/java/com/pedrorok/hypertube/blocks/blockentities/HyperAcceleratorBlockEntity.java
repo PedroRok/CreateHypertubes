@@ -3,7 +3,10 @@ package com.pedrorok.hypertube.blocks.blockentities;
 import com.pedrorok.hypertube.HypertubeMod;
 import com.pedrorok.hypertube.blocks.HyperAcceleratorBlock;
 import com.pedrorok.hypertube.blocks.HypertubeBlock;
+import com.pedrorok.hypertube.blocks.blockentities.parent.ActionTubeBlockEntity;
 import com.pedrorok.hypertube.config.ServerConfig;
+import com.pedrorok.hypertube.core.collision.TubeFiller;
+import com.pedrorok.hypertube.core.connection.BezierConnection;
 import com.pedrorok.hypertube.core.connection.TubeConnectionException;
 import com.pedrorok.hypertube.core.connection.interfaces.IConnection;
 import com.pedrorok.hypertube.core.sound.TubeSoundManager;
@@ -51,12 +54,10 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
     @Override
     protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
-        if (compound.contains("ConnectionOne")) {
-            connectionOne = getConnectionRelative(compound, "ConnectionOne", worldPosition);
-        }
-        if (compound.contains("ConnectionTwo")) {
-            connectionTwo = getConnectionRelative(compound, "ConnectionTwo", worldPosition);
-        }
+        connectionOne = compound.contains("ConnectionOne")
+                ? getConnectionRelative(compound, "ConnectionOne", worldPosition) : null;
+        connectionTwo = compound.contains("ConnectionTwo")
+                ? getConnectionRelative(compound, "ConnectionTwo", worldPosition) : null;
     }
 
     @Override
@@ -153,6 +154,9 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
             HypertubeMod.LOGGER.error(new TubeConnectionException("Connection could not define connection", connection, connectionOne, connectionTwo).getMessage());
             return;
         }
+        if (ServerConfig.get().TUBE_COLLISION.get() && connection instanceof BezierConnection bezier) {
+            TubeFiller.place(level, bezier);
+        }
         if (level != null && !level.isClientSide()) {
             BlockState blockState = level.getBlockState(worldPosition);
             if (blockState.getBlock() instanceof HypertubeBlock hypertubeBlock) {
@@ -179,6 +183,11 @@ public class HyperAcceleratorBlockEntity extends ActionTubeBlockEntity implement
         }
         setChanged();
         sync();
+    }
+
+    @Override
+    public float getConnectionOffsetOnDirection(Direction direction) {
+        return 0.4f;
     }
 
     @Override

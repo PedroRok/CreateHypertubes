@@ -1,28 +1,37 @@
 package com.pedrorok.hypertube.network.packets;
 
-import com.pedrorok.hypertube.core.travel.ClientTravelPathMover;
-import net.minecraft.core.BlockPos;
+import com.pedrorok.hypertube.core.travel.client.ClientTravelPathMover;
 import com.pedrorok.hypertube.network.Packet;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * @author Rok, Pedro Lucas nmm. Created on 03/07/2025
  * @project Create Hypertube
  */
 public record MovePathPacket(int entityId, List<Vec3> pathPoints, Set<BlockPos> actionPoints,
-                             double travelSpeed) implements Packet<MovePathPacket> {
-
+                             double travelSpeed, boolean isJunctionEnd,
+                             @Nullable Direction junctionDirection) implements Packet<MovePathPacket> {
 
     public MovePathPacket(FriendlyByteBuf buf) {
-        this(buf.readInt(), readPathPoints(buf), readActionPoints(buf), buf.readDouble());
+        this(buf.readInt(), readPathPoints(buf), readActionPoints(buf), buf.readDouble(), buf.readBoolean(), buf);
+    }
+
+    /** Finishes decoding once {@code isJunctionEnd} is known, since the direction is only on the wire when it is set. */
+    private MovePathPacket(int entityId, List<Vec3> pathPoints, Set<BlockPos> actionPoints,
+                           double travelSpeed, boolean isJunctionEnd, FriendlyByteBuf buf) {
+        this(entityId, pathPoints, actionPoints, travelSpeed, isJunctionEnd,
+                isJunctionEnd ? buf.readEnum(Direction.class) : null);
     }
 
     @Override
@@ -39,6 +48,10 @@ public record MovePathPacket(int entityId, List<Vec3> pathPoints, Set<BlockPos> 
             buf.writeBlockPos(blockPos);
         }
         buf.writeDouble(travelSpeed);
+        buf.writeBoolean(isJunctionEnd);
+
+        if (isJunctionEnd)
+            buf.writeEnum(junctionDirection);
     }
 
     @Override

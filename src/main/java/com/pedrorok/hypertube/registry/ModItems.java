@@ -14,13 +14,20 @@ public class ModItems {
 
     private static final CreateRegistrate REGISTRATE = HypertubeMod.get();
 
+    public static final ItemEntry<Item> HYPERTUBE_FUNNEL = REGISTRATE.item("hypertube_funnel", Item::new)
+            .model((ctx, prov) -> {})
+            .register();
+
     public static final ItemEntry<TubeAttachmentItem> REDSTONE_DETECTOR = REGISTRATE.item("redstone_detector_tube_attachment", (properties) -> new TubeAttachmentItem("redstone_input", properties))
+            .model((ctx, prov) -> {})
             .register();
 
     public static final ItemEntry<TubeAttachmentItem> TUBE_SCANNER = REGISTRATE.item("tube_scanner_attachment", (properties) -> new TubeAttachmentItem("tube_scanner", properties))
+            .model((ctx, prov) -> {})
             .register();
 
     public static final ItemEntry<Item> TUBE_SCANNER_UNFINISHED = REGISTRATE.item("tube_scanner_unfinished", Item::new)
+            .model((ctx, prov) -> {})
             .register();
 
     public static void register() {
