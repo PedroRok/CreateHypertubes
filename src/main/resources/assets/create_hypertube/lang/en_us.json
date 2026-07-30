@@ -60,5 +60,7 @@
   "create_hypertube.ponder.attachments.text_3": "The Redstone Detector Attachment allows you to change the Accelerator/Entrance mode with a Redstone signal.",
   "create_hypertube.ponder.tag.hypertube_systems": "Hypertube Systems",
   "create_hypertube.ponder.tag.hypertube_systems.description": "Blocks and items used in Hypertube transportation systems.",
-  "block.create_hypertube.hypertube_junction": "Hypertube Splitter"
+  "block.create_hypertube.hypertube_junction": "Hypertube Splitter",
+  "key.hypertube.tube_escape": "Hypertube Escape Button",
+  "key.categories.hypertube": "Create: Hypertube"
 }
